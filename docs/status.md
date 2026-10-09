@@ -4,7 +4,7 @@ description: Where Edge Meter stands — what is built per module with test coun
 
 # Status
 
-> As of **2026-10-09** · **0 tests**. The design is proposed and awaiting review;
+> As of **2026-10-09** · **0 tests**. The design is approved;
 > the app builds as an empty menu bar item. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
@@ -35,8 +35,10 @@ description: Where Edge Meter stands — what is built per module with test coun
 | 2026-10-09 | Its own app, beside ClaudeBar and AgentNexus, in the same design method |
 | 2026-10-09 | Rate limits stay out of v1: Cloudflare keeps no analytics for Rate Limiting bindings |
 | 2026-10-09 | The bill is an estimate from the plan files; Cloudflare's billable-usage API is alpha |
+| 2026-10-09 | The API implementation only: an API token, HTTP behind the `Analytics` and `BillingAPI` ports. The `cf` CLI can't serve every read (ENGINE §6) |
+| 2026-10-09 | Design approved; slice 1 starts |
 
 ## Open questions
 
 - The name *Edge Meter* is a working name.
-- Which unverified datasets exist (ENGINE §6) is settled in slice 2.
+- Every dataset is now verified by a read or introspection (ENGINE §6).

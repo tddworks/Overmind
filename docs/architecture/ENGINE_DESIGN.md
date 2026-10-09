@@ -110,16 +110,18 @@ No match means Free.
 | Workers requests, errors, CPU p50/p99, by `scriptName`, `status` | GraphQL `workersInvocationsAdaptive` | verified |
 | D1 reads, writes | GraphQL `d1AnalyticsAdaptiveGroups` (`accountTag`, `date`) | verified |
 | D1 queries by rows read | GraphQL `d1QueriesAdaptiveGroups` (`datetimeHour`) | from Wrangler's source |
-| D1 storage `databaseSizeBytes` | probably `d1StorageAdaptiveGroups` | **unverified**: introspect in slice 2 |
-| Workers by hour | a `datetimeHour` dimension | **unverified**: else group `datetime` client-side |
-| Cron runs | no documented dataset | **unverified**: introspect; drop the breakdown if none |
+| D1 storage `databaseSizeBytes` | GraphQL `d1StorageAdaptiveGroups` · `max.databaseSizeBytes` | verified by a read |
+| Workers by hour | `datetimeHour` (also `datetimeFifteenMinutes`, `datetimeSixHours`) | verified by introspection |
+| CPU time unit | `cpuTimeP50` · `cpuTimeP99` are **microseconds** | verified by a read |
+| Cron runs | GraphQL `workersInvocationsScheduled`: `cron` · `status` · `cpuTimeUs` · `scheduledDatetime` | verified by introspection |
 | Rate Limiting bindings | none exists | out of scope ([journeys §5](USER_JOURNEYS.md#5--out-of-scope-for-now)) |
 | GraphQL budget | 300 queries / 5 min / user; 31 days retention on adaptive datasets | verified |
-| Plan | `GET /accounts/{id}/subscriptions` (Billing Read) | verified |
+| Plan | `GET /accounts/{id}/subscriptions`: one entry per rate plan (an account can have *R2 Paid* without *Workers Paid*) | verified |
 | Invoices | `GET /accounts/{id}/billing/history` (`/user/billing/history` is deprecated) | verified |
 | Billable usage | `/accounts/{id}/billable-usage`, alpha | not used in v1: the bill is an estimate |
 | Deployments | `GET /accounts/{id}/workers/scripts/{name}/deployments` (Workers Scripts Read) | verified |
 | Token check | `GET /user/tokens/verify`; `/accounts/{id}/tokens/verify` for account-owned tokens | verified |
+| The `cf` CLI (1.0.0-beta.12) | no GraphQL command; `cf analytics sql get` has D1 datasets but no Workers invocations; its OAuth login reads analytics and subscriptions but not invoices (403) | checked 2026-10-09; not used in v1 ([status](../status.md#decisions)) |
 | Free limits | Workers 100k req/day, 10 ms CPU; D1 5M read, 100k written per day, 5 GB; reset 00:00 UTC | verified |
 | Paid ($5/mo) | 10M req, 30M CPU ms; D1 25B read, 50M written, 5 GB per month; overage $0.30/M req, $0.02/M CPU ms, $0.001/M rows read, $1.00/M rows written, $0.75/GB-month | verified |
 

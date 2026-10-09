@@ -9,7 +9,7 @@ description: How Edge Meter's code is cut into modules. There is one module per 
 > it may import · **Builds on:** [TARGET_ARCHITECTURE.md](TARGET_ARCHITECTURE.md) ·
 > **Next:** [ENGINE_DESIGN.md](ENGINE_DESIGN.md)
 >
-> **Status: PROPOSED.** Nothing is built; what lands slice by slice is in [docs/status.md](../status.md).
+> **Status: APPROVED** 2026-10-09. Nothing is built yet; what lands slice by slice is in [docs/status.md](../status.md).
 
 ---
 

@@ -86,4 +86,5 @@ do, the command that lands on the domain, and the node that answers.
 - **Changing anything on Cloudflare.** The token is read-only, and no port has a write call.
 - **Several accounts at once.** One connected account; switching is *Connect again*.
 - **Services other than Workers and D1.** KV, R2, Queues and Durable Objects are one JSON file each once someone needs them ([ENGINE_DESIGN](ENGINE_DESIGN.md)); none ships in v1.
+- **The `cf` CLI's login.** v1 connects with an API token. `Analytics` and `BillingAPI` are ports, so a `cf`-backed credential or adapter can come later without touching the domain.
 - **Rate limits.** Cloudflare keeps no analytics for Rate Limiting bindings, and a request the Worker answers with 429 is a *success* to Workers analytics. Once a Worker writes an Analytics Engine data point per block, a *Blocked by rate limit* breakdown is one entry in `worker.json`. Decided 2026-10-09: not in v1.
