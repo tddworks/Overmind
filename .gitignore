@@ -1,0 +1,20 @@
+.build
+.DS_Store
+Package.resolved
+
+# Tuist generated (regenerate with: tuist generate)
+*.xcodeproj
+*.xcworkspace
+Derived/
+DerivedData/
+.derivedData/
+
+# Xcode user data
+xcuserdata/
+
+# Build artifacts
+build/
+
+# Personal Claude Code settings (per-project, never commit)
+.claude/settings.local.json
+.idea/
