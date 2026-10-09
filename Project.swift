@@ -78,6 +78,25 @@ let project = Project(
         // Billing — the plan, invoices, deployments, accounts over Cloudflare's REST API; the Bill.
         module("Billing", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .external(name: "Mockable")]),
         tests("Billing", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .external(name: "Mockable")]),
+        // Alerts — which warnings are new (laws 9–10), and the port that shows them.
+        module("Alerts", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .target(name: "Services"),
+                                        .target(name: "Limits"), .external(name: "Mockable")]),
+        tests("Alerts", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .target(name: "Services"),
+                                       .target(name: "Limits"), .external(name: "Mockable")]),
+        // Diagnostics — AppLog. Anything may import it.
+        module("Diagnostics"),
+        // Monitor — the root: Account, the refresh, the ports for the token and the settings.
+        module("Monitor", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans"),
+                                         .target(name: "Limits"), .target(name: "Analytics"), .target(name: "Billing"),
+                                         .target(name: "Alerts"), .target(name: "Diagnostics"), .external(name: "Mockable")]),
+        tests("Monitor", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans"),
+                                        .target(name: "Limits"), .target(name: "Analytics"), .target(name: "Billing"),
+                                        .target(name: "Alerts"), .external(name: "Mockable")]),
+        // Storage — the Keychain and settings.json; implements Monitor's ports.
+        module("Storage", dependencies: [.target(name: "Monitor"), .target(name: "Analytics"), .target(name: "Alerts"),
+                                         .target(name: "Billing")]),
+        tests("Storage", dependencies: [.target(name: "Monitor"), .target(name: "Analytics"), .target(name: "Alerts"),
+                                        .target(name: "Billing")]),
         tests("Analytics", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Limits"),
                                           .external(name: "Mockable")]),
     ]

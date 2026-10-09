@@ -20,9 +20,17 @@ public enum PlanCatalog {
     /// The plan an account is on, from the `rate_plan` ids of its subscriptions: the first
     /// definition that matches one, else the one that matches nothing (Free).
     public static func plan(forRatePlans ratePlans: [String]) throws(PlanError) -> PlanDefinition {
-        let plans = try builtIns()
+        try plan(forRatePlans: ratePlans, among: builtIns())
+    }
+
+    public static func plan(forRatePlans ratePlans: [String], among plans: [PlanDefinition]) throws(PlanError) -> PlanDefinition {
         if let paid = plans.first(where: { !Set($0.matches).isDisjoint(with: ratePlans) }) { return paid }
         guard let free = plans.first(where: \.matches.isEmpty) else { throw .notFound("a plan that matches nothing") }
         return free
     }
+}
+
+extension Array where Element == PlanDefinition {
+    /// Every built-in plan.
+    public static func builtIns() throws(PlanError) -> [PlanDefinition] { try PlanCatalog.builtIns() }
 }

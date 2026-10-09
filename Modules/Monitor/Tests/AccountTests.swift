@@ -1,0 +1,199 @@
+import Foundation
+import Testing
+import Measures
+import Limits
+import Analytics
+import Billing
+@testable import Monitor
+
+@MainActor
+@Suite
+struct ConnectTests {
+    @Test func `should connect and read today's limits when the token answers for one account`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000]
+        let account = try world.account()
+
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.phase == .connected(AccountSummary(id: "acc1", name: "Acme")))
+        #expect(world.vault.token == "tok")
+        #expect(account.limit("d1.rowsRead")?.percent(at: .utc("2026-10-09T14:21:00"))?.rounded == 18)
+    }
+
+    @Test func `should ask which account to watch when the token answers for two`() async throws {
+        let world = World()
+        world.cloudflare.accountList = [AccountSummary(id: "a", name: "Acme"), AccountSummary(id: "b", name: "Personal")]
+        let account = try world.account()
+
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.phase == .choosing(world.cloudflare.accountList))
+    }
+
+    @Test func `should say Cloudflare refused and keep no token when the token is wrong`() async throws {
+        let world = World()
+        world.cloudflare.refuses = true
+        let account = try world.account()
+
+        await account.connect(token: "bad", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.phase == .refused)
+        #expect(world.vault.token == nil)
+    }
+
+    @Test func `should pick up where it left off after a relaunch`() async throws {
+        let world = World()
+        world.vault.token = "tok"
+        world.settings.settings.account = AccountSummary(id: "acc1", name: "Acme")
+        let account = try world.account()
+
+        await account.start(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.phase == .connected(AccountSummary(id: "acc1", name: "Acme")))
+        #expect(account.lastRead == .utc("2026-10-09T14:20:00"))
+    }
+
+    @Test func `should take the account to be on Free, and say invoices need Billing Read, when the token can't read billing`() async throws {
+        let world = World()
+        world.cloudflare.ratePlans = nil
+        world.cloudflare.invoiceList = nil
+        let account = try world.account()
+
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.plan.definition.id == "free")
+        #expect(account.missing.contains(.billing))
+    }
+
+    @Test func `should forget the token and the account when the person disconnects`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        account.disconnect()
+
+        #expect(account.phase == .notConnected)
+        #expect(world.vault.token == nil)
+        #expect(world.settings.settings.account == nil)
+    }
+}
+
+@MainActor
+@Suite
+struct RefreshTests {
+    func connected(_ world: World, at time: String = "2026-10-09T14:20:00") async throws -> Account {
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc(time))
+        return account
+    }
+
+    @Test func `should show the limit closest to running out in the menu bar`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000, "requests": 9_814]
+        let account = try await connected(world)
+
+        #expect(account.closest(at: .utc("2026-10-09T14:21:00"))?.id == "d1.rowsRead")
+        #expect(account.menuBar(at: .utc("2026-10-09T14:21:00")) == MenuBarState(text: "D1 18%", level: .ok))
+    }
+
+    @Test func `should never call CPU the closest limit, however high its p99`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000, "cpuTimeP99": 17_000]
+        let account = try await connected(world)
+
+        #expect(account.closest(at: .utc("2026-10-09T14:21:00"))?.id == "d1.rowsRead")
+    }
+
+    @Test func `should keep the last reading and say stale when Cloudflare can't be reached`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000]
+        let account = try await connected(world)
+        world.cloudflare.unreachable = true
+
+        await account.refresh(at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.freshness(at: .utc("2026-10-09T14:31:00")) == .stale)
+        #expect(account.limit("d1.rowsRead")?.percent(at: .utc("2026-10-09T14:31:00"))?.rounded == 18)
+    }
+
+    @Test func `should say live while the last read is recent`() async throws {
+        let account = try await connected(World())
+        #expect(account.freshness(at: .utc("2026-10-09T14:25:00")) == .live)
+    }
+
+    @Test func `should say Cloudflare refused the token when it is revoked`() async throws {
+        let world = World()
+        let account = try await connected(world)
+        world.cloudflare.refuses = true
+
+        await account.refresh(at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.phase == .refused)
+    }
+
+    @Test func `should warn once when D1 rows read crosses 75%, and remember it after a relaunch`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 3_800_000]
+        let account = try await connected(world, at: "2026-10-09T21:14:00")
+        await account.refresh(at: .utc("2026-10-09T21:20:00"))
+
+        let relaunched = try world.account()
+        await relaunched.start(at: .utc("2026-10-09T21:25:00"))
+
+        #expect(world.notifier.posted.map(\.title).filter { $0.hasPrefix("D1 rows read") } == ["D1 rows read at 76%"])
+    }
+
+    @Test func `should show only the limits the account's plan counts`() async throws {
+        let account = try await connected(World())
+        #expect(account.limits.map(\.id) == ["workers.requests", "workers.cpu", "d1.rowsRead", "d1.rowsWritten", "d1.storage"])
+    }
+
+    @Test func `should count limits across every Worker even when one is in focus`() async throws {
+        let world = World()
+        let account = try await connected(world)
+        account.focus = Focus(dimension: "scriptName", value: "leaderboard")
+
+        await account.refresh(at: .utc("2026-10-09T14:30:00"))
+
+        #expect(world.cloudflare.queries.last?.contains("scriptName") == false)
+    }
+}
+
+@MainActor
+@Suite
+struct TabTests {
+    @Test func `should read a service's charts for the focused Worker, with its deployments`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        account.focus = Focus(dimension: "scriptName", value: "leaderboard")
+
+        await account.open("workers", at: .utc("2026-10-09T14:21:00"))
+
+        #expect(account.breakdowns["workers"]?.map(\.title) == ["Requests · per hour today", "Invocations by outcome", "Cron runs"])
+        #expect(account.deployments.map(\.short) == ["d605dc93"])
+        #expect(world.cloudflare.queries.last?.contains(#"scriptName: "leaderboard""#) == true)
+    }
+
+    @Test func `should offer the account's Workers to focus on`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        #expect(account.workers == ["api", "leaderboard"])
+    }
+
+    @Test func `should quote Workers Paid for a Free account from this month's pace`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 30_000_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.bill?.estimate == Money(0, "USD"))
+        #expect(account.quotes.map(\.plan.name) == ["Workers Paid"])
+        #expect(account.quotes.first?.cost == Money(5, "USD"))
+    }
+}

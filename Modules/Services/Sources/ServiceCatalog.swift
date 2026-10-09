@@ -18,3 +18,8 @@ public enum ServiceCatalog {
         return services.sorted { ($0.order, $0.name) < ($1.order, $1.name) }
     }
 }
+
+extension Array where Element == ServiceDefinition {
+    /// Every built-in service, in tab order.
+    public static func builtIns() throws(DefinitionError) -> [ServiceDefinition] { try ServiceCatalog.builtIns() }
+}

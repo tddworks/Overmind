@@ -46,6 +46,40 @@ public struct Quantity: Sendable, Equatable, Hashable, Codable {
     }
 }
 
+extension Quantity {
+    /// The amount as a card prints it: *912k*, *3.75M*, *7.8 ms*, *41 MB*.
+    public var short: String {
+        switch unit {
+        case .milliseconds:
+            return "\(Self.trim(value, digits: value < 10 ? 1 : 0)) ms"
+        case .bytes:
+            for (size, word) in [(1e12, "TB"), (1e9, "GB"), (1e6, "MB"), (1e3, "KB")] where value >= size {
+                return "\(Self.significant(value / size)) \(word)"
+            }
+            return "\(Int(value)) bytes"
+        case .rows, .requests, .count:
+            for (size, word) in [(1e9, "B"), (1e6, "M"), (1e3, "k")] where value >= size {
+                return "\(Self.significant(value / size))\(word)"
+            }
+            return Self.trim(value, digits: 0)
+        }
+    }
+
+    /// Three significant figures, without trailing zeros: 3.75, 9.81, 912.
+    static func significant(_ value: Double) -> String {
+        trim(value, digits: value < 10 ? 2 : value < 100 ? 1 : 0)
+    }
+
+    static func trim(_ value: Double, digits: Int) -> String {
+        var text = String(format: "%.\(digits)f", value)
+        if text.contains(".") {
+            while text.hasSuffix("0") { text.removeLast() }
+            if text.hasSuffix(".") { text.removeLast() }
+        }
+        return text
+    }
+}
+
 public enum MeasureError: Error, Equatable, Sendable {
     case notAQuantity(String)
     case notMoney(String)
