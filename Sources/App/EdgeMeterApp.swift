@@ -13,6 +13,8 @@ import Storage
 @main
 struct EdgeMeterApp: App {
     @State private var account: Account
+    @State private var loginItem = LoginItem()
+    @State private var updater = Updater(enabled: !Demo.isOn)
     private let refresher: Refresher
 
     init() {
@@ -42,6 +44,10 @@ struct EdgeMeterApp: App {
             MenuBarLabel(account: account)
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            SettingsView(account: account, loginItem: loginItem, updater: updater)
+        }
     }
 }
 
@@ -58,8 +64,10 @@ enum Snapshots {
                 if tab != "today" && tab != "bill" { await account.open(tab, at: Demo.now ?? .now) }
                 write(PopoverView(account: account, tab: tab, scrolls: false), to: folder, name: tab)
             }
+            await writeLive(SettingsView(account: account, loginItem: LoginItem(), updater: Updater(enabled: false)),
+                            to: folder, name: "settings")
             if ProcessInfo.processInfo.environment["EDGEMETER_LIVE_SHOT"] == "1" {
-                await writeLive(PopoverView(account: account), to: folder, name: "today")
+                await writeLive(PopoverView(account: account), to: folder, name: "live-today")
             }
             let fresh = try! Account(services: .builtIns(), plans: .builtIns(), analytics: DemoCloudflare(), billing: DemoCloudflare(),
                                      vault: MemoryVault(token: nil), settings: MemorySettings(Settings()), notifier: SilentNotifier())
@@ -85,7 +93,7 @@ enum Snapshots {
         try? await Task.sleep(for: .seconds(1.5))
         guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return }
         host.cacheDisplay(in: host.bounds, to: rep)
-        try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: folder).appending(path: "live-\(name).png"))
+        try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: folder).appending(path: "\(name).png"))
         window.orderOut(nil)
     }
 

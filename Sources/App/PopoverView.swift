@@ -30,6 +30,7 @@ extension Level {
 /// (design-concept/edgemeter-pop.html). Renders the Account and tells it what happened.
 struct PopoverView: View {
     let account: Account
+    @Environment(\.openSettings) private var openSettings
     @State var tab: String = "today"
     /// Off for screenshots, which draw the whole tab.
     var scrolls = true
@@ -106,6 +107,12 @@ struct PopoverView: View {
             }
             PopButton(title: "☁ Dashboard ↗") { NSWorkspace.shared.open(account.dashboardURL) }
             Menu {
+                Button("Settings…") {
+                    // A menu bar app is never frontmost on its own: bring it forward first.
+                    NSApp.activate()
+                    openSettings()
+                }
+                Divider()
                 Button("Disconnect this account") { account.disconnect() }
             } label: {
                 Text("⚙").font(Pop.label(13)).foregroundStyle(Pop.ink).frame(width: 40).padding(.vertical, 7).popCard(Pop.mint, radius: 12)

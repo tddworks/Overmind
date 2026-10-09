@@ -30,3 +30,19 @@ struct SettingsFileTests {
         #expect(Storage.makeSettings(folder: folder).load() == Settings())
     }
 }
+
+@Suite
+struct OlderSettingsFileTests {
+    @Test func `should read every 5 minutes from a settings file written before the interval could be chosen`() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("edgemeter-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let older = #"{"account":{"id":"acc1","name":"Acme"},"focus":{},"alerts":{"levels":[90],"pace":false,"isOn":true},"sent":[]}"#
+        try Data(older.utf8).write(to: folder.appendingPathComponent("settings.json"))
+
+        let settings = Storage.makeSettings(folder: folder).load()
+
+        #expect(settings.account == AccountSummary(id: "acc1", name: "Acme"))
+        #expect(settings.alerts.levels == [90])
+        #expect(settings.interval == 5)
+    }
+}

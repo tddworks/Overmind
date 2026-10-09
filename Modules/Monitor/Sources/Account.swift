@@ -54,8 +54,11 @@ public final class Account {
     public private(set) var alerts: Alerts
     public private(set) var isRefreshing = false
 
-    /// How often the refresher reads; *stale* after two of these without a good read.
-    public let interval: TimeInterval = 300
+    /// How often the refresher reads; *stale* after two of these without a good read (law 18).
+    public private(set) var interval: TimeInterval
+
+    /// The read intervals the person can choose, in minutes.
+    public static let intervals = [5, 10, 15, 30]
 
     /// Which Worker the tabs describe. Never a limit's reading (law 1).
     public var focus: Focus {
@@ -86,6 +89,7 @@ public final class Account {
         self.notifier = notifier
         let saved = settings.load()
         focus = saved.focus
+        interval = TimeInterval((Self.intervals.contains(saved.interval) ? saved.interval : 5) * 60)
         alerts = Alerts(settings: saved.alerts, sent: saved.sent)
         plan = Plan(try PlanCatalog.plan(forRatePlans: [], among: plans), renewsOn: nil)
         limits = Self.limits(services, on: plan, keeping: [])
@@ -273,6 +277,13 @@ public final class Account {
 
     static func isKept(usage: Usage) -> Bool { usage.period == nil }
 
+    /// *Read every 5 · 10 · 15 · 30 min* (law 18); any other choice is refused.
+    public func setInterval(minutes: Int) {
+        guard Self.intervals.contains(minutes) else { return }
+        interval = TimeInterval(minutes * 60)
+        save()
+    }
+
     // MARK: Alerts
 
     public func setLevel(_ level: Int, on: Bool) {
@@ -350,7 +361,8 @@ public final class Account {
     }
 
     private func save() {
-        settings.save(Settings(account: summary ?? settings.load().account, focus: focus, alerts: alerts.settings, sent: alerts.sent))
+        settings.save(Settings(account: summary ?? settings.load().account, focus: focus, interval: Int(interval / 60),
+                               alerts: alerts.settings, sent: alerts.sent))
     }
 }
 

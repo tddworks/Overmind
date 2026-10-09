@@ -229,3 +229,31 @@ struct TabTests {
         #expect(account.quotes.first?.cost == Money(5, "USD"))
     }
 }
+
+@MainActor
+@Suite
+struct IntervalTests {
+    @Test func `should read every 15 minutes when the person chooses it, and call a read stale only after 30`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        account.setInterval(minutes: 15)
+
+        #expect(account.interval == 15 * 60)
+        #expect(account.freshness(at: .utc("2026-10-09T14:45:00")) == .live)
+        #expect(account.freshness(at: .utc("2026-10-09T14:51:00")) == .stale)
+    }
+
+    @Test func `should keep the read interval it has when asked for one it doesn't offer`() throws {
+        let account = try World().account()
+        account.setInterval(minutes: 7)
+        #expect(account.interval == 5 * 60)
+    }
+
+    @Test func `should remember the read interval after a relaunch`() throws {
+        let world = World()
+        try world.account().setInterval(minutes: 30)
+        #expect(try world.account().interval == 30 * 60)
+    }
+}

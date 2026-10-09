@@ -19,5 +19,7 @@ let package = Package(
     dependencies: [
         // @Mockable ports, as in ClaudeBar: tests stub what lies outside the app (Chicago school).
         .package(url: "https://github.com/Kolos65/Mockable.git", from: "0.6.4"),
+        // Updates (docs/features/updates): linked only by the App.
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.8.1"),
     ]
 )

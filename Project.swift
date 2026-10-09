@@ -51,18 +51,27 @@ let project = Project(
             product: .app,
             bundleId: "com.tddworks.edgemeter",
             deploymentTargets: deployment,
-            infoPlist: .extendingDefault(with: [
-                "LSUIElement": true,
-                "CFBundleDisplayName": "Edge Meter",
-                "CFBundleShortVersionString": "0.1.0",
-            ]),
+            infoPlist: .file(path: "Sources/App/Info.plist"),
             sources: ["Sources/App/**"],
+            resources: ["Sources/App/Resources/**"],
+            entitlements: .file(path: "Sources/App/entitlements.plist"),
             dependencies: [
                 .target(name: "Monitor"), .target(name: "Storage"), .target(name: "Analytics"), .target(name: "Billing"),
                 .target(name: "Alerts"), .target(name: "Limits"), .target(name: "Plans"), .target(name: "Services"),
-                .target(name: "Measures"),
+                .target(name: "Measures"), .target(name: "Diagnostics"), .external(name: "Sparkle"),
             ],
-            settings: .settings(base: strict)
+            settings: .settings(
+                base: strict.merging([
+                    "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                    "CODE_SIGN_IDENTITY": "-",
+                    "ENABLE_HARDENED_RUNTIME": "YES",
+                ]) { $1 },
+                debug: [
+                    // A debug copy never shares the installed app's bundle ID, so it never takes
+                    // its Sparkle update (ClaudeBar issue #450).
+                    "PRODUCT_BUNDLE_IDENTIFIER": "com.tddworks.edgemeter.debug",
+                ]
+            )
         ),
         // Measures — the shared kernel: Quantity, Money, Period, Percent. Imports nothing.
         module("Measures"),
