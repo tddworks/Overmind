@@ -1,5 +1,6 @@
 import Foundation
 import Measures
+import Diagnostics
 
 /// The `BillingAPI` port over `https://api.cloudflare.com/client/v4`. Only GETs. Never logs the
 /// token or an answer.
@@ -39,7 +40,13 @@ struct CloudflareREST: BillingAPI {
         } catch {
             throw BillingError.unreachable(error.localizedDescription)
         }
-        switch (response as? HTTPURLResponse)?.statusCode ?? 0 {
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        if !(200..<300).contains(status) {
+            // The path's first word only: never an account id, never the token.
+            let what = path.split(separator: "/").first.map(String.init) ?? ""
+            AppLog.billing.error("REST \(what, privacy: .public)… answered HTTP \(status, privacy: .public)")
+        }
+        switch status {
         case 200..<300: return data
         case 401: throw BillingError.refused
         case 403: throw BillingError.forbidden

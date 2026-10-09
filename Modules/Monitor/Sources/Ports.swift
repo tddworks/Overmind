@@ -19,6 +19,12 @@ public protocol SettingsStore: Sendable {
     func save(_ settings: Settings)
 }
 
+/// The adapters couldn't get the token from the vault: the Keychain refused this build, or the
+/// item is gone. Not Cloudflare's answer, so never shown as a refused token.
+public struct TokenUnavailable: Error, Equatable, Sendable {
+    public init() {}
+}
+
 /// The choices and the once-only log (CANONICAL §2). Never a token, never a reading.
 public struct Settings: Sendable, Equatable, Codable {
     public var account: AccountSummary?

@@ -22,7 +22,7 @@ struct EdgeMeterApp: App {
         } else {
             let vault = Storage.makeVault()
             let bearer: @Sendable () async throws -> String = {
-                guard let token = vault.load() else { throw BillingError.refused }
+                guard let token = vault.load() else { throw TokenUnavailable() }
                 return token
             }
             account = (try? Account(services: .builtIns(), plans: .builtIns(), analytics: Analytics.make(bearer: bearer),
@@ -61,6 +61,11 @@ enum Snapshots {
             let fresh = try! Account(services: .builtIns(), plans: .builtIns(), analytics: DemoCloudflare(), billing: DemoCloudflare(),
                                      vault: MemoryVault(token: nil), settings: MemorySettings(Settings()), notifier: SilentNotifier())
             write(PopoverView(account: fresh, scrolls: false), to: folder, name: "connect")
+            let refused = try! Account(services: .builtIns(), plans: .builtIns(), analytics: RefusingCloudflare(),
+                                       billing: RefusingCloudflare(), vault: MemoryVault(token: nil),
+                                       settings: MemorySettings(Settings()), notifier: SilentNotifier())
+            await refused.connect(token: "wrong", at: .now)
+            write(PopoverView(account: refused, scrolls: false), to: folder, name: "connect-refused")
             NSApplication.shared.terminate(nil)
         }
     }

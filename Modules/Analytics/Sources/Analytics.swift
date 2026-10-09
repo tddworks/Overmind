@@ -31,8 +31,10 @@ public struct AnalyticsAnswer: Sendable, Equatable {
 }
 
 public enum AnalyticsError: Error, Equatable, Sendable {
-    /// Cloudflare refused the token itself (401/403).
+    /// Cloudflare refused the token itself (401).
     case refused
+    /// The token is good but may not read analytics (403): it lacks Account Analytics Read.
+    case forbidden
     /// The network or Cloudflare couldn't be reached.
     case unreachable(String)
     /// Cloudflare answered with errors and no data.

@@ -78,9 +78,10 @@ let project = Project(
         tests("Limits", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans")]),
         // Analytics — every limit as one GraphQL read, and the answer back as Usage; breakdowns.
         module("Analytics", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans"),
-                                           .target(name: "Limits"), .external(name: "Mockable")]),
+                                           .target(name: "Limits"), .target(name: "Diagnostics"), .external(name: "Mockable")]),
         // Billing — the plan, invoices, deployments, accounts over Cloudflare's REST API; the Bill.
-        module("Billing", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .external(name: "Mockable")]),
+        module("Billing", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .target(name: "Diagnostics"),
+                                         .external(name: "Mockable")]),
         tests("Billing", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .external(name: "Mockable")]),
         // Alerts — which warnings are new (laws 9–10), and the port that shows them.
         module("Alerts", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .target(name: "Services"),

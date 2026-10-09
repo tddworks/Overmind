@@ -19,8 +19,19 @@ public final class Account {
         /// The token answers for several accounts: *Account ▾*.
         case choosing([AccountSummary])
         case connected(AccountSummary)
-        /// Cloudflare refused the token: *Connect again*.
-        case refused
+        /// Cloudflare said no, and why: *Connect again*.
+        case refused(Refusal)
+    }
+
+    /// Why Cloudflare said no: a wrong token (401) reads differently from a token that lacks a
+    /// permission (403) (law 12).
+    public enum Refusal: Sendable, Equatable {
+        /// 401: the token is wrong, revoked or expired.
+        case invalidToken
+        /// 403 on the account list: the token works but can see no account.
+        case cannotSeeAccount
+        /// 403 on the usage query: the token lacks Account Analytics Read.
+        case cannotReadAnalytics
     }
 
     public enum Freshness: Sendable, Equatable { case live, stale, refused, never }
@@ -105,15 +116,22 @@ public final class Account {
             switch accounts.count {
             case 0:
                 vault.delete()
-                phase = .refused
+                refuse(.cannotSeeAccount)
             case 1:
                 await use(accounts[0], at: now)
             default:
                 phase = .choosing(accounts)
             }
-        } catch BillingError.refused, BillingError.forbidden {
+        } catch BillingError.refused {
             vault.delete()
-            phase = .refused
+            refuse(.invalidToken)
+        } catch BillingError.forbidden {
+            vault.delete()
+            refuse(.cannotSeeAccount)
+        } catch is TokenUnavailable {
+            vault.delete()
+            lastProblem = Self.keychainProblem
+            phase = .notConnected
         } catch {
             vault.delete()
             lastProblem = "Couldn't reach Cloudflare"
@@ -179,7 +197,14 @@ public final class Account {
             lastProblem = nil
             AppLog.analytics.info("read \(usages.count) limits in \(Date().timeIntervalSince(started), format: .fixed(precision: 2))s")
         } catch AnalyticsError.refused {
-            phase = .refused
+            refuse(.invalidToken)
+            return
+        } catch AnalyticsError.forbidden {
+            refuse(.cannotReadAnalytics)
+            return
+        } catch is TokenUnavailable {
+            lastProblem = Self.keychainProblem
+            AppLog.monitor.error("the token couldn't be read from the Keychain")
             return
         } catch AnalyticsError.rejected(let messages) {
             lastProblem = messages.first ?? "Cloudflare couldn't answer"
@@ -232,6 +257,13 @@ public final class Account {
         self.bill = bill
         quotes = plans.filter { $0.id != plan.definition.id }
             .map { Quote(plan: $0, cost: bill.quote(on: Plan($0, renewsOn: nil))) }
+    }
+
+    static let keychainProblem = "Couldn't read the token back from the Keychain"
+
+    private func refuse(_ refusal: Refusal) {
+        AppLog.monitor.error("Cloudflare refused: \(String(describing: refusal), privacy: .public)")
+        phase = .refused(refusal)
     }
 
     static func isKept(_ definition: LimitDefinition) -> Bool {
@@ -290,7 +322,7 @@ public final class Account {
 
     /// *LIVE* · *STALE* (law 11).
     public func freshness(at now: Date) -> Freshness {
-        if phase == .refused { return .refused }
+        if case .refused = phase { return .refused }
         guard let lastRead else { return .never }
         return now.timeIntervalSince(lastRead) < 2 * interval ? .live : .stale
     }

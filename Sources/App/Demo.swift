@@ -100,6 +100,16 @@ struct DemoCloudflare: AnalyticsAPI, BillingAPI {
     }
 }
 
+/// Refuses every token as wrong: the Connect screen's refused state, for screenshots.
+struct RefusingCloudflare: AnalyticsAPI, BillingAPI {
+    func read(_ query: AnalyticsQuery) async throws -> AnalyticsAnswer { throw AnalyticsError.refused }
+    func accounts() async throws -> [AccountSummary] { throw BillingError.refused }
+    func subscriptions(account: String) async throws -> [Subscription] { [] }
+    func invoices(account: String) async throws -> [Invoice] { [] }
+    func scripts(account: String) async throws -> [String] { [] }
+    func deployments(account: String, script: String) async throws -> [Deployment] { [] }
+}
+
 final class MemoryVault: TokenVault, @unchecked Sendable {
     var token: String?
     init(token: String?) { self.token = token }

@@ -10,7 +10,7 @@ struct MenuBarLabel: View {
     var body: some View {
         let state = account.menuBar(at: Demo.now ?? account.lastRead ?? .now)
         switch (account.phase, state.level) {
-        case (.refused, _): Text("☁ ⚠︎")
+        case (.refused, _): Text("☁ ⚠︎")  // any refusal
         case (.connected, .actNow): Text("☁ ⚠︎ \(state.text)")
         case (.connected, .watch): Text("☁ ◐ \(state.text)")
         case (.connected, _): Text(state.text.isEmpty ? "☁" : "☁ \(state.text)")

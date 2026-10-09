@@ -1,4 +1,5 @@
 import Foundation
+import Diagnostics
 
 /// The `AnalyticsAPI` port over `POST https://api.cloudflare.com/client/v4/graphql`.
 /// GraphQL's POST is a read. Never logs the token or the answer.
@@ -21,8 +22,14 @@ struct GraphQLAnalytics: AnalyticsAPI {
             throw AnalyticsError.unreachable(error.localizedDescription)
         }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-        if status == 401 || status == 403 { throw AnalyticsError.refused }
-        guard (200..<300).contains(status) else { throw AnalyticsError.unreachable("HTTP \(status)") }
+        guard (200..<300).contains(status) else {
+            AppLog.analytics.error("GraphQL answered HTTP \(status, privacy: .public)")
+            switch status {
+            case 401: throw AnalyticsError.refused
+            case 403: throw AnalyticsError.forbidden
+            default: throw AnalyticsError.unreachable("HTTP \(status)")
+            }
+        }
         return AnalyticsAnswer(data)
     }
 }

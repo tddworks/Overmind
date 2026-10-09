@@ -38,8 +38,40 @@ struct ConnectTests {
 
         await account.connect(token: "bad", at: .utc("2026-10-09T14:20:00"))
 
-        #expect(account.phase == .refused)
+        #expect(account.phase == .refused(.invalidToken))
         #expect(world.vault.token == nil)
+    }
+
+    @Test func `should say the token can't see an account, not that it is wrong, when Cloudflare forbids the account list`() async throws {
+        let world = World()
+        world.cloudflare.forbidsAccounts = true
+        let account = try world.account()
+
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.phase == .refused(.cannotSeeAccount))
+        #expect(world.vault.token == nil)
+    }
+
+    @Test func `should say the token can't read Account Analytics when Cloudflare forbids the usage query`() async throws {
+        let world = World()
+        world.cloudflare.forbidsAnalytics = true
+        let account = try world.account()
+
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.phase == .refused(.cannotReadAnalytics))
+    }
+
+    @Test func `should blame the Keychain, not Cloudflare, when the saved token can't be read back`() async throws {
+        let world = World()
+        world.cloudflare.tokenUnavailable = true
+        let account = try world.account()
+
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.phase == .notConnected)
+        #expect(account.lastProblem == "Couldn't read the token back from the Keychain")
     }
 
     @Test func `should pick up where it left off after a relaunch`() async throws {
@@ -130,7 +162,7 @@ struct RefreshTests {
 
         await account.refresh(at: .utc("2026-10-09T14:30:00"))
 
-        #expect(account.phase == .refused)
+        #expect(account.phase == .refused(.invalidToken))
     }
 
     @Test func `should warn once when D1 rows read crosses 75%, and remember it after a relaunch`() async throws {

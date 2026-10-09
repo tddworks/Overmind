@@ -20,6 +20,10 @@ final class FakeCloudflare: AnalyticsAPI, BillingAPI, @unchecked Sendable {
     var numbers: [String: Double] = [:]
     var unreachable = false
     var refuses = false
+    var forbidsAnalytics = false
+    var forbidsAccounts = false
+    /// The Keychain wouldn't give the token back to the adapters.
+    var tokenUnavailable = false
     var accountList = [AccountSummary(id: "acc1", name: "Acme")]
     var ratePlans: [String]? = ["r2_paid"]
     var invoiceList: [Invoice]? = []
@@ -28,7 +32,9 @@ final class FakeCloudflare: AnalyticsAPI, BillingAPI, @unchecked Sendable {
     private(set) var queries: [String] = []
 
     func read(_ query: AnalyticsQuery) async throws -> AnalyticsAnswer {
+        if tokenUnavailable { throw TokenUnavailable() }
         if refuses { throw AnalyticsError.refused }
+        if forbidsAnalytics { throw AnalyticsError.forbidden }
         if unreachable { throw AnalyticsError.unreachable("offline") }
         queries.append(query.text)
         var account: [String: Any] = [:]
@@ -50,7 +56,9 @@ final class FakeCloudflare: AnalyticsAPI, BillingAPI, @unchecked Sendable {
     }
 
     func accounts() async throws -> [AccountSummary] {
+        if tokenUnavailable { throw TokenUnavailable() }
         if refuses { throw BillingError.refused }
+        if forbidsAccounts { throw BillingError.forbidden }
         return accountList
     }
 

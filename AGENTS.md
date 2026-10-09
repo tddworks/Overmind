@@ -57,7 +57,7 @@ UI changes come with a mockup in `design-concept/` first.
 ## Privacy and logging
 
 - **Never log, store outside the Keychain, or commit a token**, an `Authorization` header, an account ID or an invoice. Fixtures use placeholders.
-- Use `AppLog.<category>` (`monitor`, `analytics`, `billing`, `alerts`). Log that something happened, never what it carried.
+- Use `AppLog.<category>` (`monitor`, `analytics`, `billing`, `alerts`). Log that something happened, never what it carried. A refusal logs its HTTP status and the path's first word: `log show --last 1h --predicate 'subsystem == "com.tddworks.edgemeter"'`.
 - Live checks against a real account run only with `TEST_RUNNER_EDGEMETER_LIVE_TOKEN` (and `…_LIVE_ACCOUNT` for Analytics) set; they print numbers, never ids.
 - Screenshots come from demo data only: `EDGEMETER_DEMO=1 EDGEMETER_SNAPSHOT_DIR=$PWD/design-concept/screenshots <app>/Contents/MacOS/EdgeMeter`.
 

@@ -24,11 +24,10 @@ struct ConnectView: View {
                 Text("Connect Cloudflare").font(Pop.display(20))
                 Text("Paste an API token. Edge Meter only reads; it can't deploy, change or delete anything.")
                     .font(Pop.body(11.5)).foregroundStyle(Pop.muted).fixedSize(horizontal: false, vertical: true)
-                if account.phase == .refused {
-                    Text("Cloudflare refused the token. Check it, or make a new one.").font(Pop.label(11)).foregroundStyle(Pop.ink)
-                        .padding(8).frame(maxWidth: .infinity, alignment: .leading).popCard(Pop.coralSoft, radius: 10)
+                if case .refused(let refusal) = account.phase {
+                    Notice(text: Self.words(refusal), fill: Pop.coralSoft)
                 } else if let problem = account.lastProblem {
-                    Text(problem).font(Pop.label(11)).padding(8).frame(maxWidth: .infinity, alignment: .leading).popCard(Pop.butterSoft, radius: 10)
+                    Notice(text: problem, fill: Pop.butterSoft)
                 }
                 Text("API TOKEN").font(Pop.label(10)).tracking(0.5).padding(.top, 4)
                 SecureField("Paste the token", text: $token)
@@ -60,10 +59,31 @@ struct ConnectView: View {
         .popCard()
     }
 
+    static func words(_ refusal: Account.Refusal) -> String {
+        switch refusal {
+        case .invalidToken: "Cloudflare refused the token (401): it is wrong, revoked or expired. Check it, or make a new one."
+        case .cannotSeeAccount: "The token works, but Cloudflare shows it no account (403). Give it access to your account."
+        case .cannotReadAnalytics: "The token can't read usage (403). Add Account Analytics: Read to it."
+        }
+    }
+
     private func connect() {
         let pasted = token
         token = ""
         Task { await account.connect(token: pasted, at: .now) }
+    }
+}
+
+/// A message that wraps, never cut off.
+struct Notice: View {
+    let text: String
+    let fill: Color
+
+    var body: some View {
+        Text(text).font(Pop.label(11)).foregroundStyle(Pop.ink)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(8).frame(maxWidth: .infinity, alignment: .leading)
+            .popCard(fill, radius: 10)
     }
 }
 
