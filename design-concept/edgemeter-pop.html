@@ -220,6 +220,13 @@ button{font:inherit;color:inherit}
 .callout ol{margin:6px 0 0 16px;font-size:11.5px;font-weight:600;line-height:1.5;color:#2f2450}
 
 
+
+.verdict{padding:10px 12px;font-size:11.5px;font-weight:700;line-height:1.45;background:#F4FFF8}
+.verdict.busy{background:var(--butter-soft,#FFF8E6)}
+.verdict b{font-weight:800}
+.plan .pnote{font-size:10px;font-weight:800;color:var(--muted);margin-top:-2px}
+.row.total{background:#FBF7F1}
+
 /* settings window */
 .win{width:520px;max-width:100%;background:var(--cream);border:3px solid var(--ink);border-radius:18px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
 .win-bar{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:2.5px solid var(--ink);background:var(--paper)}
@@ -409,18 +416,24 @@ button{font:inherit;color:inherit}
             <div class="legend"><span><b style="background:var(--cf)"></b>8 days</span><span><b style="background:#F7F1E8"></b>23 days left</span></div>
             <div class="saved">✓ Nothing billable: every limit is inside the Free plan · Cloudflare's invoice replaces the estimate</div>
           </div>
-          <div class="sec-h">If we moved to Workers Paid</div>
+          <div class="sec-h">If you upgraded <a onclick="busyMonth()" id="busyLink">try a busy month ↺</a></div>
+          <div class="card verdict" id="verdict"><b>Free is enough.</b> No limit came near its stop this month. Upgrade when one would stop you.</div>
           <div class="plans">
-            <div class="card plan cur"><h4>Free <span class="st ok">NOW</span></h4><div class="p">$0</div>
-              <ul><li><b>100k</b> requests / day</li><li><b>5M</b> D1 reads / day</li><li><b>100k</b> D1 writes / day</li><li>stops at the limit</li></ul></div>
-            <div class="card plan"><h4>Workers Paid <span class="st paid">$5</span></h4><div class="p">$5.00<small style="font:800 10px 'Plus Jakarta Sans';color:var(--muted)"> /mo est.</small></div>
-              <ul><li><b>10M</b> requests / mo</li><li><b>25B</b> D1 reads / mo</li><li><b>50M</b> D1 writes / mo</li><li>bills overage instead</li></ul></div>
+            <div class="card plan cur"><h4>Free <span class="st ok">YOUR PLAN</span></h4><div class="p" id="freeCost">$0.00</div>
+              <div class="pnote">this month</div>
+              <ul><li>stops at its limits</li><li id="freeStop">requests and D1 fail until 00:00 UTC, then reset</li></ul></div>
+            <div class="card plan"><h4>Workers Paid <span class="st paid">$5 / mo</span></h4><div class="p" id="paidCost">$5.00</div>
+              <div class="pnote">this month, if you'd been on it</div>
+              <ul><li>never stops</li><li id="paidNote">nothing past what's included: just the $5</li></ul></div>
           </div>
           <div class="card list">
-            <div class="list-h">At this month's pace, on Paid <span>est.</span></div>
-            <div class="row"><div>Workers requests<div class="sub">~304k of 10M included</div></div><div class="val"><b>$0.00</b></div></div>
-            <div class="row"><div>D1 rows read<div class="sub">~49M of 25B included</div></div><div class="val"><b>$0.00</b></div></div>
-            <div class="row"><div>Subscription</div><div class="val"><b>$5.00</b></div></div>
+            <div class="list-h">This month on Workers Paid <span>at this pace · est.</span></div>
+            <div class="row"><div>Subscription<div class="sub">includes everything below up to its amount</div></div><div class="val"><b>$5.00</b></div></div>
+            <div class="row"><div>Requests<div class="sub" id="pReq">~304k of 10M included</div></div><div class="val"><b id="pReqC">$0.00</b></div></div>
+            <div class="row"><div>CPU time<div class="sub" id="pCpu">~0.2M ms of 30M included</div></div><div class="val"><b id="pCpuC">$0.00</b></div></div>
+            <div class="row"><div>D1 rows read<div class="sub" id="pRead">~49M of 25B included</div></div><div class="val"><b id="pReadC">$0.00</b></div></div>
+            <div class="row"><div>D1 rows written<div class="sub" id="pWrite">~0.4M of 50M included</div></div><div class="val"><b id="pWriteC">$0.00</b></div></div>
+            <div class="row total"><div><b style="font-family:'Plus Jakarta Sans';font-size:12px">Total</b></div><div class="val"><b id="pTotal">$5.00</b></div></div>
           </div>
           <div class="card list">
             <div class="list-h">Invoices</div>
@@ -522,6 +535,32 @@ document.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{
   document.querySelectorAll('.pill').forEach(x=>x.classList.toggle('on',x===p));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+p.dataset.v));
 });
+
+
+// Bill: a quiet month (today's numbers) and a busy one, to show both answers
+let busy=false;
+function busyMonth(){
+  busy=!busy;
+  const $=id=>document.getElementById(id);
+  const v=$('verdict');
+  if(busy){
+    v.className='card verdict busy';
+    v.innerHTML='<b>Free stopped you on 2 days.</b> D1 reads ran out on Oct 7 and Oct 8 until 00:00 UTC. On Workers Paid this month would cost <b>$6.20</b> and nothing would have stopped.';
+    $('freeStop').textContent='D1 reads failed on 2 days this month';
+    $('paidCost').textContent='$6.20';
+    $('paidNote').textContent='$5 + $1.20 for use past what\'s included';
+    $('pRead').textContent='~26.2B of 25B included · 1.2B past it at $0.001 per million';$('pReadC').textContent='$1.20';
+    $('pTotal').textContent='$6.20';$('busyLink').textContent='back to this month ↺';
+  }else{
+    v.className='card verdict';
+    v.innerHTML='<b>Free is enough.</b> No limit came near its stop this month. Upgrade when one would stop you.';
+    $('freeStop').textContent='requests and D1 fail until 00:00 UTC, then reset';
+    $('paidCost').textContent='$5.00';
+    $('paidNote').textContent='nothing past what\'s included: just the $5';
+    $('pRead').textContent='~49M of 25B included';$('pReadC').textContent='$0.00';
+    $('pTotal').textContent='$5.00';$('busyLink').textContent='try a busy month ↺';
+  }
+}
 
 // meters (mock)
 const meters=[
