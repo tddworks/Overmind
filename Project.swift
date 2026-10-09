@@ -75,6 +75,9 @@ let project = Project(
         // Analytics — every limit as one GraphQL read, and the answer back as Usage; breakdowns.
         module("Analytics", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans"),
                                            .target(name: "Limits"), .external(name: "Mockable")]),
+        // Billing — the plan, invoices, deployments, accounts over Cloudflare's REST API; the Bill.
+        module("Billing", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .external(name: "Mockable")]),
+        tests("Billing", dependencies: [.target(name: "Measures"), .target(name: "Plans"), .external(name: "Mockable")]),
         tests("Analytics", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Limits"),
                                           .external(name: "Mockable")]),
     ]
