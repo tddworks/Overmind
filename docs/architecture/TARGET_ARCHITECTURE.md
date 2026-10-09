@@ -40,10 +40,10 @@ description: How Edge Meter runs. It covers the pieces, each with one job, and t
 | `PlanCatalog` | load the plan files; pick the account's plan from its subscriptions | Plans | bundle, `[Subscription]` → `PlanDefinition` |
 | `Limit` | turn usage and an allowance into percent, level and pace | Limits | `Usage`, `Allowance`, now → derived values |
 | `ReadPlan` | every limit's read for one period, as **one** query | Analytics | `[LimitDefinition]`, `Period`s, accountID → `AnalyticsQuery` |
-| `Analytics` (port) | send a query, return the rows | Analytics | `AnalyticsQuery` → `AnalyticsAnswer` |
+| `AnalyticsAPI` (port) | send a query, return the rows | Analytics | `AnalyticsQuery` → `AnalyticsAnswer` |
 | `GraphQLAnalytics` | the port over `POST /client/v4/graphql` | Analytics/Internal | HTTP |
-| `AnswerReader` | read each limit's number out of the answer, by the paths its definition names | Analytics | `AnalyticsAnswer` → `[Limit.ID: Usage]` |
-| `BillingAPI` (port) | subscriptions, invoices, deployments, token verify | Billing | REST → values |
+| `PlannedRead` · `PlannedBreakdowns` | read each limit's number (or each chart) out of the answer, by the paths its definition names | Analytics | `AnalyticsAnswer` → `[LimitID: Usage]` · `[Breakdown]` |
+| `BillingAPI` (port) | accounts (how a token is checked), subscriptions, invoices, Workers, deployments | Billing | REST → values |
 | `Bill` | estimate, forecast, quote; invoice when there is one | Billing | `Plan`, `[Limit]`, `[Invoice]` → money |
 | `Alerts` | decide which warnings are new | Alerts | `[Limit]`, now → `[Warning]` |
 | `Notifier` (port) | show a warning | Alerts | `Warning` → a notification |
@@ -72,8 +72,8 @@ ConnectSheet ─ account.connect(token)
 Refresher ─ account.refresh(at: now)
   plan.period(for: each limit, at: now)          law 5
   ReadPlan(limits, periods) → one AnalyticsQuery  one POST per refresh: the GraphQL API allows 300 per 5 min
-  Analytics.read(query) → answer
-  AnswerReader → [Limit.ID: Usage]
+  AnalyticsAPI.read(query) → answer
+  PlannedRead.usages(from: answer) → [LimitID: Usage]
   limit.record(usage)                             law 7: newer and same period, or dropped
   connection.didRead(at:) / didFail(…)            law 11
   alerts.check(limits, at: now) → [Warning]       laws 9–10
@@ -87,7 +87,7 @@ on screen with *STALE*, never zeros.
 
 ```text
 PopoverView ─ account.open(service)
-  breakdowns older than one refresh? → ReadPlan(service.breakdowns, focus) → Analytics → AnswerReader
+  breakdowns older than one refresh? → ReadPlan.breakdowns(service, focus) → AnalyticsAPI → PlannedBreakdowns
   deployments for the focused Worker → BillingAPI.deployments (once per open, cached 5 min)
 ```
 

@@ -114,7 +114,7 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | **Services** | `ServiceDefinition` · `LimitDefinition` · `BreakdownDefinition` · the catalog | its bundle |
 | **Plans** | `PlanDefinition` · `Allowance` · `Price` · the catalog | its bundle |
 | **Limits** | `Limit` · `Usage` · `Pace` · `Level` | — (pure) |
-| **Analytics** | turning definitions into one GraphQL read, and the answer into `Usage` and `Breakdown` | `Analytics` port |
+| **Analytics** | turning definitions into one GraphQL read, and the answer into `Usage` and `Breakdown` | `AnalyticsAPI` port |
 | **Billing** | `Bill` · `Invoice` · which plan the account is on | `BillingAPI` port |
 | **Alerts** | `Alerts` · `Warning` | `Notifier` port |
 | **Monitor** | `Account` · `Connection` · `Focus` · the refresh | `TokenVault` · `SettingsStore` ports |

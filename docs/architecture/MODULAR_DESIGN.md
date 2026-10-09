@@ -9,7 +9,7 @@ description: How Edge Meter's code is cut into modules. There is one module per 
 > it may import · **Builds on:** [TARGET_ARCHITECTURE.md](TARGET_ARCHITECTURE.md) ·
 > **Next:** [ENGINE_DESIGN.md](ENGINE_DESIGN.md)
 >
-> **Status: APPROVED** 2026-10-09. Nothing is built yet; what lands slice by slice is in [docs/status.md](../status.md).
+> **Status: BUILT** 2026-10-09; what lands slice by slice is in [docs/status.md](../status.md).
 
 ---
 
@@ -59,11 +59,11 @@ Refresher(account: account, every: .minutes(5)).start()
 | `Services` | core | `ServiceDefinition`, `LimitDefinition`, `BreakdownDefinition`, `Read` (ENGINE §2), `ServiceCatalog` | `Resources/Services/`: `workers.json`, `d1.json` |
 | `Plans` | core | `PlanDefinition`, `Allowance`, `Price`, `PlanCatalog` (`plan(for: [Subscription])`), `cost(of:)` | `Resources/Plans/`: `free.json`, `workers-paid.json` |
 | `Limits` | core | `Limit`, `Usage`, `Pace`, `Level` | none: pure |
-| `Analytics` | supporting | `ReadPlan`, `AnalyticsQuery`, `AnalyticsAnswer`, `AnswerReader`, `Breakdown`, the port `Analytics` | `GraphQLAnalytics` (over `HTTP`) |
-| `Billing` | supporting | `Bill`, `Invoice`, `Subscription`, `Deployment`, `AccountSummary`, the port `BillingAPI` | `CloudflareREST` (over `HTTP`) |
+| `Analytics` | supporting | `ReadPlan`, `PlannedRead`, `PlannedBreakdowns`, `AnalyticsQuery`, `AnalyticsAnswer`, `Breakdown`, `Focus`, the port `AnalyticsAPI` | `GraphQLAnalytics` |
+| `Billing` | supporting | `Bill`, `Invoice`, `Subscription`, `Deployment`, `AccountSummary`, the port `BillingAPI` | `CloudflareREST` |
 | `Alerts` | supporting | `Alerts`, `Warning`, the port `Notifier` | `UserNotifier` |
 | `Storage` | generic | `Storage.makeVault()` (`TokenVault`), `.makeSettings()` (`SettingsStore`) | `KeychainTokenVault`, `JSONSettingsFile` |
-| `Diagnostics` | cross-cutting | `AppLog` and its categories | `FileLogger` |
+| `Diagnostics` | cross-cutting | `AppLog` and its categories (OSLog) | — |
 | `Monitor` | core · the root | `Account` (`@MainActor @Observable`), `Connection`, `Focus`, `MenuBarState`, `Refresher`, the ports `TokenVault` · `SettingsStore` | — |
 | `EdgeMeter` (App) | the composition root | SwiftUI views, the Pop theme (AgentNexus's), the menu-bar label | — |
 

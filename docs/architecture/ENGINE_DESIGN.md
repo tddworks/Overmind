@@ -25,7 +25,7 @@ reads the answer back by the paths the files name. No Swift knows D1.
 | Case | Means | Example |
 |---|---|---|
 | `sum` | add up a field over the period | D1 rows read: `d1AnalyticsAdaptiveGroups` · `sum.rowsRead` |
-| `max` | the largest value in the period | D1 storage: `databaseSizeBytes` |
+| `max` | what is kept: the largest value in the period for each value of `focus`, added up (the 5 GB covers every database) | D1 storage: `databaseSizeBytes` |
 | `quantile` | a percentile over the period, plus a count of the invocations that failed the allowance | CPU: `quantiles.cpuTimeP99`, failures where `status = exceededResources` |
 
 Every `Read` names:

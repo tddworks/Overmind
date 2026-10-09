@@ -27,7 +27,8 @@ enum Fixture {
       "l0":[{"sum":{"rowsRead":120000}},{"sum":{"rowsRead":57504}}],
       "l1":[{"quantiles":{"cpuTimeP99":16726}}],
       "l1_failures":[{"sum":{"requests":3}}],
-      "l2":[{"max":{"databaseSizeBytes":512000}}]
+      "l2":[{"dimensions":{"databaseId":"db1"},"max":{"databaseSizeBytes":512000}},
+            {"dimensions":{"databaseId":"db2"},"max":{"databaseSizeBytes":40488000}}]
     }]}},"errors":null}
     """.utf8)
 }

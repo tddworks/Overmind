@@ -57,7 +57,11 @@ let project = Project(
                 "CFBundleShortVersionString": "0.1.0",
             ]),
             sources: ["Sources/App/**"],
-            dependencies: [],
+            dependencies: [
+                .target(name: "Monitor"), .target(name: "Storage"), .target(name: "Analytics"), .target(name: "Billing"),
+                .target(name: "Alerts"), .target(name: "Limits"), .target(name: "Plans"), .target(name: "Services"),
+                .target(name: "Measures"),
+            ],
             settings: .settings(base: strict)
         ),
         // Measures — the shared kernel: Quantity, Money, Period, Percent. Imports nothing.

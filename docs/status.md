@@ -4,32 +4,38 @@ description: Where Edge Meter stands — what is built per module with test coun
 
 # Status
 
-> As of **2026-10-09** · **55 tests**, all passing. Slice 1 (the pure core) is built;
-> the app still shows a placeholder popover. This file is the one home for
+> As of **2026-10-09** · **114 tests** (and 4 live checks), all passing. Every slice is built; the app
+> runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
 ## What is built
 
-| Piece | State |
-|---|---|
-| Design: the five docs, the mockup | proposed |
-| `EdgeMeter` app target | builds; shows a placeholder popover |
-| `Measures` | `Quantity` (reads *5M rows*, *5 GB*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 17 |
+| Piece | Holds | Tests |
+|---|---|---|
+| Design: the five docs, the mockup | approved | — |
+| `EdgeMeter` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect; demo mode and screenshots | — |
+| `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 18 |
 | `Services` | `ServiceDefinition`, `LimitDefinition`, `Read`, `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json` | 10 |
 | `Plans` | `PlanDefinition`, `Plan`, `Allowance`, `Price`, `cost(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` | 15 |
-| `Limits` | `Limit` (laws 2–7), `Usage`, `Level`, `Pace` | 13 |
+| `Limits` | `Limit` (laws 2–8), `Usage`, `Level`, `Pace` | 16 |
+| `Analytics` | `ReadPlan` (one query; storage summed per database), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 13 + 2 live |
+| `Billing` | `Bill` (estimate, forecast, quote), `BillingAPI`; `CloudflareREST` | 11 + 1 live |
+| `Alerts` | laws 9–10, CPU stopped invocations; `UserNotifier` | 11 |
+| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts), `Refresher` | 17 + 1 live |
+| `Storage` | `KeychainTokenVault`, `JSONSettingsFile` | 3 |
+| `Diagnostics` | `AppLog` | — |
 
 ## Slices, in order
 
 | # | Slice | Modules | Done when |
 |---|---|---|---|
 | 1 ✅ | The pure core | `Measures`, `Services`, `Plans`, `Limits` | percent, level, pace and periods are tested on a neutral fixture, and `d1.json`, `workers.json`, `free.json`, `workers-paid.json` load in definition tests |
-| 2 | One read | `Analytics` | `ReadPlan` writes one query for every limit; `AnswerReader` reads recorded answers. The unverified datasets in ENGINE §6 are settled by introspection |
-| 3 | The root | `Monitor`, `Storage`, `Billing` (verify, accounts, subscriptions) | connect, choose, refresh, freshness; the token in the Keychain |
-| 4 | The Today tab | App | the menu bar and Today from the mockup, on the real account |
-| 5 | Warnings | `Alerts` | laws 9–10, with the sent log kept across relaunches |
-| 6 | Service tabs | `Analytics` breakdowns, `Billing` deployments | D1 and Worker tabs, with deployment pins and the focus picker |
-| 7 | The bill | `Billing` | estimate, forecast, quote, invoices |
+| 2 ✅ | One read | `Analytics` | `ReadPlan` writes one query for every limit; `PlannedRead` reads recorded answers. The unverified datasets in ENGINE §6 are settled by introspection |
+| 3 ✅ | The root | `Monitor`, `Storage`, `Billing` (verify, accounts, subscriptions) | connect, choose, refresh, freshness; the token in the Keychain |
+| 4 ✅ | The Today tab | App | the menu bar and Today from the mockup, on the real account |
+| 5 ✅ | Warnings | `Alerts` | laws 9–10, with the sent log kept across relaunches |
+| 6 ✅ | Service tabs | `Analytics` breakdowns, `Billing` deployments | D1 and Worker tabs, with deployment pins and the focus picker |
+| 7 ✅ | The bill | `Billing` | estimate, forecast, quote, invoices |
 
 ## Decisions
 
@@ -39,9 +45,12 @@ description: Where Edge Meter stands — what is built per module with test coun
 | 2026-10-09 | Rate limits stay out of v1: Cloudflare keeps no analytics for Rate Limiting bindings |
 | 2026-10-09 | The bill is an estimate from the plan files; Cloudflare's billable-usage API is alpha |
 | 2026-10-09 | The API implementation only: an API token, HTTP behind the `Analytics` and `BillingAPI` ports. The `cf` CLI can't serve every read (ENGINE §6) |
-| 2026-10-09 | Design approved; slice 1 starts |
+| 2026-10-09 | Design approved; slices 1–7 built the same day |
+| 2026-10-09 | A per-invocation limit acts only when Cloudflare stopped invocations, and is never the closest: a real account ran p99 17 ms past Free's 10 ms with none stopped |
 
 ## Open questions
 
 - The name *Edge Meter* is a working name.
-- Every dataset is now verified by a read or introspection (ENGINE §6).
+- Workers Paid's `rate_plan` id (`workers_paid`) is unverified: no Paid account has been read.
+- Invoices have only been read as *forbidden* (the `cf` login has no billing scope); a token with Billing Read will show them.
+- Checked end to end on a real Free account on 2026-10-09: plan, 5 limits, both tabs with 10 deployment pins, and the Workers Paid quote ($5).

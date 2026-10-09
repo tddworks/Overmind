@@ -26,7 +26,7 @@ One module per bounded context ([MODULAR_DESIGN.md](docs/architecture/MODULAR_DE
 | `Modules/Measures` | the kernel: `Quantity`, `Money`, `Period`, `Percent`. Imports nothing |
 | `Modules/Services` · `Modules/Plans` | definitions and their catalogs; `Resources/Services/<id>.json`, `Resources/Plans/<id>.json` |
 | `Modules/Limits` | `Limit`, `Usage`, `Pace`, `Level`. Pure |
-| `Modules/Analytics` · `Billing` · `Alerts` · `Storage` | the outside, behind `@Mockable` ports |
+| `Modules/Analytics` · `Billing` · `Alerts` · `Storage` | the outside, behind `@Mockable` ports (`AnalyticsAPI`, `BillingAPI`, `Notifier`, `TokenVault`, `SettingsStore`) |
 | `Modules/Monitor` | `Account`, the root the views read |
 | `Sources/App` | SwiftUI views (AgentNexus's Pop theme) and the composition root |
 
@@ -58,11 +58,15 @@ UI changes come with a mockup in `design-concept/` first.
 
 - **Never log, store outside the Keychain, or commit a token**, an `Authorization` header, an account ID or an invoice. Fixtures use placeholders.
 - Use `AppLog.<category>` (`monitor`, `analytics`, `billing`, `alerts`). Log that something happened, never what it carried.
+- Live checks against a real account run only with `TEST_RUNNER_EDGEMETER_LIVE_TOKEN` (and `…_LIVE_ACCOUNT` for Analytics) set; they print numbers, never ids.
+- Screenshots come from demo data only: `EDGEMETER_DEMO=1 EDGEMETER_SNAPSHOT_DIR=$PWD/design-concept/screenshots <app>/Contents/MacOS/EdgeMeter`.
 
 ## Gotchas
 
 - In a `@MainActor` suite, mark Mockable's `willProduce` **and** `.matching` closures `@Sendable` (as in AgentNexus).
 - Free allowances reset at 00:00 UTC, not local midnight; Paid ones on the subscription's renewal date.
+- No `TimelineView` in the `MenuBarExtra` label: it makes the label update in a loop and the app hangs. The label redraws when `Account` changes.
+- `ImageRenderer` draws a `SecureField` as a placeholder block: the Connect screenshot shows it so; the real field is fine.
 - D1 datasets filter by `date`, Workers datasets by `datetime` ([ENGINE §2](docs/architecture/ENGINE_DESIGN.md#2--read--how-a-limits-number-is-found)).
 
 ## When you are…

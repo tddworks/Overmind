@@ -31,7 +31,10 @@ public struct ReadPlan: Sendable {
             let source = read.definition.read.source
             let period = read.period ?? .day(containing: now)
             let range = GraphQL.range(source.time, from: period.start, to: min(now, period.end.addingTimeInterval(-1)))
-            fields.append("l\(index): \(source.dataset)(limit: \(Self.groups), filter: { \(range) }) { \(GraphQL.selection(source.field)) }")
+            // What is kept is kept per database (or Worker): the largest size of each, added up.
+            var selection = GraphQL.selection(source.field)
+            if case .max = read.definition.read, let focus = source.focus { selection = "dimensions { \(focus) } \(selection)" }
+            fields.append("l\(index): \(source.dataset)(limit: \(Self.groups), filter: { \(range) }) { \(selection) }")
             if case .quantile(let source) = read.definition.read, let failures = source.failures {
                 let filter = "\(range), \(failures.dimension): \(GraphQL.string(failures.equals))"
                 fields.append("l\(index)_failures: \(source.dataset)(limit: \(Self.groups), filter: { \(filter) }) { \(GraphQL.selection(failures.measure)) }")
@@ -113,8 +116,8 @@ public struct PlannedRead: Sendable {
             let source = read.definition.read.source
             let values = groups.compactMap { GraphQL.number(at: source.field, in: $0) }
             let value: Double = switch read.definition.read {
-            case .sum: values.reduce(0, +)
-            case .max, .quantile: values.max() ?? 0
+            case .sum, .max: values.reduce(0, +)
+            case .quantile: values.max() ?? 0
             }
             var failures: Int?
             if case .quantile(let source) = read.definition.read, let rule = source.failures,

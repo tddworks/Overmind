@@ -262,6 +262,11 @@ public final class Account {
 
     public func limit(_ id: LimitID) -> Limit? { limits.first { $0.id == id } }
 
+    /// The service a limit belongs to: its icon on a card.
+    public func service(of limit: LimitID) -> ServiceDefinition? {
+        services.first { $0.limits.contains { $0.id == limit } }
+    }
+
     public func limits(of serviceID: String) -> [Limit] {
         let ids = Set(services.first { $0.id == serviceID }?.limits.map(\.id) ?? [])
         return limits.filter { ids.contains($0.id) }

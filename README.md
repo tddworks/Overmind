@@ -6,12 +6,11 @@ the query or deploy behind it, and what the month costs — read with a read-onl
 
 ClaudeBar's and AgentNexus's sibling: same design method, same Pop theme.
 
-> **Status:** design proposed, nothing built yet → [docs/status.md](docs/status.md) ·
-> the screens → [design-concept/edgemeter-pop.html](design-concept/edgemeter-pop.html)
+<img src="design-concept/screenshots/popover-today.png" width="360" alt="The Edge Meter popover on demo data">
 
-## Build
+## Install
 
-macOS 15+, Xcode, [Tuist](https://tuist.dev):
+Build from source (macOS 15+, Xcode, [Tuist](https://tuist.dev)):
 
 ```bash
 tuist install && tuist generate
@@ -19,20 +18,27 @@ xcodebuild build -workspace EdgeMeter.xcworkspace -scheme EdgeMeter -destination
 open .build/dd/Build/Products/Debug/EdgeMeter.app
 ```
 
-## What it will watch (v1)
+Try it without an account: `EDGEMETER_DEMO=1 .build/dd/Build/Products/Debug/EdgeMeter.app/Contents/MacOS/EdgeMeter`.
 
-| Service | Limits |
-|---|---|
-| Workers | requests, CPU per invocation |
-| D1 | rows read, rows written, storage |
+## First run
 
-Plans: Free and Workers Paid. Other Cloudflare products are one JSON file each →
-[ENGINE_DESIGN](docs/architecture/ENGINE_DESIGN.md).
+1. [Create an API token](https://dash.cloudflare.com/profile/api-tokens) with **read** access to
+   **Account Analytics** and **Workers Scripts**, and **Billing** if you want the plan and invoices.
+2. Click **☁** in the menu bar, paste the token, **Connect**. It is kept in your Keychain.
+3. The menu bar shows the limit closest to running out (**D1 18%**). Edge Meter reads every 5 minutes
+   and after the Mac wakes, and warns at 50%, 75% and 90%, or early when today's pace would cross 90%.
 
-## The token
+## What it watches
 
-Create an API token with **read** access to Account Analytics, D1, Workers Scripts and
-Billing. Edge Meter keeps it in the Keychain and has no call that changes your account.
+| Service | Limits | Tab |
+|---|---|---|
+| Workers | requests, CPU per invocation (Free) or CPU time (Paid) | requests per hour, invocations by outcome, cron runs, deployments |
+| D1 | rows read, rows written, storage | rows read per day and hour, top queries |
+
+Plans: Free and Workers Paid; the Bill tab prices this month on both. Other Cloudflare products
+are one JSON file each → [ENGINE_DESIGN](docs/architecture/ENGINE_DESIGN.md).
+
+Edge Meter only reads: no call it makes can change your account.
 
 ## Docs
 

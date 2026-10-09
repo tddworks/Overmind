@@ -37,7 +37,7 @@ struct ReadPlanTests {
         let query = plan.limits(try reads(), at: Fixture.now).query.text
 
         #expect(!query.contains("scriptName"))
-        #expect(!query.contains("databaseId"))
+        #expect(!query.contains("databaseId:"))
     }
 
     @Test func `should read today's D1 rows read from Cloudflare's answer`() throws {
@@ -57,10 +57,12 @@ struct ReadPlanTests {
         #expect(cpu.failures == 3)
     }
 
-    @Test func `should read storage as the size kept, with no period`() throws {
-        let usages = try plan.limits(try reads(), at: Fixture.now).usages(from: AnalyticsAnswer(Fixture.limitsAnswer))
+    @Test func `should add up every database's size for storage, since the allowance covers them all`() throws {
+        let planned = plan.limits(try reads(), at: Fixture.now)
+        let usages = try planned.usages(from: AnalyticsAnswer(Fixture.limitsAnswer))
 
-        #expect(usages["d1.storage"] == Usage(used: Quantity(512_000, .bytes), period: nil, readAt: Fixture.now))
+        #expect(planned.query.text.contains("l2: d1StorageAdaptiveGroups(limit: 10000, filter: { date_geq: \"2026-10-09\", date_leq: \"2026-10-09\" }) { dimensions { databaseId } max { databaseSizeBytes } }"))
+        #expect(usages["d1.storage"] == Usage(used: Quantity(41_000_000, .bytes), period: nil, readAt: Fixture.now))
     }
 
     @Test func `should count zero when Cloudflare has no rows for a limit yet today`() throws {
