@@ -137,12 +137,12 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 |---|---|---|
 | 1 | **A limit counts the whole account**, because Cloudflare does. `Focus` narrows breakdowns and never a limit's reading. | `Account` |
 | 2 | `percent = used ÷ allowance`. **Level:** under 50 is *ok*, 50 up to 90 is *watch*, 90 and over is *act now*. | `Limit` |
-| 3 | A **per-invocation** allowance (*10 ms*) is compared with the period's p99; the card also counts the invocations that went past it. | `Limit` |
+| 3 | A **per-invocation** allowance (*10 ms*) is compared with the period's p99, and the card counts the invocations Cloudflare stopped for it. Cloudflare lets single invocations run past it (a real account: p99 17 ms, none stopped), so its level is *act now* only when some were stopped, and at most *watch* otherwise. It never runs out, so it is never `closest`. | `Limit` |
 | 4 | A **total** allowance (*5 GB*) never resets and has no pace. | `Allowance` |
 | 5 | **Periods:** Free allowances reset at 00:00 UTC; Paid included amounts reset on the subscription's renewal date. | `Plan` |
 | 6 | `Pace = used × length ÷ elapsed`, projected to the period's end. **Nil in the period's first hour**, and for total and per-invocation allowances. | `Pace` |
 | 7 | A reading replaces `Usage` only if it is **newer and of the same period**. When a period ends, usage is nil until the first read of the new one; a number from yesterday is never shown as today's. | `Limit` |
-| 8 | `closest` is the limit with the **highest percent**; a tie goes to the higher pace; a limit with no usage is never closest. | `Account` |
+| 8 | `closest` is the limit that runs out with the **highest percent**; a tie goes to the higher pace; a limit with no usage is never closest. | `Account` |
 | 9 | **One warning per limit, per level, per period.** Falling back under a level and crossing it again in the same period sends nothing new. Turning a level off never clears the log. | `Alerts` |
 | 10 | A **pace warning** goes out when pace reaches 90% while percent is under 90, once per limit per period. | `Alerts` |
 | 11 | **Freshness:** *live* while the last good read is under two refresh intervals old, *stale* after that, *refused* when Cloudflare rejects the token itself (401/403 on verify). | `Connection` |

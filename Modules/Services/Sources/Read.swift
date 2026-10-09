@@ -37,13 +37,17 @@ public enum Read: Sendable, Equatable {
         }
     }
 
+    /// The invocations that went past the allowance: those whose `dimension` is `equals`,
+    /// counted by `measure`.
     public struct Failures: Sendable, Equatable, Codable {
         public let dimension: String
         public let equals: String
+        public let measure: String
 
-        public init(dimension: String, equals: String) {
+        public init(dimension: String, equals: String, measure: String) {
             self.dimension = dimension
             self.equals = equals
+            self.measure = measure
         }
     }
 }

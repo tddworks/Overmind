@@ -38,8 +38,21 @@ public struct Limit: Sendable, Equatable, Identifiable {
         return Percent(fraction: fraction)
     }
 
+    /// *OK · WATCH · ACT NOW* (law 2). A per-invocation allowance is met or failed by each
+    /// request alone: it acts only when Cloudflare stopped some, and otherwise watches at most
+    /// (law 3).
     public func level(at now: Date) -> Level? {
-        percent(at: now).map(Level.init)
+        guard let percent = percent(at: now) else { return nil }
+        guard case .perInvocation = allowance else { return Level(percent) }
+        if (current(at: now)?.failures ?? 0) > 0 { return .actNow }
+        return min(Level(percent), .watch)
+    }
+
+    /// Whether use adds up toward the allowance until it is gone. A per-invocation allowance
+    /// doesn't, so it is never the closest limit (law 8).
+    public var runsOut: Bool {
+        if case .perInvocation = allowance { return false }
+        return true
     }
 
     /// Where the rate ends the period (law 6): nil in the first hour, and for allowances that

@@ -130,3 +130,27 @@ struct PaceTests {
         #expect(limit.percent(at: .utc("2026-10-09T12:01:00")) == Percent(78))
     }
 }
+
+/// Cloudflare lets single invocations run past the Free CPU allowance; only the ones it stops
+/// matter (law 3, checked against a real account on 2026-10-09: p99 17 ms, 0 failures).
+@Suite
+struct PerInvocationTests {
+    func cpu(p99: Double, failures: Int) -> Limit {
+        var limit = Limit(.acmeWidgets, allowance: .perInvocation(Quantity(10, .count)))
+        let at = Date.utc("2026-10-09T12:00:00")
+        limit.record(Usage(used: Quantity(p99, .count), period: .day(containing: at), readAt: at, failures: failures))
+        return limit
+    }
+
+    @Test func `should only ask to watch when the p99 is past the allowance but nothing failed`() {
+        #expect(cpu(p99: 17, failures: 0).level(at: .utc("2026-10-09T12:01:00")) == .watch)
+    }
+
+    @Test func `should ask to act when Cloudflare stopped invocations for going past the allowance`() {
+        #expect(cpu(p99: 9, failures: 3).level(at: .utc("2026-10-09T12:01:00")) == .actNow)
+    }
+
+    @Test func `should say a per-invocation limit never runs out, so it is never the closest`() {
+        #expect(!cpu(p99: 17, failures: 0).runsOut)
+    }
+}

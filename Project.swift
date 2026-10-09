@@ -72,5 +72,10 @@ let project = Project(
         // Limits — Limit, Usage, Pace, Level: how close each limit is. Pure.
         module("Limits", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans")]),
         tests("Limits", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans")]),
+        // Analytics — every limit as one GraphQL read, and the answer back as Usage; breakdowns.
+        module("Analytics", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans"),
+                                           .target(name: "Limits"), .external(name: "Mockable")]),
+        tests("Analytics", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Limits"),
+                                          .external(name: "Mockable")]),
     ]
 )

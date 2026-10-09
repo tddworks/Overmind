@@ -30,12 +30,12 @@ struct BuiltInServicesTests {
         guard case .quantile(let source) = cpu.read else { Issue.record("CPU is not a percentile"); return }
         #expect(source.field == "quantiles.cpuTimeP99")
         #expect(source.scale == 0.001)
-        #expect(source.failures == Read.Failures(dimension: "status", equals: "exceededResources"))
+        #expect(source.failures == Read.Failures(dimension: "status", equals: "exceededResources", measure: "sum.requests"))
     }
 
     @Test func `should draw the cron runs on the Workers tab`() throws {
         let workers = try ServiceCatalog.builtIn("workers")
-        #expect(workers.breakdowns.contains { $0.kind == .split(dataset: "workersInvocationsScheduled", dimension: "status",
-                                                                  measure: "count", time: .datetime) })
+        let cron = BreakdownDefinition.Source(dataset: "workersInvocationsScheduled", measure: "rows", time: .datetime, focus: "scriptName")
+        #expect(workers.breakdowns.contains { $0.kind == .split(cron, dimension: "status") })
     }
 }

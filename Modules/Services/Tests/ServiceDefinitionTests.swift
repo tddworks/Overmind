@@ -13,7 +13,7 @@ struct ServiceDefinitionTests {
           "read": { "sum": { "dataset": "acmeGroups", "field": "sum.widgets", "time": "date", "focus": "factoryId" } } },
         { "id": "acme.latency", "name": "Latency", "short": "Latency", "unit": "milliseconds",
           "read": { "quantile": { "dataset": "acmeGroups", "field": "quantiles.latencyP99", "time": "datetime",
-                                  "scale": 0.001, "failures": { "dimension": "status", "equals": "tooSlow" } } } }
+                                  "scale": 0.001, "failures": { "dimension": "status", "equals": "tooSlow", "measure": "sum.requests" } } } }
       ],
       "breakdowns": [
         { "title": "Widgets · last 7 days", "series": { "limit": "acme.widgets", "by": "day", "last": 7 } },
@@ -37,7 +37,7 @@ struct ServiceDefinitionTests {
 
         guard case .quantile(let source) = acme.limits[1].read else { Issue.record("not a percentile"); return }
         #expect(source.scale == 0.001)
-        #expect(source.failures == Read.Failures(dimension: "status", equals: "tooSlow"))
+        #expect(source.failures == Read.Failures(dimension: "status", equals: "tooSlow", measure: "sum.requests"))
     }
 
     @Test func `should know which charts a service's tab draws`() throws {
