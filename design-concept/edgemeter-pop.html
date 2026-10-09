@@ -231,7 +231,9 @@ button{font:inherit;color:inherit}
 .plan.pick.sel{background:var(--purple-soft);box-shadow:5px 5px 0 var(--purple),5px 5px 0 2.5px var(--ink)}
 .plan.pick:not(.sel){background:var(--paper);box-shadow:var(--sh)}
 .plan .up{display:inline-block;margin-top:8px;text-decoration:none;color:var(--ink);font-size:10.5px}
-.plan-foot{font-size:10px;font-weight:700;color:var(--muted);padding:0 4px;line-height:1.4}
+.upgrade{padding:10px 12px 12px;border-top:2px dashed var(--dash)}
+.upgrade .fbtn{width:100%;text-decoration:none;color:var(--ink)}
+.plan-foot{margin-top:8px;font-size:10px;font-weight:700;color:var(--muted);padding:0 4px;line-height:1.4}
 
 /* settings window */
 .win{width:520px;max-width:100%;background:var(--cream);border:3px solid var(--ink);border-radius:18px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
@@ -430,10 +432,8 @@ button{font:inherit;color:inherit}
               <ul><li>stops at its limits</li><li id="freeStop">requests and D1 fail until 00:00 UTC, then reset</li></ul></div>
             <div class="card plan pick" id="pick-paid" onclick="pickPlan('paid')"><h4>Workers Paid <span class="st paid">$5 / mo</span></h4><div class="p" id="paidCost">$5.00</div>
               <div class="pnote">this month, if you'd been on it</div>
-              <ul><li>never stops</li><li id="paidNote">nothing past what's included: just the $5</li></ul>
-              <a class="btn-s up" href="#" onclick="event.stopPropagation()" title="Opens Cloudflare's Workers plans page for this account; Cloudflare takes the payment">Upgrade on Cloudflare ↗</a></div>
+              <ul><li>never stops</li><li id="paidNote">nothing past what's included: just the $5</li></ul></div>
           </div>
-          <div class="plan-foot">Edge Meter only reads: plans change on Cloudflare. After you upgrade, the next look here shows Workers Paid.</div>
           <div class="card list detail" id="detail-free">
             <div class="list-h">This month on Free <span>your plan · stops instead of charging</span></div>
             <div class="row"><div>Requests<div class="sub" id="fReq">100k a day · busiest day 41k</div></div><div class="val"><b id="fReqD">0 days</b><div class="sub">stopped</div></div></div>
@@ -451,6 +451,10 @@ button{font:inherit;color:inherit}
             <div class="row"><div>D1 rows read<div class="sub" id="pRead">~49M of 25B included</div></div><div class="val"><b id="pReadC">$0.00</b></div></div>
             <div class="row"><div>D1 rows written<div class="sub" id="pWrite">~0.4M of 50M included</div></div><div class="val"><b id="pWriteC">$0.00</b></div></div>
             <div class="row total"><div><b style="font-family:'Plus Jakarta Sans';font-size:12px">Total</b></div><div class="val"><b id="pTotal">$5.00</b></div></div>
+            <div class="upgrade">
+              <a class="fbtn mint" href="#" title="Opens Cloudflare's Workers plans page for this account">Upgrade on Cloudflare ↗</a>
+              <div class="plan-foot">Edge Meter only reads: Cloudflare takes the payment. After you upgrade, the next look here shows Workers Paid.</div>
+            </div>
           </div>
           <div class="card list">
             <div class="list-h">Invoices</div>
