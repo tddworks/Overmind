@@ -140,6 +140,21 @@ struct Sticker: View {
     }
 }
 
+/// Concentric corners (Apple HIG), as in AgentNexus: an inner shape's corners follow its
+/// container's — `ConcentricRectangle` within a `.containerShape(…)` on macOS 26+; before that
+/// the same rule by hand. Inside a capsule, concentric means round.
+enum Concentric {
+    static func shape(fallback radius: CGFloat) -> AnyShape {
+        if #available(macOS 26.0, *) {
+            AnyShape(ConcentricRectangle())
+        } else {
+            AnyShape(RoundedRectangle(cornerRadius: max(radius, 0)))
+        }
+    }
+
+    static let inCapsule: CGFloat = 999
+}
+
 /// A tab pill: icon, title, and a count when there is one.
 struct TabPill: View {
     let icon: String
@@ -153,9 +168,9 @@ struct TabPill: View {
         Button(action: tell) {
             HStack(spacing: 4) {
                 Text(icon).font(Pop.label(9.5)).foregroundStyle(Pop.ink)
-                    .frame(width: 18, height: 18)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(tint))
-                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(isOn ? .white : Pop.ink, lineWidth: 2))
+                    .frame(width: 17, height: 17)
+                    .background(Concentric.shape(fallback: Concentric.inCapsule).fill(tint))
+                    .overlay(Concentric.shape(fallback: Concentric.inCapsule).stroke(isOn ? .white : Pop.ink, lineWidth: 2))
                 Text(title).font(Pop.label(11.5)).fixedSize()
                 if let count {
                     Text(count).font(Pop.label(9)).foregroundStyle(isOn ? Pop.ink : .white).fixedSize()
@@ -167,6 +182,7 @@ struct TabPill: View {
             .background(Capsule().fill(isOn ? Pop.grape : Pop.paper))
             .overlay(Capsule().stroke(Pop.ink, lineWidth: 2.5))
             .background(Capsule().fill(Pop.ink).offset(x: 2, y: 2))
+            .containerShape(Capsule())   // what the icon is concentric with
         }
         .buttonStyle(.plain)
     }

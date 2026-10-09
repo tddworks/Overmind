@@ -133,6 +133,14 @@ struct CappedScroll<Content: View>: View {
     @State private var height: CGFloat = 0
 
     var body: some View {
+        if maxHeight == .infinity {
+            content    // screenshots: ImageRenderer draws nothing inside a ScrollView
+        } else {
+            scroll
+        }
+    }
+
+    private var scroll: some View {
         ScrollView(.vertical) {
             content
                 .padding(.trailing, 4).padding(.bottom, 4)
