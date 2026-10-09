@@ -257,3 +257,58 @@ struct IntervalTests {
         #expect(try world.account().interval == 30 * 60)
     }
 }
+
+@MainActor
+@Suite
+struct UpgradeTests {
+    @Test func `should pick up an upgrade made on Cloudflare when the Bill tab opens, without a restart`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        world.cloudflare.ratePlans = ["r2_paid", "workers_paid"]
+
+        await account.openBill(at: .utc("2026-10-09T15:00:00"))
+
+        #expect(account.plan.definition.name == "Workers Paid")
+        #expect(account.limit("d1.rowsRead")?.allowance == .perMonth(Quantity(25e9, .rows)))
+        #expect(account.quotes.map(\.plan.name) == ["Free"])
+    }
+
+    @Test func `should re-read the plan once a day while refreshing, and not on every read`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        let afterConnect = world.cloudflare.subscriptionReads
+
+        await account.refresh(at: .utc("2026-10-09T14:25:00"))
+        #expect(world.cloudflare.subscriptionReads == afterConnect)
+
+        await account.refresh(at: .utc("2026-10-10T14:21:00"))
+        #expect(world.cloudflare.subscriptionReads == afterConnect + 1)
+    }
+
+    @Test func `should say Free stopped D1 reads on the days they ran out this month`() async throws {
+        let world = World()
+        world.cloudflare.daily = ["rowsRead": ["2026-10-06": 2e6, "2026-10-07": 5e6, "2026-10-08": 5.2e6]]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.bill?.verdict == .stopped(days: [Date.utc("2026-10-07T00:00:00"), Date.utc("2026-10-08T00:00:00")],
+                                                  limits: ["d1.rowsRead"]))
+    }
+
+    @Test func `should show where Workers Paid's price would come from, and link to its page for this account`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 30_000_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        let paid = try #require(account.quotes.first)
+        #expect(paid.lines.contains { $0.limit == "d1.rowsRead" })
+        #expect(paid.upgradeURL?.absoluteString == "https://dash.cloudflare.com/acc1/workers/plans")
+    }
+}

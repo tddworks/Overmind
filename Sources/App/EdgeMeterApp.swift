@@ -64,6 +64,7 @@ enum Snapshots {
                 if tab != "today" && tab != "bill" { await account.open(tab, at: Demo.now ?? .now) }
                 write(PopoverView(account: account, tab: tab, scrolls: false), to: folder, name: tab)
             }
+            write(PopoverView(account: account, tab: "bill", scrolls: false, billChoice: "workers-paid"), to: folder, name: "bill-paid")
             await writeLive(SettingsView(account: account, loginItem: LoginItem(), updater: Updater(enabled: false)),
                             to: folder, name: "settings")
             if ProcessInfo.processInfo.environment["EDGEMETER_LIVE_SHOT"] == "1" {

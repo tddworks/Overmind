@@ -66,7 +66,10 @@ struct DemoCloudflare: AnalyticsAPI, BillingAPI {
                     return group(ISO8601DateFormatter().string(from: at), shape[(index + 9) % 24] * scale)
                 }
             case "date":
-                let values: [Double] = [2.1e6, 2.6e6, 3.2e6, 3.75e6, 1.1e6, 0.86e6, 0.91e6]
+                // D1 reads near (never past) 5M; the others scaled to their own daily allowances.
+                let factors: [String: Double] = ["requests": 0.011, "rowsWritten": 0.004]
+                let factor: Double = factors[field] ?? 1
+                let values: [Double] = [2.1e6, 2.6e6, 3.2e6, 3.75e6, 1.1e6, 0.86e6, 0.91e6].map { $0 * factor }
                 return (0..<7).map { index in
                     let day = Calendar.current.date(byAdding: .day, value: index - 6, to: now)!
                     let formatter = DateFormatter()

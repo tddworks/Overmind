@@ -10,6 +10,9 @@ public struct PlanDefinition: Sendable, Equatable, Identifiable {
     public let matches: [String]
     let allowances: [LimitID: Allowance]
     let prices: [LimitID: Price]
+    /// Its page on Cloudflare's dashboard, `{account}` for the account ID. Edge Meter only
+    /// links to it; plans change on Cloudflare.
+    let upgradeTemplate: String?
 
     public init(json: Data) throws(PlanError) {
         do {
@@ -20,6 +23,7 @@ public struct PlanDefinition: Sendable, Equatable, Identifiable {
             matches = file.matches
             allowances = Dictionary(uniqueKeysWithValues: file.allowances.map { (LimitID($0.key), $0.value) })
             prices = Dictionary(uniqueKeysWithValues: (file.prices ?? [:]).map { (LimitID($0.key), $0.value) })
+            upgradeTemplate = file.upgradeURL
         } catch let error as PlanError {
             throw error
         } catch {
@@ -35,11 +39,20 @@ public struct PlanDefinition: Sendable, Equatable, Identifiable {
     /// What the use past the allowance costs; nil when the plan stops at the limit.
     public func price(for limit: LimitID) -> Price? { prices[limit] }
 
+    /// Free stops at its limits; a plan with prices charges for the rest instead.
+    public var stopsAtLimits: Bool { prices.isEmpty }
+
+    /// *Upgrade on Cloudflare ↗* for `account`; nil when the plan has no page to send you to.
+    public func upgradeURL(account: String) -> URL? {
+        upgradeTemplate.flatMap { URL(string: $0.replacingOccurrences(of: "{account}", with: account)) }
+    }
+
     private struct File: Decodable {
         let id, name, subscription: String
         let matches: [String]
         let allowances: [String: Allowance]
         let prices: [String: Price]?
+        let upgradeURL: String?
     }
 }
 

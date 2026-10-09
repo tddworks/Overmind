@@ -34,6 +34,8 @@ struct PopoverView: View {
     @State var tab: String = "today"
     /// Off for screenshots, which draw the whole tab.
     var scrolls = true
+    /// For screenshots: the Bill's chosen plan card.
+    var billChoice: String? = nil
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { timeline in
@@ -46,7 +48,7 @@ struct PopoverView: View {
                     CappedScroll(maxHeight: scrolls ? 600 : .infinity) {
                         switch tab {
                         case "today": TodayView(account: account, now: now)
-                        case "bill": BillView(account: account, now: now)
+                        case "bill": BillView(account: account, now: now, chosen: billChoice)
                         default: ServiceView(account: account, serviceID: tab, now: now)
                         }
                     }

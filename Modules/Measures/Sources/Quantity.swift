@@ -51,6 +51,9 @@ extension Quantity {
     public var short: String {
         switch unit {
         case .milliseconds:
+            for (size, word) in [(1e9, "B"), (1e6, "M"), (1e3, "k")] where value >= size {
+                return "\(Self.significant(value / size))\(word) ms"
+            }
             return "\(Self.trim(value, digits: value < 10 ? 1 : 0)) ms"
         case .bytes:
             for (size, word) in [(1e12, "TB"), (1e9, "GB"), (1e6, "MB"), (1e3, "KB")] where value >= size {

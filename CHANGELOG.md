@@ -4,6 +4,14 @@ All notable changes to Edge Meter are recorded here, in the reader's order: Remo
 
 ## [Unreleased]
 
+### Changed
+
+- The Bill tab answers "should I upgrade?": Free is enough, or the days it stopped you; choose Free or Workers Paid to see that plan's month line by line → [docs](https://github.com/tddworks/EdgeMeter/blob/main/docs/features/bill/README.md)
+
+### Added
+
+- Upgrade on Cloudflare ↗ under Workers Paid's month, and the plan is re-read when the Bill tab opens, so an upgrade shows without a restart → [docs](https://github.com/tddworks/EdgeMeter/blob/main/docs/features/bill/README.md)
+
 ---
 
 ## [0.1.0] - 2026-10-09

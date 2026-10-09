@@ -3,6 +3,7 @@
   "name": "Workers Paid",
   "subscription": "5 USD",
   "matches": ["workers_paid"],
+  "upgradeURL": "https://dash.cloudflare.com/{account}/workers/plans",
   "allowances": {
     "workers.requests": { "perMonth": "10M requests" },
     "workers.cpuTime": { "perMonth": "30M ms" },

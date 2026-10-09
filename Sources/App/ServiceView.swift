@@ -163,7 +163,7 @@ struct ListRow: View {
                     } else {
                         Text(label).font(Pop.label(11.5)).lineLimit(1)
                     }
-                    if let note { Text(note).font(Pop.label(9.5)).foregroundStyle(Pop.muted) }
+                    if let note { Text(note).font(Pop.label(9.5)).foregroundStyle(Pop.muted).fixedSize(horizontal: false, vertical: true) }
                 }
                 Spacer(minLength: 6)
                 VStack(alignment: .trailing, spacing: 3) {

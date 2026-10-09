@@ -109,3 +109,39 @@ struct BuiltInPlansTests {
         #expect(try PlanCatalog.plan(forRatePlans: ["r2_paid", "workers_paid"]).id == "workers-paid")
     }
 }
+
+@Suite
+struct QuoteLineTests {
+    @Test func `should show each limit's month with what the plan includes and the price of the rest`() throws {
+        let plan = Plan(try PlanDefinition(json: Data(PlanTests.pro.utf8)), renewsOn: nil)
+
+        let lines = plan.lines(of: ["acme.widgets": Quantity(1_250, .count)])
+
+        #expect(lines == [CostLine(limit: "acme.widgets", used: Quantity(1_250, .count), included: Quantity(1_000, .count),
+                                   cost: Money(Decimal(string: "2.5")!, "USD"))])
+    }
+
+    @Test func `should add the lines and the subscription up to the plan's cost`() throws {
+        let plan = Plan(try PlanDefinition(json: Data(PlanTests.pro.utf8)), renewsOn: nil)
+        let used: [LimitID: Quantity] = ["acme.widgets": Quantity(1_250, .count), "acme.disk": Quantity(3e9, .bytes)]
+
+        let total = plan.lines(of: used).reduce(plan.definition.subscription) { $0 + $1.cost }
+
+        #expect(total == plan.cost(of: used))
+    }
+
+    @Test func `should not list what a plan doesn't price`() throws {
+        let free = Plan(try PlanDefinition(json: Data(PlanTests.free.utf8)), renewsOn: nil)
+        #expect(free.lines(of: ["acme.widgets": Quantity(5_000, .count)]).isEmpty)
+    }
+
+    @Test func `should link to Workers Paid's page on Cloudflare for this account`() throws {
+        let paid = try PlanCatalog.builtIn("workers-paid")
+        #expect(paid.upgradeURL(account: "acc1")?.absoluteString == "https://dash.cloudflare.com/acc1/workers/plans")
+    }
+
+    @Test func `should say whether a plan stops at its limits or charges for the rest`() throws {
+        #expect(try PlanCatalog.builtIn("free").stopsAtLimits)
+        #expect(try !PlanCatalog.builtIn("workers-paid").stopsAtLimits)
+    }
+}

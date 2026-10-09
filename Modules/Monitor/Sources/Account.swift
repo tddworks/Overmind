@@ -54,7 +54,7 @@ public final class Account {
     public private(set) var alerts: Alerts
     public private(set) var isRefreshing = false
 
-    /// How often the refresher reads; *stale* after two of these without a good read (law 18).
+    /// How often the refresher reads; *stale* after two of these without a good read (law 17).
     public private(set) var interval: TimeInterval
 
     /// The read intervals the person can choose, in minutes.
@@ -77,6 +77,9 @@ public final class Account {
     let settings: any SettingsStore
     let notifier: any Notifier
     private var breakdownsReadAt: [String: Date] = [:]
+    /// When the plan was last read; it is read again once a day (law 18).
+    private var planReadAt: Date?
+    static let planEvery: TimeInterval = 86_400
 
     public init(services: [ServiceDefinition], plans: [PlanDefinition], analytics: any AnalyticsAPI, billing: any BillingAPI,
                 vault: any TokenVault, settings: any SettingsStore, notifier: any Notifier) throws {
@@ -164,13 +167,14 @@ public final class Account {
     private func use(_ summary: AccountSummary, at now: Date) async {
         phase = .connected(summary)
         save()
-        await readPlan(summary)
+        await readPlan(summary, at: now)
         workers = (try? await billing.scripts(account: summary.id)) ?? []
         await refresh(at: now)
     }
 
     /// The plan, from the account's subscriptions; Free when the token can't read them.
-    private func readPlan(_ summary: AccountSummary) async {
+    private func readPlan(_ summary: AccountSummary, at now: Date) async {
+        planReadAt = now
         do {
             let subscriptions = try await billing.subscriptions(account: summary.id)
             let definition = try PlanCatalog.plan(forRatePlans: subscriptions.map(\.ratePlan), among: plans)
@@ -189,6 +193,7 @@ public final class Account {
         guard case .connected(let summary) = phase, !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
+        if let planReadAt, now.timeIntervalSince(planReadAt) >= Self.planEvery { await readPlan(summary, at: now) }
         let reads = limits.map { LimitRead($0.definition, period: plan.period(for: $0.id, at: now)) }
         let planned = ReadPlan(account: summary.id).limits(reads, at: now)
         let started = Date()
@@ -242,6 +247,8 @@ public final class Account {
     /// others.
     public func openBill(at now: Date) async {
         guard case .connected(let summary) = phase else { return }
+        // An upgrade made on Cloudflare shows here without a restart (law 18).
+        await readPlan(summary, at: now)
         let month = Period.month(containing: now, renewsOn: plan.renewsOn)
         let definitions = services.flatMap(\.limits).filter { definition in
             plans.contains { $0.price(for: definition.id) != nil }
@@ -257,10 +264,22 @@ public final class Account {
         } catch {
             missing.insert(.billing)
         }
-        let bill = Bill(plan: plan, monthToDate: monthToDate, kept: kept, invoices: invoices, at: now)
+        // Each day's use of every limit some plan allows per day: the days Free stops you (law 19).
+        let dailyLimits = services.flatMap(\.limits).filter { definition in
+            plans.contains { if case .perDay = $0.allowance(for: definition.id) { true } else { false } }
+        }
+        var daily: [LimitID: [Date: Quantity]] = [:]
+        if !dailyLimits.isEmpty {
+            let plannedDays = ReadPlan(account: summary.id).daily(dailyLimits, over: month, at: now)
+            daily = (try? plannedDays.days(from: try await analytics.read(plannedDays.query))) ?? [:]
+        }
+        let bill = Bill(plan: plan, monthToDate: monthToDate, kept: kept, invoices: invoices, daily: daily, at: now)
         self.bill = bill
-        quotes = plans.filter { $0.id != plan.definition.id }
-            .map { Quote(plan: $0, cost: bill.quote(on: Plan($0, renewsOn: nil))) }
+        quotes = plans.filter { $0.id != plan.definition.id }.map { definition in
+            let other = Plan(definition, renewsOn: nil)
+            return Quote(plan: definition, cost: bill.quote(on: other), lines: bill.lines(on: other),
+                         days: bill.days(on: other), upgradeURL: definition.upgradeURL(account: summary.id))
+        }
     }
 
     static let keychainProblem = "Couldn't read the token back from the Keychain"
@@ -277,7 +296,7 @@ public final class Account {
 
     static func isKept(usage: Usage) -> Bool { usage.period == nil }
 
-    /// *Read every 5 · 10 · 15 · 30 min* (law 18); any other choice is refused.
+    /// *Read every 5 · 10 · 15 · 30 min* (law 17); any other choice is refused.
     public func setInterval(minutes: Int) {
         guard Self.intervals.contains(minutes) else { return }
         interval = TimeInterval(minutes * 60)
@@ -304,6 +323,11 @@ public final class Account {
     // MARK: Derived
 
     public func limit(_ id: LimitID) -> Limit? { limits.first { $0.id == id } }
+
+    /// A limit's definition, whether or not this plan counts it: its name on the Bill.
+    public func definition(of limit: LimitID) -> LimitDefinition? {
+        services.lazy.flatMap(\.limits).first { $0.id == limit }
+    }
 
     /// The service a limit belongs to: its icon on a card.
     public func service(of limit: LimitID) -> ServiceDefinition? {
@@ -381,4 +405,10 @@ public struct MenuBarState: Sendable, Equatable {
 public struct Quote: Sendable, Equatable {
     public let plan: PlanDefinition
     public let cost: Money
+    /// Where the cost comes from, one line per priced limit (law 20).
+    public let lines: [CostLine]
+    /// For a plan that stops at its limits: the days it would have stopped you (law 19).
+    public let days: [LimitID: LimitDays]
+    /// *Upgrade on Cloudflare ↗*; nil for a plan with no page to send you to.
+    public let upgradeURL: URL?
 }

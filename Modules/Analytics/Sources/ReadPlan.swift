@@ -43,6 +43,17 @@ public struct ReadPlan: Sendable {
         return PlannedRead(query: query(fields), reads: reads, readAt: now)
     }
 
+    /// Each limit's use per UTC day over `period`, in one query: the days Free stopped you and
+    /// each limit's busiest day (law 19). Across the account, like every limit (law 1).
+    public func daily(_ limits: [LimitDefinition], over period: Period, at now: Date) -> PlannedDaily {
+        let fields = limits.enumerated().map { index, limit in
+            let source = limit.read.source
+            let range = GraphQL.range(source.time, from: period.start, to: min(now, period.end.addingTimeInterval(-1)))
+            return "d\(index): \(source.dataset)(limit: \(Self.groups), filter: { \(range) }) { dimensions { date } \(GraphQL.selection(source.field)) }"
+        }
+        return PlannedDaily(query: query(fields), limits: limits)
+    }
+
     public func breakdowns(_ service: ServiceDefinition, focus: Focus, at now: Date) -> PlannedBreakdowns {
         var fields: [String] = []
         for (index, breakdown) in service.breakdowns.enumerated() {
@@ -182,5 +193,29 @@ public struct PlannedBreakdowns: Sendable {
         formatter.timeZone = TimeZone(identifier: "UTC")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.date(from: stamp)
+    }
+}
+
+/// A per-day query and how to read its answer.
+public struct PlannedDaily: Sendable {
+    public let query: AnalyticsQuery
+    let limits: [LimitDefinition]
+
+    /// Each limit's use per UTC day; a day split across groups (databases, Workers) is added up.
+    public func days(from answer: AnalyticsAnswer) throws(AnalyticsError) -> [LimitID: [Date: Quantity]] {
+        let account = try GraphQL.account(in: answer)
+        var result: [LimitID: [Date: Quantity]] = [:]
+        for (index, limit) in limits.enumerated() {
+            guard let groups = account["d\(index)"] as? [[String: Any]] else { continue }
+            let source = limit.read.source
+            var totals: [Date: Double] = [:]
+            for group in groups {
+                guard let stamp = GraphQL.text(at: "dimensions.date", in: group), let day = PlannedBreakdowns.date(stamp),
+                      let value = GraphQL.number(at: source.field, in: group) else { continue }
+                totals[day, default: 0] += value * (source.scale ?? 1)
+            }
+            result[limit.id] = totals.mapValues { Quantity($0, limit.unit) }
+        }
+        return result
     }
 }

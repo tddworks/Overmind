@@ -146,3 +146,33 @@ struct BreakdownPlanTests {
         #expect(top.content == .rows([Row(label: "SELECT a", value: 396_000), Row(label: "SELECT b", value: 90_000)]))
     }
 }
+
+@Suite
+struct DailyPlanTests {
+    let plan = ReadPlan(account: Fixture.account)
+    let october = Period.month(containing: Fixture.now, renewsOn: nil)
+
+    @Test func `should ask for each limit's use per UTC day of the month in one request`() throws {
+        let planned = plan.daily([try Fixture.limit("d1", "d1.rowsRead"), try Fixture.limit("workers", "workers.requests")],
+                                 over: october, at: Fixture.now)
+
+        #expect(planned.query.text.contains(#"d0: d1AnalyticsAdaptiveGroups(limit: 10000, filter: { date_geq: "2026-10-01", date_leq: "2026-10-09" }) { dimensions { date } sum { rowsRead } }"#))
+        #expect(planned.query.text.contains("d1: workersInvocationsAdaptive"))
+        #expect(planned.query.text.components(separatedBy: "viewer").count == 2)
+    }
+
+    @Test func `should add up each day's groups, since Cloudflare can split a day across databases`() throws {
+        let planned = plan.daily([try Fixture.limit("d1", "d1.rowsRead")], over: october, at: Fixture.now)
+        let answer = Data("""
+        {"data":{"viewer":{"accounts":[{"d0":[
+          {"dimensions":{"date":"2026-10-07"},"sum":{"rowsRead":3000000}},
+          {"dimensions":{"date":"2026-10-07"},"sum":{"rowsRead":2100000}},
+          {"dimensions":{"date":"2026-10-08"},"sum":{"rowsRead":900000}}]}]}}}
+        """.utf8)
+
+        let days = try planned.days(from: AnalyticsAnswer(answer))
+
+        #expect(days["d1.rowsRead"] == [Date.utc("2026-10-07T00:00:00"): Quantity(5_100_000, .rows),
+                                        Date.utc("2026-10-08T00:00:00"): Quantity(900_000, .rows)])
+    }
+}

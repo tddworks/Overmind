@@ -29,7 +29,7 @@ public struct TokenUnavailable: Error, Equatable, Sendable {
 public struct Settings: Sendable, Equatable, Codable {
     public var account: AccountSummary?
     public var focus: Focus
-    /// Minutes between reads (law 18).
+    /// Minutes between reads (law 17).
     public var interval: Int
     public var alerts: AlertSettings
     public var sent: Set<Warning.Key>

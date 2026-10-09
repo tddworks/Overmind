@@ -4,7 +4,7 @@ description: Where Edge Meter stands — what is built per module with test coun
 
 # Status
 
-> As of **2026-10-09** · **121 tests** (and 4 live checks), all passing. Every slice is built; the app
+> As of **2026-10-09** · **137 tests** (and 4 live checks), all passing. Every slice is built; the app
 > runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
@@ -15,14 +15,14 @@ description: Where Edge Meter stands — what is built per module with test coun
 | Design: the five docs, the mockup | approved | — |
 | `EdgeMeter` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect, the Settings window, `LoginItem`, `Updater` (Sparkle), the icon; demo mode and screenshots | — |
 | Release | `tests.yml`, `release.yml` (sign, notarize, DMG, appcast), ClaudeBar's scripts; a universal Release archive built and Developer-ID-signed locally | — |
-| `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 18 |
+| `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 18 |
 | `Services` | `ServiceDefinition`, `LimitDefinition`, `Read`, `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json` | 10 |
-| `Plans` | `PlanDefinition`, `Plan`, `Allowance`, `Price`, `cost(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` | 15 |
+| `Plans` | `PlanDefinition` (upgrade link), `Plan`, `Allowance`, `Price`, `cost(of:)`, `lines(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` | 20 |
 | `Limits` | `Limit` (laws 2–8), `Usage`, `Level`, `Pace` | 16 |
-| `Analytics` | `ReadPlan` (one query; storage summed per database), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 13 + 2 live |
-| `Billing` | `Bill` (estimate, forecast, quote), `BillingAPI`; `CloudflareREST` | 11 + 1 live |
+| `Analytics` | `ReadPlan` (one query; storage summed per database; per-day use), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 15 + 2 live |
+| `Billing` | `Bill` (estimate, forecast, quote, lines, days stopped, verdict), `BillingAPI`; `CloudflareREST` | 16 + 1 live |
 | `Alerts` | laws 9–10, CPU stopped invocations; `UserNotifier` | 11 |
-| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval), `Refresher` | 23 + 1 live |
+| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read), `Refresher` | 27 + 1 live |
 | `Storage` | `KeychainTokenVault`, `JSONSettingsFile` (older files still read) | 4 |
 | `Diagnostics` | `AppLog` | — |
 

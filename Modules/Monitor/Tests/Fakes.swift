@@ -18,6 +18,9 @@ extension Date {
 /// field's last name (`rowsRead`, `cpuTimeP99`), and counts reads.
 final class FakeCloudflare: AnalyticsAPI, BillingAPI, @unchecked Sendable {
     var numbers: [String: Double] = [:]
+    /// Use per UTC day, by field: `["rowsRead": ["2026-10-07": 5_200_000]]`.
+    var daily: [String: [String: Double]] = [:]
+    private(set) var subscriptionReads = 0
     var unreachable = false
     var refuses = false
     var forbidsAnalytics = false
@@ -39,13 +42,24 @@ final class FakeCloudflare: AnalyticsAPI, BillingAPI, @unchecked Sendable {
         queries.append(query.text)
         var account: [String: Any] = [:]
         for line in query.text.split(separator: "\n") {
-            guard let colon = line.firstIndex(of: ":"), line.hasPrefix("l") || line.hasPrefix("b"),
+            guard let colon = line.firstIndex(of: ":"), line.hasPrefix("l") || line.hasPrefix("b") || line.hasPrefix("d"),
                   let open = line.lastIndex(of: "{") else { continue }
             let alias = String(line[..<colon])
             // `) { sum { rowsRead } }` → ["sum", "rowsRead"]
             let selection = line[line.range(of: ") {")!.upperBound...].split(whereSeparator: { " {}".contains($0) }).map(String.init)
             _ = open
             guard let field = selection.last else { continue }
+            if alias.hasPrefix("d"), selection.starts(with: ["dimensions", "date"]) {
+                let measured = Array(selection.dropFirst(2))
+                account[alias] = (daily[field] ?? [:]).map { day, value -> [String: Any] in
+                    var node: Any = value
+                    for key in measured.reversed() { node = [key: node] }
+                    var group = node as? [String: Any] ?? [:]
+                    group["dimensions"] = ["date": day]
+                    return group
+                }
+                continue
+            }
             // A failures alias is filtered to the stopped invocations: `numbers["stopped"]`.
             var node: Any = (alias.hasSuffix("_failures") ? numbers["stopped"] : numbers[field]) ?? 0
             for key in selection.reversed() where key != "dimensions" { node = [key: node] }
@@ -63,6 +77,7 @@ final class FakeCloudflare: AnalyticsAPI, BillingAPI, @unchecked Sendable {
     }
 
     func subscriptions(account: String) async throws -> [Subscription] {
+        subscriptionReads += 1
         guard let ratePlans else { throw BillingError.forbidden }
         return ratePlans.map { Subscription(ratePlan: $0, renewsOn: nil) }
     }

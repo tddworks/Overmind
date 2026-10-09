@@ -61,7 +61,8 @@ struct ShortQuantityTests {
         (Quantity(912_000, .rows), "912k"), (Quantity(3_750_000, .rows), "3.75M"), (Quantity(5_000_000, .rows), "5M"),
         (Quantity(25e9, .rows), "25B"), (Quantity(830, .requests), "830"), (Quantity(9_814, .requests), "9.81k"),
         (Quantity(7.84, .milliseconds), "7.8 ms"), (Quantity(41e6, .bytes), "41 MB"), (Quantity(5e9, .bytes), "5 GB"),
-        (Quantity(512_000, .bytes), "512 KB"),
+        (Quantity(512_000, .bytes), "512 KB"), (Quantity(75_722, .milliseconds), "75.7k ms"),
+        (Quantity(30_000_000, .milliseconds), "30M ms"),
     ])
     func `should print an amount the way a card does`(quantity: Quantity, text: String) {
         #expect(quantity.short == text)
