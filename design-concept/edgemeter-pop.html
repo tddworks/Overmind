@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edge Meter Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* AgentNexus "pop" tokens, unchanged; Cloudflare orange joins as --cf */
+:root{
+  --cream:#FDF5EA; --paper:#FFFFFF; --ink:#1B1613;
+  --mint:#8EE3B0; --mint-deep:#5CCB8C; --purple:#8B5CF6; --purple-soft:#E9DEFF;
+  --coral:#FF7A66; --coral-soft:#FFE1DA; --butter:#FFD966; --sky:#8FD3FF; --pink:#FFB5D8;
+  --cf:#F6821F; --cf-soft:#FFE6CF;
+  --muted:#6B625B; --dash:#e4d8ca;
+  --b:2.5px solid var(--ink); --sh:4px 4px 0 var(--ink);
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,sans-serif;
+  background-image:radial-gradient(#e9dccb 1.2px,transparent 1.2px);background-size:22px 22px;min-height:100vh}
+.display{font-family:"Lilita One",sans-serif;font-weight:400;letter-spacing:.3px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.wrap{max-width:1320px;margin:0 auto;padding:28px 16px 80px}
+button{font:inherit;color:inherit}
+
+/* ---------- intro ---------- */
+.intro{display:grid;grid-template-columns:1fr 290px;gap:20px}
+.hero{background:var(--cf-soft);border:var(--b);border-radius:28px;box-shadow:8px 8px 0 var(--ink);padding:30px 34px;position:relative}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;border-radius:999px;padding:7px 16px;font-weight:800;font-size:13px}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--cf)}
+.hero h1{font-family:"Lilita One";font-weight:400;font-size:clamp(34px,5vw,58px);line-height:1.05;margin-top:16px;color:#fff;
+  -webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink)}
+.hero h1 span{display:inline-block;background:var(--ink);color:#fff;-webkit-text-stroke:0;text-shadow:none;border-radius:14px;padding:2px 16px 6px;margin-top:6px}
+.hero p{max-width:660px;margin-top:14px;font-weight:600;color:#4a2a10;line-height:1.55}
+.tag{display:inline-block;background:var(--coral);border:2px dashed var(--ink);border-radius:8px;padding:5px 10px;font-weight:800;transform:rotate(-5deg);box-shadow:3px 3px 0 var(--ink);font-size:13px}
+.hero .tag{position:absolute;right:26px;top:-14px;background:var(--butter)}
+.swatches{display:flex;flex-direction:column;gap:10px}
+.sw{background:var(--paper);border:var(--b);border-radius:18px;box-shadow:var(--sh);padding:12px 14px;display:flex;align-items:center;gap:12px}
+.sw b{width:34px;height:34px;border:var(--b);border-radius:11px;flex:none}
+.sw div{font-weight:800;font-size:14px}.sw small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.section-title{font-family:"Lilita One";font-weight:400;font-size:30px;margin:36px 0 4px}
+.section-sub{color:var(--muted);font-weight:600;max-width:860px;line-height:1.5}
+
+/* ---------- stage ---------- */
+.stage{margin-top:20px;display:flex;flex-wrap:wrap;gap:34px;align-items:flex-start}
+.col{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.label{font-weight:800;background:var(--paper);border:var(--b);border-radius:999px;padding:5px 14px;box-shadow:3px 3px 0 var(--ink);font-size:13px}
+
+/* menu bar strip */
+.menubar{width:400px;max-width:100%;height:30px;background:rgba(255,255,255,.75);border:var(--b);border-radius:10px;box-shadow:var(--sh);display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:0 12px;font-size:12px;font-weight:700}
+.mb-item{display:flex;align-items:center;gap:5px;padding:2px 7px;border-radius:7px;white-space:nowrap}
+.mb-item.on{background:var(--ink);color:#fff}
+.mb-dot{width:16px;height:16px;border-radius:5px;border:2px solid currentColor;display:grid;place-items:center;font-size:9px;font-weight:800}
+.mb-pct{font-family:"Lilita One";font-weight:400;font-size:13px}
+.mb-item.warn .mb-pct{color:var(--butter)}
+.mb-item.hot .mb-pct{color:var(--coral)}
+.mb-ms{font-size:10.5px;opacity:.75}
+
+/* popover */
+.popover{width:400px;max-width:100%;background:var(--cream);border:3px solid var(--ink);border-radius:22px;box-shadow:8px 8px 0 var(--ink);padding:14px;position:relative;
+  background-image:radial-gradient(#ecdfcd 1.1px,transparent 1.1px);background-size:18px 18px}
+.popover::before{content:"";position:absolute;top:-11px;right:70px;width:18px;height:18px;background:var(--cream);border-left:3px solid var(--ink);border-top:3px solid var(--ink);transform:rotate(45deg)}
+.p-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.p-brand{display:flex;align-items:center;gap:9px}
+.logo{width:34px;height:34px;border:var(--b);border-radius:11px;background:var(--cf);color:#fff;display:grid;place-items:center;font-size:17px;font-weight:800;box-shadow:2px 2px 0 var(--ink)}
+.p-brand .display{font-size:22px}
+.p-brand small{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-top:-2px}
+.plan-chip{border:2px solid var(--ink);border-radius:999px;padding:5px 11px;font-size:10.5px;font-weight:800;background:var(--mint);box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+.plan-chip.paid{background:var(--sky)}
+
+/* tabs */
+.pills{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.pill{flex:none;display:flex;align-items:center;gap:6px;border:var(--b);border-radius:999px;padding:5px 11px 5px 6px;font-weight:800;font-size:12px;background:var(--paper);box-shadow:2px 2px 0 var(--ink);cursor:pointer;transition:transform .1s,box-shadow .1s}
+.pill:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+.pill.on{background:var(--purple);color:#fff}
+.pill .pi{width:20px;height:20px;border:2px solid var(--ink);border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--ink)}
+.pill.on .pi{border-color:#fff}
+.pill .n{font-size:9.5px;background:var(--ink);color:#fff;border-radius:999px;padding:0 6px}
+.pill.on .n{background:#fff;color:var(--ink)}
+
+.card{background:var(--paper);border:var(--b);border-radius:var(--r);box-shadow:var(--sh)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.view{display:none}.view.on{display:flex}
+
+/* account strip */
+.acct{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#F4FFF8}
+.acct .led{width:12px;height:12px;border-radius:50%;background:var(--mint-deep);border:2px solid var(--ink);box-shadow:0 0 0 3px #c9f3da;flex:none}
+.acct.stale{background:#FFF8E6}.acct.stale .led{background:var(--butter);box-shadow:0 0 0 3px #fff0bf}
+.a-name{font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px}
+.a-meta{font-size:10.5px;color:var(--muted);font-weight:700}
+.chip{font-size:9px;font-weight:800;border:1.5px solid var(--ink);border-radius:999px;padding:1px 7px;background:var(--mint)}
+.acct select{margin-left:auto;font:800 11px "Plus Jakarta Sans";border:2px solid var(--ink);border-radius:9px;padding:3px 6px;background:var(--paper);box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+
+/* headline limit */
+.head{padding:12px;position:relative}
+.head .tag{position:absolute;right:12px;top:-12px;font-size:10px;padding:3px 7px;background:var(--butter)}
+.head.hot{background:var(--coral-soft)}.head.hot .tag{background:var(--coral)}
+.r-label{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.r-label .qi{width:18px;height:18px;border:2px solid var(--ink);border-radius:6px;display:grid;place-items:center;font-size:9px;background:var(--cf-soft)}
+.r-big{font-family:"Lilita One";font-size:34px;line-height:1.05;color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink);margin-top:8px}
+.r-sub{font-size:11.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.r-sub b{color:var(--ink)}
+/* the day bar: used so far, then the pace to midnight UTC, then the free line */
+.daybar{position:relative;height:20px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);margin-top:10px;overflow:hidden}
+.daybar .used{position:absolute;left:0;top:0;bottom:0;background:var(--cf);border-right:2px solid var(--ink)}
+.daybar .pace{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,var(--cf-soft) 0 5px,#ffd0a6 5px 8px);border-right:2px dashed var(--ink)}
+.daymarks{display:flex;justify-content:space-between;font-size:9.5px;font-weight:800;color:var(--muted);margin-top:4px}
+.r-stats{display:flex;gap:8px;margin-top:10px}
+.r-stat{flex:1;border:2px solid var(--ink);border-radius:10px;padding:5px 7px;background:#FBF7F1}
+.r-stat b{display:block;font-family:"Lilita One";font-weight:400;font-size:17px}
+.r-stat small{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+
+/* meters grid */
+.sec-h{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin:2px 2px -4px}
+.sec-h a{color:var(--purple);text-decoration:none;cursor:pointer;letter-spacing:0;text-transform:none;font-size:11px}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meter{padding:9px 10px 10px;cursor:pointer;transition:transform .1s,box-shadow .1s}
+.meter:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.meter.warn{background:#FFF8E6}
+.meter.hot{background:#FFF4F1;box-shadow:5px 5px 0 var(--coral),5px 5px 0 2.5px var(--ink)}
+.mt-head{display:flex;align-items:center;gap:7px}
+.mt-head .pi{width:24px;height:24px;border:2px solid var(--ink);border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
+.mt-name{font-weight:800;font-size:12.5px;line-height:1.1}
+.mt-name small{display:block;font-size:9.5px;color:var(--muted);font-weight:700}
+.st{margin-left:auto;font-size:8.5px;font-weight:800;border:1.5px solid var(--ink);border-radius:999px;padding:1px 6px;flex:none}
+.st.ok{background:var(--mint)}.st.warn{background:var(--butter)}.st.hot{background:var(--coral)}.st.paid{background:var(--sky)}
+.mt-num{font-family:"Lilita One";font-size:22px;margin-top:6px;line-height:1}
+.mt-num small{font-family:"Plus Jakarta Sans";font-size:10px;font-weight:800;color:var(--muted)}
+.gauge{height:10px;border:2px solid var(--ink);border-radius:999px;background:#F7F1E8;margin-top:6px;overflow:hidden}
+.gauge i{display:block;height:100%;background:var(--mint);border-right:2px solid var(--ink)}
+.warn .gauge i{background:var(--butter)}.hot .gauge i{background:var(--coral)}
+.mt-foot{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted);margin-top:6px;border-top:2px dashed var(--dash);padding-top:5px}
+.mt-foot b{color:var(--ink)}
+
+/* alert rules */
+.alerts{padding:10px 12px}
+.al-row{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.lvl{border:2px solid var(--ink);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800;background:var(--paper);box-shadow:2px 2px 0 var(--ink);cursor:pointer;user-select:none}
+.lvl.on.l50{background:var(--mint)}.lvl.on.l75{background:var(--butter)}.lvl.on.l90{background:var(--coral)}
+.lvl:not(.on){opacity:.5;box-shadow:none;border-style:dashed}
+.toggle{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;cursor:pointer;text-transform:none;letter-spacing:0}
+.toggle .sw-t{width:30px;height:17px;border:2px solid var(--ink);border-radius:999px;background:var(--mint);position:relative}
+.toggle .sw-t::after{content:"";position:absolute;top:1.5px;left:14px;width:10px;height:10px;border-radius:50%;background:var(--ink);transition:left .15s}
+.toggle.off .sw-t{background:#E9DECF}.toggle.off .sw-t::after{left:2px}
+.hint{font-size:10.5px;font-weight:700;color:var(--muted);margin-top:8px;line-height:1.45}
+
+/* bill card */
+.bill{background:var(--butter);padding:11px 12px}
+.bill-row{display:flex;justify-content:space-between;align-items:flex-end}
+.bill .amt{font-family:"Lilita One";font-size:30px;line-height:1}
+.bill small{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.split{display:flex;height:16px;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin-top:8px;background:var(--paper)}
+.split i{height:100%;border-right:2px solid var(--ink)}
+.split i:last-child{border-right:none}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;font-size:10px;font-weight:800}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend b{width:9px;height:9px;border:1.5px solid var(--ink);border-radius:3px}
+.saved{font-size:10.5px;font-weight:800;color:#1f6b3e;margin-top:5px}
+
+/* charts */
+.chart{padding:10px 12px}
+.bars{display:flex;align-items:flex-end;gap:3px;height:78px;margin-top:8px;border-bottom:2px solid var(--ink);position:relative}
+.bars i{flex:1;background:var(--sky);border:1.5px solid var(--ink);border-bottom:none;border-radius:4px 4px 0 0;position:relative}
+.bars i.cf{background:var(--cf)}
+.bars i.hot{background:var(--coral)}
+.bars i.now{background:repeating-linear-gradient(135deg,var(--cf-soft) 0 4px,#ffd0a6 4px 6px);border-style:dashed}
+.bars .limit{position:absolute;left:0;right:0;border-top:2px dashed var(--coral);font-size:8.5px;font-weight:800;color:#b03a26;text-align:right;padding-right:2px;line-height:1.3}
+.bars .pin{position:absolute;bottom:100%;left:50%;transform:translate(-50%,-4px);font-size:8.5px;font-weight:800;background:var(--ink);color:#fff;border-radius:6px;padding:1px 5px;white-space:nowrap}
+.axis{display:flex;justify-content:space-between;font-size:9.5px;font-weight:800;color:var(--muted);margin-top:4px}
+
+/* lists */
+.list{padding:2px 0}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 12px;border-bottom:2px dashed var(--dash);font-size:11px}
+.row:last-child{border-bottom:none}
+.row code{font-family:"JetBrains Mono";font-size:10px;border:1.5px solid var(--ink);border-radius:6px;padding:1px 5px;background:#F7F1E8;display:inline-block;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.row .sub{font-size:9.5px;color:var(--muted);font-weight:700;margin-top:3px}
+.row .val{text-align:right;font-weight:800}
+.row .val b{display:block;font-family:"Lilita One";font-weight:400;font-size:15px}
+.row .mini{width:70px;height:7px;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden;background:#F7F1E8;margin-top:3px;margin-left:auto}
+.row .mini i{display:block;height:100%;background:var(--cf)}
+.list-h{padding:9px 12px 4px;font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;display:flex;justify-content:space-between}
+.list-h span{color:var(--muted);text-transform:none;letter-spacing:0}
+
+/* plan compare */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.plan{padding:10px}
+.plan.cur{background:var(--purple-soft);box-shadow:5px 5px 0 var(--purple),5px 5px 0 2.5px var(--ink)}
+.plan h4{font-size:12.5px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.plan .p{font-family:"Lilita One";font-size:24px;margin-top:4px}
+.plan ul{list-style:none;margin-top:6px;font-size:10px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.plan ul b{color:var(--ink)}
+
+/* footer */
+.foot{display:grid;grid-template-columns:1.4fr 1.4fr 44px 44px;gap:8px;margin-top:2px}
+.fbtn{border:var(--b);border-radius:14px;background:var(--paper);box-shadow:3px 3px 0 var(--ink);padding:8px 0;font:800 12px "Plus Jakarta Sans";cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .1s,box-shadow .1s}
+.fbtn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.fbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.fbtn.primary{background:var(--sky)}.fbtn.mint{background:var(--mint)}.fbtn.quit{background:var(--coral-soft)}
+
+/* side pieces */
+.note{width:330px;max-width:100%;padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+.note .logo{width:30px;height:30px;font-size:14px}
+.note h5{font-size:12.5px;font-weight:800}
+.note p{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:3px;line-height:1.45}
+.note .when{margin-left:auto;font-size:10px;font-weight:800;color:var(--muted);white-space:nowrap}
+.setup{width:330px;max-width:100%;padding:14px}
+.setup h4{font-family:"Lilita One";font-weight:400;font-size:20px}
+.setup p{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:4px;line-height:1.45}
+.field{margin-top:10px}
+.field label{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.field .in{margin-top:4px;border:2px solid var(--ink);border-radius:10px;padding:7px 9px;font:500 11px "JetBrains Mono";background:#FBF7F1;display:flex;justify-content:space-between;align-items:center}
+.scopes{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.scope{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700}
+.scope b{width:16px;height:16px;border:2px solid var(--ink);border-radius:5px;background:var(--mint);display:grid;place-items:center;font-size:9px}
+.scope em{margin-left:auto;font-style:normal;font-size:9.5px;color:var(--muted);font-weight:800}
+.callout{width:330px;max-width:100%;padding:12px 14px;background:var(--purple-soft)}
+.callout h5{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.callout ol{margin:6px 0 0 16px;font-size:11.5px;font-weight:600;line-height:1.5;color:#2f2450}
+
+@media (max-width:760px){
+  .intro{grid-template-columns:1fr}
+  .hero{padding:24px 20px}
+  .hero .tag{right:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== intro ===== -->
+  <div class="intro">
+    <div class="hero">
+      <span class="tag">MOCKUP · MOCK DATA</span>
+      <div class="badge"><i></i> Cloudflare · claudebar-leaderboard</div>
+      <h1>Know before the<br><span>free tier says no</span></h1>
+      <p>A menu bar meter for the leaderboard's Cloudflare account. It reads the Worker, D1 and billing numbers from Cloudflare's GraphQL Analytics and Billing APIs with a read-only token, shows the one limit closest to running out, and warns you before it does — the way D1 reached 75% of its 5M free rows read on 2026-10-08 with nobody watching.</p>
+    </div>
+    <div class="swatches">
+      <div class="sw"><b style="background:var(--cf)"></b><div>Edge orange<small>today's use, Cloudflare</small></div></div>
+      <div class="sw"><b style="background:var(--mint)"></b><div>Mint<small>under 50% · plenty left</small></div></div>
+      <div class="sw"><b style="background:var(--butter)"></b><div>Butter<small>50–90% · watch it</small></div></div>
+      <div class="sw"><b style="background:var(--coral)"></b><div>Coral<small>over 90% · act now</small></div></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">The popover</h2>
+  <p class="section-sub">Four tabs: <b>Today</b> answers "am I fine until midnight UTC?", <b>D1</b> and <b>Worker</b> say where the use comes from, <b>Bill</b> says what this month costs and what the next plan would. Free-tier limits reset daily at 00:00 UTC; paid ones monthly. Click the tabs, the menu bar states and the alert levels.</p>
+
+  <div class="stage">
+    <div class="col">
+      <span class="label">Menu bar · click to try a state</span>
+      <div class="menubar">
+        <span class="mb-ms">⌁ 8 ms</span>
+        <span class="mb-item on" id="mb" onclick="cycleMb()"><span class="mb-dot">☁</span><span class="mb-pct" id="mbPct">D1 18%</span></span>
+        <span>Thu 14:20</span>
+      </div>
+
+      <div class="popover" id="pop">
+        <div class="p-head">
+          <div class="p-brand">
+            <div class="logo">☁</div>
+            <div><div class="display">Edge Meter</div><small>tddworks · Cloudflare account</small></div>
+          </div>
+          <span class="plan-chip" id="planChip">FREE · resets in 9h 40m</span>
+        </div>
+
+        <div class="pills">
+          <button class="pill on" data-v="today"><span class="pi" style="background:var(--cf-soft)">◔</span>Today</button>
+          <button class="pill" data-v="d1"><span class="pi" style="background:var(--butter)">⛁</span>D1</button>
+          <button class="pill" data-v="worker"><span class="pi" style="background:var(--sky)">ƒ</span>Worker</button>
+          <button class="pill" data-v="bill"><span class="pi" style="background:var(--mint)">$</span>Bill <span class="n">$0</span></button>
+        </div>
+
+        <!-- ===== TODAY ===== -->
+        <div class="view stack on" id="v-today">
+          <div class="card acct" id="acct">
+            <span class="led"></span>
+            <div>
+              <div class="a-name">claudebar-leaderboard <span class="chip">LIVE</span></div>
+              <div class="a-meta mono">claudebar-api.tddworks.com · d605dc93 · read 1 min ago</div>
+            </div>
+            <select><option>leaderboard</option><option>All workers</option></select>
+          </div>
+
+          <div class="card head" id="head">
+            <span class="tag" id="headTag">CLOSEST TO THE LIMIT</span>
+            <div class="r-label"><span class="qi">⛁</span> D1 rows read · today</div>
+            <div class="r-big" id="headBig">18% of 5M</div>
+            <div class="r-sub" id="headSub"><b>912k</b> read since 00:00 UTC · on pace for <b>31%</b> by midnight</div>
+            <div class="daybar"><span class="pace" id="pace" style="width:31%"></span><span class="used" id="used" style="width:18%"></span></div>
+            <div class="daymarks"><span>00:00 UTC</span><span>now 14:20</span><span>5M · free line</span></div>
+            <div class="r-stats">
+              <div class="r-stat"><b>~1.6M</b><small>Pace at 24:00</small></div>
+              <div class="r-stat"><b>−82%</b><small>vs 2026-10-07</small></div>
+              <div class="r-stat"><b>9h 40m</b><small>Until reset</small></div>
+            </div>
+          </div>
+
+          <div class="sec-h">Every limit today <a>Open dashboard ↗</a></div>
+          <div class="meters" id="meters"></div>
+
+          <div class="card alerts">
+            <div class="sec-h" style="margin:0">Warn me at
+              <span class="toggle" id="notifyT" onclick="this.classList.toggle('off')"><span class="sw-t"></span>Notify</span>
+            </div>
+            <div class="al-row">
+              <span class="lvl l50 on" onclick="this.classList.toggle('on')">50%</span>
+              <span class="lvl l75 on" onclick="this.classList.toggle('on')">75%</span>
+              <span class="lvl l90 on" onclick="this.classList.toggle('on')">90%</span>
+              <span class="lvl" style="margin-left:6px;opacity:1;border-style:solid;box-shadow:2px 2px 0 var(--ink);background:var(--cf-soft)" onclick="this.classList.toggle('on')">⏱ pace</span>
+            </div>
+            <div class="hint">One notification per limit per level per day. <b>Pace</b> warns early when today's rate would cross 90% before 00:00 UTC.</div>
+          </div>
+
+          <div class="card bill">
+            <div class="bill-row">
+              <div><small>This month · est.</small><div class="amt">$0.00</div></div>
+              <div style="text-align:right"><small>On Workers Paid</small><div class="amt" style="font-size:20px">$5.00</div></div>
+            </div>
+            <div class="split"><i style="width:62%;background:var(--mint)"></i><i style="width:38%;background:#F7F1E8"></i></div>
+            <div class="saved">✓ Free plan · 8 of 31 days used · no overage possible</div>
+          </div>
+        </div>
+
+        <!-- ===== D1 ===== -->
+        <div class="view stack" id="v-d1">
+          <div class="card chart">
+            <div class="sec-h" style="margin:0">Rows read · last 7 days <span style="color:var(--muted);text-transform:none;letter-spacing:0">daily · UTC</span></div>
+            <div class="bars" id="d1days"></div>
+            <div class="axis"><span>10-03</span><span>10-05</span><span>10-07</span><span>today</span></div>
+            <div class="hint">The drop on <b>10-08</b> is the standings-on-write deploy (migration 0005). Pins mark deploys, read from the Worker's version history.</div>
+          </div>
+          <div class="card chart">
+            <div class="sec-h" style="margin:0">Rows read · per hour today</div>
+            <div class="bars" id="d1hours" style="height:60px"></div>
+            <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+          </div>
+          <div class="card list">
+            <div class="list-h">Top queries by rows read <span>D1 query insights · 24h</span></div>
+            <div class="row"><div><code>SELECT … FROM standings ORDER BY tokens DESC LIMIT ?</code><div class="sub">board · 4,120 runs · 96 rows/run</div></div><div class="val"><b>396k</b><div class="mini"><i style="width:43%"></i></div></div></div>
+            <div class="row"><div><code>SELECT … FROM daily_tokens WHERE member_id = ? AND day &gt;= ?</code><div class="sub">/me · 2,890 runs · 31 rows/run</div></div><div class="val"><b>90k</b><div class="mini"><i style="width:10%"></i></div></div></div>
+            <div class="row"><div><code>INSERT INTO standings … ON CONFLICT DO UPDATE</code><div class="sub">upload · 2,410 runs</div></div><div class="val"><b>74k</b><div class="mini"><i style="width:8%"></i></div></div></div>
+            <div class="row"><div><code>SELECT … FROM devices WHERE code = ?</code><div class="sub">device link · 312 runs</div></div><div class="val"><b>1.2k</b><div class="mini"><i style="width:1%"></i></div></div></div>
+          </div>
+          <div class="card list">
+            <div class="list-h">Database <span class="mono">claudebar-leaderboard</span></div>
+            <div class="row"><div>Storage<div class="sub">5 GB free</div></div><div class="val"><b>41 MB</b><div class="mini"><i style="width:1%;background:var(--mint)"></i></div></div></div>
+            <div class="row"><div>Rows written today<div class="sub">100k free / day</div></div><div class="val"><b>12.4k</b><div class="mini"><i style="width:12%;background:var(--mint)"></i></div></div></div>
+          </div>
+        </div>
+
+        <!-- ===== WORKER ===== -->
+        <div class="view stack" id="v-worker">
+          <div class="card chart">
+            <div class="sec-h" style="margin:0">Requests · per hour today <span style="color:var(--muted);text-transform:none;letter-spacing:0">■ 2xx ■ errors</span></div>
+            <div class="bars" id="reqs"></div>
+            <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+            <div class="r-stats">
+              <div class="r-stat"><b>9,814</b><small>Requests</small></div>
+              <div class="r-stat"><b>0.3%</b><small>Errors</small></div>
+              <div class="r-stat"><b>2.1 ms</b><small>CPU p50</small></div>
+              <div class="r-stat"><b>7.8 ms</b><small>CPU p99</small></div>
+            </div>
+          </div>
+          <div class="card list">
+            <div class="list-h">Invocations by outcome <span>24h</span></div>
+            <div class="row"><div>Success</div><div class="val"><b>9,781</b></div></div>
+            <div class="row"><div>Script threw<div class="sub">an exception in the Worker</div></div><div class="val"><b>21</b></div></div>
+            <div class="row"><div>Exceeded resources<div class="sub">went past 10 ms CPU · the request failed</div></div><div class="val"><b style="color:#b03a26">3</b></div></div>
+            <div class="row"><div>Client disconnected</div><div class="val"><b>9</b></div></div>
+          </div>
+          <div class="card list">
+            <div class="list-h">Hourly cron <span class="mono">0 * * * *</span></div>
+            <div class="row"><div>Last run 14:00 UTC<div class="sub">countToday · 1,206 members · 41 ms CPU</div></div><div class="val"><span class="st ok" style="margin:0">OK</span></div></div>
+            <div class="row"><div>Last 24 runs<div class="sub">one at 03:00 took 1.4 s</div></div><div class="val"><b>24 / 24</b></div></div>
+          </div>
+          
+        </div>
+
+        <!-- ===== BILL ===== -->
+        <div class="view stack" id="v-bill">
+          <div class="card bill">
+            <div class="bill-row">
+              <div><small>October so far · est.</small><div class="amt">$0.00</div></div>
+              <div style="text-align:right"><small>Forecast · Oct 31</small><div class="amt" style="font-size:20px">$0.00</div></div>
+            </div>
+            <div class="split"><i style="width:26%;background:var(--cf)"></i><i style="width:74%;background:#F7F1E8"></i></div>
+            <div class="legend"><span><b style="background:var(--cf)"></b>8 days</span><span><b style="background:#F7F1E8"></b>23 days left</span></div>
+            <div class="saved">✓ Nothing billable: every limit is inside the Free plan · Cloudflare's invoice replaces the estimate</div>
+          </div>
+          <div class="sec-h">If we moved to Workers Paid</div>
+          <div class="plans">
+            <div class="card plan cur"><h4>Free <span class="st ok">NOW</span></h4><div class="p">$0</div>
+              <ul><li><b>100k</b> requests / day</li><li><b>5M</b> D1 reads / day</li><li><b>100k</b> D1 writes / day</li><li>stops at the limit</li></ul></div>
+            <div class="card plan"><h4>Workers Paid <span class="st paid">$5</span></h4><div class="p">$5.00<small style="font:800 10px 'Plus Jakarta Sans';color:var(--muted)"> /mo est.</small></div>
+              <ul><li><b>10M</b> requests / mo</li><li><b>25B</b> D1 reads / mo</li><li><b>50M</b> D1 writes / mo</li><li>bills overage instead</li></ul></div>
+          </div>
+          <div class="card list">
+            <div class="list-h">At this month's pace, on Paid <span>est.</span></div>
+            <div class="row"><div>Workers requests<div class="sub">~304k of 10M included</div></div><div class="val"><b>$0.00</b></div></div>
+            <div class="row"><div>D1 rows read<div class="sub">~49M of 25B included</div></div><div class="val"><b>$0.00</b></div></div>
+            <div class="row"><div>Subscription</div><div class="val"><b>$5.00</b></div></div>
+          </div>
+          <div class="card list">
+            <div class="list-h">Invoices</div>
+            <div class="row"><div>September 2026</div><div class="val"><b>$0.00</b></div></div>
+            <div class="row"><div>August 2026</div><div class="val"><b>$0.00</b></div></div>
+          </div>
+        </div>
+
+        <div class="foot" style="margin-top:12px">
+          <button class="fbtn primary">↻ Refresh</button>
+          <button class="fbtn">☁ Dashboard ↗</button>
+          <button class="fbtn mint" title="Settings">⚙</button>
+          <button class="fbtn quit" title="Quit">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <span class="label">The warning · 2026-10-07, 21:14 UTC</span>
+      <div class="card note">
+        <div class="logo">☁</div>
+        <div>
+          <h5>D1 rows read at 75%</h5>
+          <p>3.75M of 5M free · on pace for 101% by 00:00 UTC. Reads stop at the limit until reset.</p>
+        </div>
+        <span class="when">now</span>
+      </div>
+      <div class="card note" style="background:#FFF8E6">
+        <div class="logo" style="background:var(--butter);color:var(--ink)">⏱</div>
+        <div>
+          <h5>Pace: D1 would cross 90% at 22:40</h5>
+          <p>Top query: <span class="mono" style="font-size:10.5px">SUM(tokens) FROM daily_tokens</span> · 3.1M rows</p>
+        </div>
+        <span class="when">2h ago</span>
+      </div>
+
+      <span class="label" style="margin-top:14px">First run · connect the account</span>
+      <div class="card setup">
+        <h4>Connect Cloudflare</h4>
+        <p>Paste an API token. Edge Meter only reads; it can't deploy, change or delete anything.</p>
+        <div class="field"><label>API token</label><div class="in"><span>•••••••••••••••••••• 7f3a</span><span>✓</span></div></div>
+        <div class="field"><label>Account</label><div class="in"><span>tddworks</span><span>▾</span></div></div>
+        <div class="field"><label>Token needs</label>
+          <div class="scopes">
+            <div class="scope"><b>✓</b>Account Analytics<em>READ</em></div>
+            <div class="scope"><b>✓</b>D1<em>READ</em></div>
+            <div class="scope"><b>✓</b>Workers Scripts<em>READ</em></div>
+            <div class="scope"><b>✓</b>Billing<em>READ</em></div>
+          </div>
+        </div>
+        <p style="margin-top:10px">Kept in the Keychain. Read every 5 minutes; Cloudflare's analytics lag about a minute.</p>
+      </div>
+
+      <div class="card callout">
+        <h5>Design</h5>
+        <ol>
+          <li>Its own app, ClaudeBar's sibling: <span class="mono" style="font-size:10.5px">docs/architecture/</span></li>
+          <li>Limits count the whole account; the Worker picker narrows only the D1 and Worker tabs.</li>
+          <li>The bill is an estimate until Cloudflare's invoice.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// tabs
+document.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{
+  document.querySelectorAll('.pill').forEach(x=>x.classList.toggle('on',x===p));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+p.dataset.v));
+});
+
+// meters (mock)
+const meters=[
+  {n:'D1 reads',s:'rows · 5M / day',v:'912k',p:18,i:'⛁',c:'var(--butter)'},
+  {n:'D1 writes',s:'rows · 100k / day',v:'12.4k',p:12,i:'✎',c:'var(--butter)'},
+  {n:'Requests',s:'Workers · 100k / day',v:'9.8k',p:10,i:'ƒ',c:'var(--sky)'},
+  {n:'CPU',s:'10 ms / invocation',v:'7.8 ms',p:78,i:'⚙',c:'var(--sky)',f:'p99 · 3 failed'},
+  {n:'D1 storage',s:'5 GB total · never resets',v:'41 MB',p:1,i:'▤',c:'var(--purple-soft)',f:'all databases',wide:1},
+];
+function lvl(p){return p>=90?'hot':p>=50?'warn':'ok'}
+function drawMeters(list){
+  document.getElementById('meters').innerHTML=list.map(m=>{
+    const l=lvl(m.p);
+    const tag=l==='hot'?'ACT NOW':l==='warn'?'WATCH':'OK';
+    return `<div class="card meter ${l==='ok'?'':l}" ${m.wide?'style="grid-column:1/-1"':''}>
+      <div class="mt-head"><span class="pi" style="background:${m.c}">${m.i}</span>
+        <div class="mt-name">${m.n}<small>${m.s}</small></div><span class="st ${l}">${tag}</span></div>
+      <div class="mt-num">${m.v} <small>${m.p}%</small></div>
+      <div class="gauge"><i style="width:${Math.max(m.p,1)}%"></i></div>
+      <div class="mt-foot"><span>${m.f||'resets 00:00 UTC'}</span><b>${100-m.p}% left</b></div>
+    </div>`}).join('');
+}
+drawMeters(meters);
+
+// charts (mock)
+function bars(id,vals,max,opts={}){
+  const el=document.getElementById(id);
+  el.innerHTML=vals.map((v,k)=>{
+    const cls=(opts.cls&&opts.cls(v,k))||'';
+    const pin=opts.pin&&opts.pin[k]?`<span class="pin">${opts.pin[k]}</span>`:'';
+    return `<i class="${cls}" style="height:${Math.max(3,v/max*100)}%" title="${v}">${pin}</i>`}).join('')+
+    (opts.limit?`<span class="limit" style="bottom:${opts.limit.at/max*100}%">${opts.limit.label}</span>`:'');
+}
+// rows read per day, millions: the 10-08 deploy cuts it
+bars('d1days',[2.1,2.6,3.2,3.75,1.1,0.86,0.91],5.4,{
+  cls:(v,k)=>k===6?'now':v>=3.75?'hot':v>=2.5?'':'cf',
+  pin:{4:'d605dc93'},limit:{at:5,label:'5M free'}});
+const hrs=[38,31,26,22,20,24,33,41,52,61,66,70,72,68,64,0,0,0,0,0,0,0,0,0].map((v,k)=>k<15?v*1000:0);
+bars('d1hours',hrs.map((v,k)=>k===14?64000:v),80000,{cls:(v,k)=>k===14?'now':'cf'});
+const req=[310,260,210,180,170,190,280,360,450,520,610,660,700,690,640,0,0,0,0,0,0,0,0,0];
+bars('reqs',req,800,{cls:(v,k)=>k===3||k===11?'hot':''});
+
+// menu bar states: fine → watch → hot
+const states=[
+  {pct:'D1 18%',cls:'',big:'18% of 5M',sub:'<b>912k</b> read since 00:00 UTC · on pace for <b>31%</b> by midnight',u:18,pa:31,tag:'CLOSEST TO THE LIMIT',acct:''},
+  {pct:'D1 62%',cls:'warn',big:'62% of 5M',sub:'<b>3.1M</b> read since 00:00 UTC · on pace for <b>88%</b> by midnight',u:62,pa:88,tag:'WATCH',acct:''},
+  {pct:'D1 91%',cls:'hot',big:'91% of 5M',sub:'<b>4.55M</b> read · crosses 5M at <b>22:40 UTC</b>, reads fail until reset',u:91,pa:100,tag:'ACT NOW',acct:''},
+];
+let si=0;
+function cycleMb(){
+  si=(si+1)%states.length;const s=states[si];
+  const mb=document.getElementById('mb');mb.className='mb-item on '+s.cls;
+  document.getElementById('mbPct').textContent=s.pct;
+  document.getElementById('headBig').textContent=s.big;
+  document.getElementById('headSub').innerHTML=s.sub;
+  document.getElementById('used').style.width=s.u+'%';
+  document.getElementById('pace').style.width=s.pa+'%';
+  document.getElementById('headTag').textContent=s.tag;
+  document.getElementById('head').classList.toggle('hot',s.cls==='hot');
+  drawMeters(meters.map(m=>m.n==='D1 reads'?{...m,p:s.u,v:s.big.split(' ')[0]==='18%'?'912k':s.sub.match(/<b>([^<]+)/)[1]}:m));
+}
+</script>
+</body>
+</html>
