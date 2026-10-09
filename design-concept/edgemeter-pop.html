@@ -226,6 +226,12 @@ button{font:inherit;color:inherit}
 .verdict b{font-weight:800}
 .plan .pnote{font-size:10px;font-weight:800;color:var(--muted);margin-top:-2px}
 .row.total{background:#FBF7F1}
+.plan.pick{cursor:pointer;transition:transform .1s,box-shadow .1s}
+.plan.pick:hover{transform:translate(-1px,-1px)}
+.plan.pick.sel{background:var(--purple-soft);box-shadow:5px 5px 0 var(--purple),5px 5px 0 2.5px var(--ink)}
+.plan.pick:not(.sel){background:var(--paper);box-shadow:var(--sh)}
+.plan .up{display:inline-block;margin-top:8px;text-decoration:none;color:var(--ink);font-size:10.5px}
+.plan-foot{font-size:10px;font-weight:700;color:var(--muted);padding:0 4px;line-height:1.4}
 
 /* settings window */
 .win{width:520px;max-width:100%;background:var(--cream);border:3px solid var(--ink);border-radius:18px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
@@ -419,14 +425,25 @@ button{font:inherit;color:inherit}
           <div class="sec-h">If you upgraded <a onclick="busyMonth()" id="busyLink">try a busy month ↺</a></div>
           <div class="card verdict" id="verdict"><b>Free is enough.</b> No limit came near its stop this month. Upgrade when one would stop you.</div>
           <div class="plans">
-            <div class="card plan cur"><h4>Free <span class="st ok">YOUR PLAN</span></h4><div class="p" id="freeCost">$0.00</div>
+            <div class="card plan pick sel" id="pick-free" onclick="pickPlan('free')"><h4>Free <span class="st ok">YOUR PLAN</span></h4><div class="p" id="freeCost">$0.00</div>
               <div class="pnote">this month</div>
               <ul><li>stops at its limits</li><li id="freeStop">requests and D1 fail until 00:00 UTC, then reset</li></ul></div>
-            <div class="card plan"><h4>Workers Paid <span class="st paid">$5 / mo</span></h4><div class="p" id="paidCost">$5.00</div>
+            <div class="card plan pick" id="pick-paid" onclick="pickPlan('paid')"><h4>Workers Paid <span class="st paid">$5 / mo</span></h4><div class="p" id="paidCost">$5.00</div>
               <div class="pnote">this month, if you'd been on it</div>
-              <ul><li>never stops</li><li id="paidNote">nothing past what's included: just the $5</li></ul></div>
+              <ul><li>never stops</li><li id="paidNote">nothing past what's included: just the $5</li></ul>
+              <a class="btn-s up" href="#" onclick="event.stopPropagation()" title="Opens Cloudflare's Workers plans page for this account; Cloudflare takes the payment">Upgrade on Cloudflare ↗</a></div>
           </div>
-          <div class="card list">
+          <div class="plan-foot">Edge Meter only reads: plans change on Cloudflare. After you upgrade, the next look here shows Workers Paid.</div>
+          <div class="card list detail" id="detail-free">
+            <div class="list-h">This month on Free <span>your plan · stops instead of charging</span></div>
+            <div class="row"><div>Requests<div class="sub" id="fReq">100k a day · busiest day 41k</div></div><div class="val"><b id="fReqD">0 days</b><div class="sub">stopped</div></div></div>
+            <div class="row"><div>CPU<div class="sub">10 ms a request · p99 7.8 ms</div></div><div class="val"><b>0</b><div class="sub">stopped</div></div></div>
+            <div class="row"><div>D1 rows read<div class="sub" id="fRead">5M a day · busiest day 3.75M (Oct 7)</div></div><div class="val"><b id="fReadD">0 days</b><div class="sub">stopped</div></div></div>
+            <div class="row"><div>D1 rows written<div class="sub">100k a day · busiest day 14k</div></div><div class="val"><b>0 days</b><div class="sub">stopped</div></div></div>
+            <div class="row"><div>D1 storage<div class="sub">5 GB in all · 41 MB kept</div></div><div class="val"><b>1%</b></div></div>
+            <div class="row total"><div><b style="font-family:'Plus Jakarta Sans';font-size:12px">Total</b><div class="sub">Free never charges; past a limit, requests fail until 00:00 UTC</div></div><div class="val"><b>$0.00</b></div></div>
+          </div>
+          <div class="card list detail" id="detail-paid" style="display:none">
             <div class="list-h">This month on Workers Paid <span>at this pace · est.</span></div>
             <div class="row"><div>Subscription<div class="sub">includes everything below up to its amount</div></div><div class="val"><b>$5.00</b></div></div>
             <div class="row"><div>Requests<div class="sub" id="pReq">~304k of 10M included</div></div><div class="val"><b id="pReqC">$0.00</b></div></div>
@@ -537,6 +554,15 @@ document.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{
 });
 
 
+
+// Bill: the chosen plan card picks the detail list below it
+function pickPlan(which){
+  ['free','paid'].forEach(k=>{
+    document.getElementById('pick-'+k).classList.toggle('sel',k===which);
+    document.getElementById('detail-'+k).style.display=k===which?'':'none';
+  });
+}
+
 // Bill: a quiet month (today's numbers) and a busy one, to show both answers
 let busy=false;
 function busyMonth(){
@@ -551,6 +577,7 @@ function busyMonth(){
     $('paidNote').textContent='$5 + $1.20 for use past what\'s included';
     $('pRead').textContent='~26.2B of 25B included · 1.2B past it at $0.001 per million';$('pReadC').textContent='$1.20';
     $('pTotal').textContent='$6.20';$('busyLink').textContent='back to this month ↺';
+    $('fRead').textContent='5M a day · ran out on Oct 7 and Oct 8';$('fReadD').textContent='2 days';
   }else{
     v.className='card verdict';
     v.innerHTML='<b>Free is enough.</b> No limit came near its stop this month. Upgrade when one would stop you.';
@@ -559,6 +586,7 @@ function busyMonth(){
     $('paidNote').textContent='nothing past what\'s included: just the $5';
     $('pRead').textContent='~49M of 25B included';$('pReadC').textContent='$0.00';
     $('pTotal').textContent='$5.00';$('busyLink').textContent='try a busy month ↺';
+    $('fRead').textContent='5M a day · busiest day 3.75M (Oct 7)';$('fReadD').textContent='0 days';
   }
 }
 

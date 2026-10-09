@@ -50,13 +50,16 @@ do, the command that lands on the domain, and the node that answers.
 | 12 | Kai opens *D1* | *Rows read · last 7 days* with *d605dc93* pinned on 10-08 · *per hour today* · *Top queries by rows read* · *Database: storage, rows written* | reads | `service.breakdowns` | `Breakdown` · `Deployment` |
 | 13 | Kai opens *Worker* | *Requests per hour* (errors in coral) · *CPU p50 / p99* · *Hourly cron · last run OK · 24/24* | reads | `service.breakdowns` | `Breakdown` |
 | 14 | Kai picks *All workers* in the strip | the breakdowns cover every Worker; the limits don't change | — | `account.focus = .allWorkers` | `Focus` — a limit is the account's, a focus only narrows breakdowns |
-| 15 | Lee opens *Bill* | *October so far $0.00* · *Forecast · Oct 31* · *Free · NOW* vs *Workers Paid $5* · *At this month's pace, on Paid* · *Invoices* | reads | `account.bill` · `plan.quote(pace)` | `Bill` · `Plan` |
+| 15 | Lee opens *Bill* | *October so far $0.00* · *Forecast · Oct 31* · *IF YOU UPGRADED* · *Free is enough* or *Free stopped you on 2 days* · *Free · YOUR PLAN $0.00 this month* · *Workers Paid · $5 / mo · $5.00 this month, if you'd been on it* · *This month on Workers Paid*, one line per limit · *Invoices* | reads | `account.bill` · `bill.verdict` · `quote.lines` | `Bill` · `Plan` |
+| 15c | Lee taps a plan card | the chosen card is purple; below it, *This month on Free* (each limit's allowance, busiest day, days it stopped you, $0.00) or *This month on Workers Paid* (the subscription and one line per limit) | taps the other card | — (the view's choice) | `Bill` · `Quote` |
+| 15a | Lee decides to upgrade | *Upgrade on Cloudflare ↗* · *Edge Meter only reads: plans change on Cloudflare* | clicks it; pays on Cloudflare | — | the plan file's `upgradeURL` |
+| 15b | Lee comes back after upgrading | *WORKERS PAID* in the header; monthly allowances on the cards | nothing; no restart | `account.openBill(at:)` · `refresh(at:)` | `Account` re-reads the plan (law 18) |
 | 16 | The Mac slept for a night | the strip reads *STALE · read 9h ago* until the next read lands | nothing | `account.refresh()` | `Connection.freshness` |
 | 17 | The token is revoked | *Cloudflare refused the token* · *Connect again* | pastes a new one | `account.connect(token)` | `Connection` |
-| 18 | Kai clicks *Dashboard ↗* | the Cloudflare dashboard opens on that account | — | — | `Account.dashboardURL` |
-| 19 | Kai opens *⚙ → Settings…* | the Settings window: *Account* · *Reading* · *Warnings* · *General* | — | — | the same `Account` the popover reads |
-| 20 | Kai wants fewer reads | *Read every 5 min · 10 · 15 · 30*; *STALE* waits for two missed reads | picks *15* | `account.setInterval(minutes:)` | `Account.interval` (law 18) |
-| 21 | Lee wants it there after a restart | *Start at login* | turns it on | — | the system's login items (`LoginItem`, App) |
+| 17 | Kai clicks *Dashboard ↗* | the Cloudflare dashboard opens on that account | — | — | `Account.dashboardURL` |
+| 18 | Kai opens *⚙ → Settings…* | the Settings window: *Account* · *Reading* · *Warnings* · *General* | — | — | the same `Account` the popover reads |
+| 19 | Kai wants fewer reads | *Read every 5 min · 10 · 15 · 30*; *STALE* waits for two missed reads | picks *15* | `account.setInterval(minutes:)` | `Account.interval` (law 17) |
+| 20 | Lee wants it there after a restart | *Start at login* | turns it on | — | the system's login items (`LoginItem`, App) |
 | 22 | A new version is out | Sparkle's *A new version of Edge Meter is available* · *Check now* in Settings | installs | — | `Updater` (App, Sparkle) |
 
 ## 3 · What the person never has to know
@@ -92,4 +95,5 @@ do, the command that lands on the domain, and the node that answers.
 - **Several accounts at once.** One connected account; switching is *Connect again*.
 - **Services other than Workers and D1.** KV, R2, Queues and Durable Objects are one JSON file each once someone needs them ([ENGINE_DESIGN](ENGINE_DESIGN.md)); none ships in v1.
 - **The `cf` CLI's login.** v1 connects with an API token. `Analytics` and `BillingAPI` are ports, so a `cf`-backed credential or adapter can come later without touching the domain.
+- **Changing the plan from Edge Meter.** Cloudflare's API can (`POST`/`PUT`/`DELETE /accounts/{id}/subscriptions`), but it needs *Billing: Edit*, which can cancel any subscription, and the payment belongs in Cloudflare's own flow. Decided 2026-10-09: a link to Cloudflare's plans page instead; revisit as an opt-in capability once a Paid account can verify it.
 - **Rate limits.** Cloudflare keeps no analytics for Rate Limiting bindings, and a request the Worker answers with 429 is a *success* to Workers analytics. Once a Worker writes an Analytics Engine data point per block, a *Blocked by rate limit* breakdown is one entry in `worker.json`. Decided 2026-10-09: not in v1.

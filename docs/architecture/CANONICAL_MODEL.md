@@ -88,7 +88,10 @@ Account  ◆                                  THE ROOT — one per app (v1)
 ├── menuBar: MenuBarState                   DERIVED — "D1 18%" and its level
 │
 ├── bill: Bill  ◇                           "This month · est." — estimate · forecast · invoices
-│   └── quote(on: Plan) → Money             "On Workers Paid $5.00" — the same usage, priced by another plan
+│   ├── stopped: [LimitID: [Date]]          "Free stopped you on 2 days" — days a daily allowance ran out
+│   ├── verdict                             DERIVED — enough · stopped(days)
+│   └── quote(on: Plan) → Quote             "Workers Paid · $5.00 this month" — the same usage, priced by
+│                                           another plan, with one line per limit
 │
 └── alerts: Alerts  ◆                       "Warn me at" — levels · pace · isOn
     └── sent: [Warning.Key]                 limit · level · period — the once-only log
@@ -153,6 +156,9 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | 14 | A **quote** prices the same usage with another plan; a **forecast** prices the month's pace with this one. | `Plan` (`cost(of:)`) · `Bill` |
 | 15 | **The token** lives only in the Keychain, is never logged, and is shown only as its last four characters. | `Connection` (through `TokenVault`) |
 | 16 | **Read-only:** no port has a call that writes to Cloudflare. | the ports ([MODULAR_DESIGN](MODULAR_DESIGN.md)) |
-| 18 | **Read every 5, 10, 15 or 30 minutes**, 5 unless the person chose; *stale* follows the choice (two intervals). Fewer reads never skip a warning: each read still checks every level. | `Account` |
+| 17 | **Read every 5, 10, 15 or 30 minutes**, 5 unless the person chose; *stale* follows the choice (two intervals). Fewer reads never skip a warning: each read still checks every level. | `Account` |
+| 18 | **The plan is re-read** when the Bill tab opens and once a day, so an upgrade made on Cloudflare shows without a restart; the limits follow the new plan's allowances. | `Account` |
+| 19 | **A day Free stopped you** is a UTC day in the billing month when a *daily* allowance's use reached it. The verdict is *enough* when there is none, *stopped* otherwise. Each daily limit also answers its **busiest day** of the month. | `Bill` |
+| 20 | **A quote line** is one limit: its month's use, what the plan includes, and the price of the rest; the subscription is its own line and the lines add up to the quote. | `Plan` (`lines(of:)`) |
 
 *Start at login* and *updates* are the system's and Sparkle's, not the account's: the App holds them (`LoginItem`, `Updater`) and no law of the tree depends on them.

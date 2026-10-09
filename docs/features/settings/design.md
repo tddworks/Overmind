@@ -6,7 +6,7 @@ description: Where each setting is owned — Account (focus, interval), Alerts (
 
 | Setting | Owner | Kept in |
 |---|---|---|
-| account, focus, interval | `Account` (law 18 for the interval) | `settings.json` |
+| account, focus, interval | `Account` (law 17 for the interval) | `settings.json` |
 | levels, pace, notify | `Alerts` via `Account` | `settings.json` |
 | start at login | `LoginItem` (App), `SMAppService.mainApp` | the system |
 | automatic checks | `Updater` (App), Sparkle | Sparkle's defaults |

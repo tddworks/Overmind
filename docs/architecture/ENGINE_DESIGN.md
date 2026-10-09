@@ -59,13 +59,19 @@ number of limits.
 | `beyond(Money, per: Quantity)` | each unit past the allowance costs this (*$0.001 per 1M rows*) |
 | `perMonthOver(Money, per: Quantity)` | storage: billed on the month's average past the allowance (*$0.75 per GB-month*) |
 
-A plan also carries `subscription` (`$5` a month) and `matches`: the
+A plan also carries `subscription` (`$5` a month), `upgradeURL` (its page on Cloudflare's
+dashboard, with `{account}` for the account ID; Edge Meter only links to it) and `matches`: the
 `rate_plan` ids from `/accounts/{id}/subscriptions` that mean this plan.
 No match means Free.
 
 **A plan without an allowance for a limit doesn't show that limit.** Free caps
 CPU per invocation (`workers.cpu`); Workers Paid bills CPU time by the month
 (`workers.cpuTime`, `sum.cpuTimeUs`). Each plan file names only its own.
+
+### Days Free stopped you
+
+`ReadPlan.daily(_:at:)` reads each limit with a daily allowance over the billing month, grouped
+by `date`, in one query; `Bill` counts the days whose use reached the allowance (law 19).
 
 ## 4 · `Breakdown` — on a service tab
 
