@@ -1,0 +1,13 @@
+{
+  "id": "free",
+  "name": "Free",
+  "subscription": "0 USD",
+  "matches": [],
+  "allowances": {
+    "workers.requests": { "perDay": "100k requests" },
+    "workers.cpu": { "perInvocation": "10 ms" },
+    "d1.rowsRead": { "perDay": "5M rows" },
+    "d1.rowsWritten": { "perDay": "100k rows" },
+    "d1.storage": { "total": "5 GB" }
+  }
+}

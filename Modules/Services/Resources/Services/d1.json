@@ -1,0 +1,24 @@
+{
+  "id": "d1",
+  "name": "D1",
+  "order": 2,
+  "look": { "glyph": "⛁", "color": "butter" },
+  "limits": [
+    { "id": "d1.rowsRead", "name": "D1 rows read", "short": "D1", "unit": "rows",
+      "read": { "sum": { "dataset": "d1AnalyticsAdaptiveGroups", "field": "sum.rowsRead",
+                         "time": "date", "focus": "databaseId" } } },
+    { "id": "d1.rowsWritten", "name": "D1 rows written", "short": "D1 writes", "unit": "rows",
+      "read": { "sum": { "dataset": "d1AnalyticsAdaptiveGroups", "field": "sum.rowsWritten",
+                         "time": "date", "focus": "databaseId" } } },
+    { "id": "d1.storage", "name": "D1 storage", "short": "D1 storage", "unit": "bytes",
+      "read": { "max": { "dataset": "d1StorageAdaptiveGroups", "field": "max.databaseSizeBytes",
+                         "time": "date", "focus": "databaseId" } } }
+  ],
+  "breakdowns": [
+    { "title": "Rows read · last 7 days", "series": { "limit": "d1.rowsRead", "by": "day", "last": 7 } },
+    { "title": "Rows read · per hour today", "series": { "limit": "d1.rowsRead", "by": "hour", "last": 24 } },
+    { "title": "Top queries by rows read",
+      "top": { "dataset": "d1QueriesAdaptiveGroups", "dimension": "query", "measure": "sum.rowsRead",
+               "count": 5, "time": "datetimeHour" } }
+  ]
+}

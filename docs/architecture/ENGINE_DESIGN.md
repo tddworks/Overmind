@@ -34,7 +34,11 @@ Every `Read` names:
 - `time`: the filter the dataset takes, `date` (`date_geq`/`date_leq`, D1) or
   `datetime` (`datetime_geq`/`datetime_leq`, Workers);
 - `focus`: the dimension a breakdown narrows by (`scriptName`, `databaseId`).
-  `ReadPlan` uses it **for breakdowns only** (model law 1).
+  `ReadPlan` uses it **for breakdowns only** (model law 1);
+- `scale`, when the answer's unit isn't the limit's: CPU comes in microseconds,
+  so `0.001` turns it into milliseconds;
+- `failures`, for a `quantile`: the dimension value that marks an invocation
+  that went past the allowance (`status = exceededResources`).
 
 `ReadPlan` writes each limit as an aliased field of one `viewer.accounts`
 query filtered by `accountTag`, so a refresh is one request whatever the
@@ -58,6 +62,10 @@ number of limits.
 A plan also carries `subscription` (`$5` a month) and `matches`: the
 `rate_plan` ids from `/accounts/{id}/subscriptions` that mean this plan.
 No match means Free.
+
+**A plan without an allowance for a limit doesn't show that limit.** Free caps
+CPU per invocation (`workers.cpu`); Workers Paid bills CPU time by the month
+(`workers.cpuTime`, `sum.cpuTimeUs`). Each plan file names only its own.
 
 ## 4 · `Breakdown` — on a service tab
 
@@ -117,6 +125,8 @@ No match means Free.
 | Rate Limiting bindings | none exists | out of scope ([journeys §5](USER_JOURNEYS.md#5--out-of-scope-for-now)) |
 | GraphQL budget | 300 queries / 5 min / user; 31 days retention on adaptive datasets | verified |
 | Plan | `GET /accounts/{id}/subscriptions`: one entry per rate plan (an account can have *R2 Paid* without *Workers Paid*) | verified |
+| Workers Paid's `rate_plan` id | `workers_paid` in `workers-paid.json` | **unverified**: no Paid account to read yet |
+| Workers CPU time total | `workersInvocationsAdaptive` · `sum.cpuTimeUs` | verified by introspection |
 | Invoices | `GET /accounts/{id}/billing/history` (`/user/billing/history` is deprecated) | verified |
 | Billable usage | `/accounts/{id}/billable-usage`, alpha | not used in v1: the bill is an estimate |
 | Deployments | `GET /accounts/{id}/workers/scripts/{name}/deployments` (Workers Scripts Read) | verified |

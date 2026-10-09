@@ -60,7 +60,17 @@ let project = Project(
             dependencies: [],
             settings: .settings(base: strict)
         ),
-        // The modules land slice by slice (docs/status.md). Each is one line here:
-        // module("Measures"), tests("Measures"), …
+        // Measures — the shared kernel: Quantity, Money, Period, Percent. Imports nothing.
+        module("Measures"),
+        tests("Measures"),
+        // Services — the Cloudflare products as data: what each counts and where. Pure.
+        module("Services", dependencies: [.target(name: "Measures")], resources: true),
+        tests("Services", dependencies: [.target(name: "Measures")]),
+        // Plans — what each plan includes and what the rest costs, as data. Pure.
+        module("Plans", dependencies: [.target(name: "Measures")], resources: true),
+        tests("Plans", dependencies: [.target(name: "Measures")]),
+        // Limits — Limit, Usage, Pace, Level: how close each limit is. Pure.
+        module("Limits", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans")]),
+        tests("Limits", dependencies: [.target(name: "Measures"), .target(name: "Services"), .target(name: "Plans")]),
     ]
 )

@@ -4,8 +4,8 @@ description: Where Edge Meter stands — what is built per module with test coun
 
 # Status
 
-> As of **2026-10-09** · **0 tests**. The design is approved;
-> the app builds as an empty menu bar item. This file is the one home for
+> As of **2026-10-09** · **55 tests**, all passing. Slice 1 (the pure core) is built;
+> the app still shows a placeholder popover. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
 ## What is built
@@ -14,13 +14,16 @@ description: Where Edge Meter stands — what is built per module with test coun
 |---|---|
 | Design: the five docs, the mockup | proposed |
 | `EdgeMeter` app target | builds; shows a placeholder popover |
-| Modules | none yet: each is carved when its first test needs it |
+| `Measures` | `Quantity` (reads *5M rows*, *5 GB*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 17 |
+| `Services` | `ServiceDefinition`, `LimitDefinition`, `Read`, `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json` | 10 |
+| `Plans` | `PlanDefinition`, `Plan`, `Allowance`, `Price`, `cost(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` | 15 |
+| `Limits` | `Limit` (laws 2–7), `Usage`, `Level`, `Pace` | 13 |
 
 ## Slices, in order
 
 | # | Slice | Modules | Done when |
 |---|---|---|---|
-| 1 | The pure core | `Measures`, `Services`, `Plans`, `Limits` | percent, level, pace and periods are tested on a neutral fixture, and `d1.json`, `workers.json`, `free.json`, `workers-paid.json` load in definition tests |
+| 1 ✅ | The pure core | `Measures`, `Services`, `Plans`, `Limits` | percent, level, pace and periods are tested on a neutral fixture, and `d1.json`, `workers.json`, `free.json`, `workers-paid.json` load in definition tests |
 | 2 | One read | `Analytics` | `ReadPlan` writes one query for every limit; `AnswerReader` reads recorded answers. The unverified datasets in ENGINE §6 are settled by introspection |
 | 3 | The root | `Monitor`, `Storage`, `Billing` (verify, accounts, subscriptions) | connect, choose, refresh, freshness; the token in the Keychain |
 | 4 | The Today tab | App | the menu bar and Today from the mockup, on the real account |

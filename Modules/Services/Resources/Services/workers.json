@@ -1,0 +1,25 @@
+{
+  "id": "workers",
+  "name": "Worker",
+  "order": 1,
+  "look": { "glyph": "ƒ", "color": "sky" },
+  "limits": [
+    { "id": "workers.requests", "name": "Requests", "short": "Requests", "unit": "requests",
+      "read": { "sum": { "dataset": "workersInvocationsAdaptive", "field": "sum.requests",
+                         "time": "datetime", "focus": "scriptName" } } },
+    { "id": "workers.cpu", "name": "CPU", "short": "CPU", "unit": "milliseconds",
+      "read": { "quantile": { "dataset": "workersInvocationsAdaptive", "field": "quantiles.cpuTimeP99",
+                              "time": "datetime", "focus": "scriptName", "scale": 0.001,
+                              "failures": { "dimension": "status", "equals": "exceededResources" } } } },
+    { "id": "workers.cpuTime", "name": "CPU time", "short": "CPU time", "unit": "milliseconds",
+      "read": { "sum": { "dataset": "workersInvocationsAdaptive", "field": "sum.cpuTimeUs",
+                         "time": "datetime", "focus": "scriptName", "scale": 0.001 } } }
+  ],
+  "breakdowns": [
+    { "title": "Requests · per hour today", "series": { "limit": "workers.requests", "by": "hour", "last": 24 } },
+    { "title": "Invocations by outcome",
+      "split": { "dataset": "workersInvocationsAdaptive", "dimension": "status", "measure": "sum.requests", "time": "datetime" } },
+    { "title": "Cron runs",
+      "split": { "dataset": "workersInvocationsScheduled", "dimension": "status", "measure": "count", "time": "datetime" } }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "workers-paid",
+  "name": "Workers Paid",
+  "subscription": "5 USD",
+  "matches": ["workers_paid"],
+  "allowances": {
+    "workers.requests": { "perMonth": "10M requests" },
+    "workers.cpuTime": { "perMonth": "30M ms" },
+    "d1.rowsRead": { "perMonth": "25B rows" },
+    "d1.rowsWritten": { "perMonth": "50M rows" },
+    "d1.storage": { "total": "5 GB" }
+  },
+  "prices": {
+    "workers.requests": { "beyond": { "price": "0.30 USD", "per": "1M requests" } },
+    "workers.cpuTime": { "beyond": { "price": "0.02 USD", "per": "1M ms" } },
+    "d1.rowsRead": { "beyond": { "price": "0.001 USD", "per": "1M rows" } },
+    "d1.rowsWritten": { "beyond": { "price": "1.00 USD", "per": "1M rows" } },
+    "d1.storage": { "perMonthOver": { "price": "0.75 USD", "per": "1 GB" } }
+  }
+}
