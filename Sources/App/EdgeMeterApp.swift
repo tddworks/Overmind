@@ -58,6 +58,9 @@ enum Snapshots {
                 if tab != "today" && tab != "bill" { await account.open(tab, at: Demo.now ?? .now) }
                 write(PopoverView(account: account, tab: tab, scrolls: false), to: folder, name: tab)
             }
+            if ProcessInfo.processInfo.environment["EDGEMETER_LIVE_SHOT"] == "1" {
+                await writeLive(PopoverView(account: account), to: folder, name: "today")
+            }
             let fresh = try! Account(services: .builtIns(), plans: .builtIns(), analytics: DemoCloudflare(), billing: DemoCloudflare(),
                                      vault: MemoryVault(token: nil), settings: MemorySettings(Settings()), notifier: SilentNotifier())
             write(PopoverView(account: fresh, scrolls: false), to: folder, name: "connect")
@@ -68,6 +71,22 @@ enum Snapshots {
             write(PopoverView(account: refused, scrolls: false), to: folder, name: "connect-refused")
             NSApplication.shared.terminate(nil)
         }
+    }
+
+    /// The popover as it really draws, scroll view included, from an offscreen window.
+    static func writeLive(_ view: some View, to folder: String, name: String) async {
+        let host = NSHostingView(rootView: view)
+        let window = NSWindow(contentRect: NSRect(x: -3000, y: 0, width: 400, height: 900), styleMask: [.borderless],
+                              backing: .buffered, defer: false)
+        window.contentView = host
+        host.frame.size = host.fittingSize
+        window.setContentSize(host.fittingSize)
+        window.orderFrontRegardless()
+        try? await Task.sleep(for: .seconds(1.5))
+        guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return }
+        host.cacheDisplay(in: host.bounds, to: rep)
+        try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: folder).appending(path: "live-\(name).png"))
+        window.orderOut(nil)
     }
 
     static func write(_ view: some View, to folder: String, name: String) {

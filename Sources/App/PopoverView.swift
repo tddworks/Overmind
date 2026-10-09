@@ -134,16 +134,18 @@ struct CappedScroll<Content: View>: View {
 
     var body: some View {
         if maxHeight == .infinity {
-            content    // screenshots: ImageRenderer draws nothing inside a ScrollView
+            content.padding(.top, 10)    // screenshots: ImageRenderer draws nothing inside a ScrollView
         } else {
-            scroll
+            scroll.padding(.leading, -2).padding(.top, -10)
         }
     }
 
     private var scroll: some View {
         ScrollView(.vertical) {
             content
-                .padding(.trailing, 4).padding(.bottom, 4)
+                // Room for the cards' outlines and hard shadows, which reach past their frames
+                // and a ScrollView clips: 2.5 pt strokes, 3 pt shadows, the tilted sticker.
+                .padding(.leading, 2).padding(.top, 12).padding(.trailing, 5).padding(.bottom, 6)
                 .background(GeometryReader { geometry in
                     Color.clear.onAppear { height = geometry.size.height }
                         .onChange(of: geometry.size.height) { _, new in height = new }
