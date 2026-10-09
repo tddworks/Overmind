@@ -4,6 +4,10 @@ All notable changes to Edge Meter are recorded here, in the reader's order: Remo
 
 ## [Unreleased]
 
+---
+
+## [0.1.0] - 2026-10-09
+
 ### Added
 
 - A Settings window (⚙ → Settings…): the account and Worker focus, how often to read (5–30 min), warnings, start at login, and updates → [docs](https://github.com/tddworks/EdgeMeter/blob/main/docs/features/settings/README.md)
