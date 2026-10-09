@@ -69,6 +69,12 @@ UI changes come with a mockup in `design-concept/` first.
 - `ImageRenderer` draws a `SecureField` as a placeholder block: the Connect screenshot shows it so; the real field is fine.
 - D1 datasets filter by `date`, Workers datasets by `datetime` ([ENGINE §2](docs/architecture/ENGINE_DESIGN.md#2--read--how-a-limits-number-is-found)).
 
+## Releasing
+
+- Tag `vX.Y.Z` and push: `.github/workflows/release.yml` tests, builds a universal app, signs, notarizes, publishes the DMG and ZIP, promotes `[Unreleased]` and updates `docs/appcast.xml` → [docs/release/RELEASE_SETUP.md](docs/release/RELEASE_SETUP.md).
+- `docs/appcast.xml` is Sparkle's live feed. Never move or hand-edit it.
+- The app icon is drawn by `swift scripts/make-app-icon.swift`; change the script, not the PNGs.
+
 ## When you are…
 
 - adding a feature → `implement-feature` skill

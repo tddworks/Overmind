@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same branch or PR replaces this run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache Tuist dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/Library/Caches/tuist
+            Tuist/.build
+          key: tuist-v1-${{ runner.os }}-${{ hashFiles('Tuist/Package.swift', 'Tuist.swift', 'Project.swift') }}
+          restore-keys: tuist-v1-${{ runner.os }}-
+
+      - name: Install Tuist
+        run: |
+          brew update --quiet
+          brew install --cask tuist
+          tuist version
+
+      - name: Generate the project
+        run: |
+          tuist install
+          tuist generate --no-open
+
+      # The live checks against a real account are skipped: no token is set here.
+      - name: Test
+        run: |
+          xcodebuild test \
+            -workspace EdgeMeter.xcworkspace \
+            -scheme EdgeMeter-Workspace \
+            -destination 'platform=macOS,arch=arm64' \
+            -derivedDataPath .derivedData \
+            -skipMacroValidation
