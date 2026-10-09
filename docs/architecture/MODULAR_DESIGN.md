@@ -65,7 +65,7 @@ Refresher(account: account, every: .minutes(5)).start()
 | `Storage` | generic | `Storage.makeVault()` (`TokenVault`), `.makeSettings()` (`SettingsStore`) | `KeychainTokenVault`, `JSONSettingsFile` |
 | `Diagnostics` | cross-cutting | `AppLog` and its categories (OSLog) | — |
 | `Monitor` | core · the root | `Account` (`@MainActor @Observable`), `Connection`, `Focus`, `MenuBarState`, `Refresher`, the ports `TokenVault` · `SettingsStore` | — |
-| `EdgeMeter` (App) | the composition root | SwiftUI views, the Pop theme (AgentNexus's), the menu-bar label | — |
+| `EdgeMeter` (App) | the composition root | SwiftUI views (popover, Settings), the Pop theme (AgentNexus's), the menu-bar label, `LoginItem`, `Updater` (Sparkle, the only module that links it) | — |
 
 The HTTP call itself is a small `internal` type in each of `Analytics` and
 `Billing`, so neither imports the other. The two copies are a few lines;

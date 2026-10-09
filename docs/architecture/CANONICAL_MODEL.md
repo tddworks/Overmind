@@ -81,6 +81,7 @@ Account  ◆                                  THE ROOT — one per app (v1)
 │   └── breakdowns: [Breakdown]  ◇          read when the tab opens, for the focus
 │
 ├── focus: Focus  ◇                         .worker(name) · .allWorkers — breakdowns only
+├── interval                                "Read every 5 min" — 5 · 10 · 15 · 30 minutes
 ├── deployments: [Deployment]  ◇            id · when — pins on the charts
 ├── limits                                  DERIVED — every service's limits, in catalog order
 ├── closest: Limit?                         DERIVED — the headline and the menu bar
@@ -100,7 +101,7 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | Kind | Examples | Home | Changes when |
 |---|---|---|---|
 | **Definitions** (data) | D1 counts *rows read* from `d1AnalyticsAdaptiveGroups`; Free allows 5M per day | `Resources/Services/*.json` · `Resources/Plans/*.json` | Cloudflare changes a product or a price |
-| **Choices** (settings) | the account, the focus, the alert levels | `~/.edgemeter/settings.json`; the token in the Keychain | the person changes them |
+| **Choices** (settings) | the account, the focus, the read interval, the alert levels | `~/.edgemeter/settings.json`; the token in the Keychain | the person changes them |
 | **Readings** (state) | 912k read at 14:20; the warnings already sent | memory; the sent-warnings log in settings | every refresh |
 
 **No Swift names a Cloudflare product or a number Cloudflare can change.**
@@ -129,6 +130,7 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | `focus = …` | `Account` | the Worker isn't on the account |
 | `open(service)` | `Account` | — (reads its breakdowns if older than one refresh) |
 | `toggle(level)` · `isOn` · `paceIsOn` | `Alerts` | — |
+| `setInterval(minutes:)` | `Account` | a choice other than 5, 10, 15 or 30 minutes |
 | `disconnect()` | `Account` | — (removes the token from the Keychain) |
 
 ## 5 · The laws, on the node that owns them
@@ -151,3 +153,6 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | 14 | A **quote** prices the same usage with another plan; a **forecast** prices the month's pace with this one. | `Plan` (`cost(of:)`) · `Bill` |
 | 15 | **The token** lives only in the Keychain, is never logged, and is shown only as its last four characters. | `Connection` (through `TokenVault`) |
 | 16 | **Read-only:** no port has a call that writes to Cloudflare. | the ports ([MODULAR_DESIGN](MODULAR_DESIGN.md)) |
+| 18 | **Read every 5, 10, 15 or 30 minutes**, 5 unless the person chose; *stale* follows the choice (two intervals). Fewer reads never skip a warning: each read still checks every level. | `Account` |
+
+*Start at login* and *updates* are the system's and Sparkle's, not the account's: the App holds them (`LoginItem`, `Updater`) and no law of the tree depends on them.

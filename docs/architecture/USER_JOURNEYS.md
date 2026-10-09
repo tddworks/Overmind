@@ -54,6 +54,10 @@ do, the command that lands on the domain, and the node that answers.
 | 16 | The Mac slept for a night | the strip reads *STALE · read 9h ago* until the next read lands | nothing | `account.refresh()` | `Connection.freshness` |
 | 17 | The token is revoked | *Cloudflare refused the token* · *Connect again* | pastes a new one | `account.connect(token)` | `Connection` |
 | 18 | Kai clicks *Dashboard ↗* | the Cloudflare dashboard opens on that account | — | — | `Account.dashboardURL` |
+| 19 | Kai opens *⚙ → Settings…* | the Settings window: *Account* · *Reading* · *Warnings* · *General* | — | — | the same `Account` the popover reads |
+| 20 | Kai wants fewer reads | *Read every 5 min · 10 · 15 · 30*; *STALE* waits for two missed reads | picks *15* | `account.setInterval(minutes:)` | `Account.interval` (law 18) |
+| 21 | Lee wants it there after a restart | *Start at login* | turns it on | — | the system's login items (`LoginItem`, App) |
+| 22 | A new version is out | Sparkle's *A new version of Edge Meter is available* · *Check now* in Settings | installs | — | `Updater` (App, Sparkle) |
 
 ## 3 · What the person never has to know
 
@@ -80,6 +84,7 @@ do, the command that lands on the domain, and the node that answers.
 | **Focus** — *leaderboard · All workers* | which Worker the breakdowns describe | scope, filter |
 | **Bill** · **Forecast** · **Invoice** | money: this month's, its projection, past months | |
 | **Stale** | the last read is older than two refreshes | offline |
+| **Settings** | the window for the choices: account, reading, warnings, general | preferences |
 
 ## 5 · Out of scope, for now
 

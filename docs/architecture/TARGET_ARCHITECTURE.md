@@ -51,6 +51,9 @@ description: How Edge Meter runs. It covers the pieces, each with one job, and t
 | `Refresher` | tell `Account.refresh` every 5 minutes, on wake and on *Refresh* | Monitor | a clock → commands |
 | `TokenVault` (port) | keep the token | Monitor | Keychain |
 | `SettingsStore` (port) | keep the choices and the sent-warnings log | Monitor | `~/.edgemeter/settings.json` |
+| `SettingsView` | the Settings window: renders `Account` and tells it, like the popover | App | — |
+| `LoginItem` | *Start at login*, over `SMAppService.mainApp` | App | the system's login items |
+| `Updater` | Sparkle: checks the appcast, installs signed updates | App | `https://tddworks.github.io/EdgeMeter/appcast.xml` |
 
 ## 3 · Flows
 

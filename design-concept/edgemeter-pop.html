@@ -219,6 +219,25 @@ button{font:inherit;color:inherit}
 .callout h5{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
 .callout ol{margin:6px 0 0 16px;font-size:11.5px;font-weight:600;line-height:1.5;color:#2f2450}
 
+
+/* settings window */
+.win{width:520px;max-width:100%;background:var(--cream);border:3px solid var(--ink);border-radius:18px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.win-bar{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:2.5px solid var(--ink);background:var(--paper)}
+.win-bar i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink)}
+.win-bar b{margin:0 auto;font-weight:800;font-size:13px}
+.win-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.set{padding:12px 14px}
+.set h4{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+.set-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:2px dashed var(--dash);font-size:12.5px;font-weight:700}
+.set-row:first-of-type{border-top:none}
+.set-row small{display:block;font-size:10.5px;color:var(--muted);font-weight:600}
+.set-row .end{margin-left:auto;display:flex;gap:6px;align-items:center}
+.seg{display:flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.seg span{padding:3px 10px;font-size:11px;font-weight:800;border-left:2px solid var(--ink);cursor:pointer}
+.seg span:first-child{border-left:none}
+.seg span.on{background:var(--purple);color:#fff}
+.btn-s{border:2px solid var(--ink);border-radius:10px;padding:4px 10px;font-weight:800;font-size:11px;background:var(--paper);box-shadow:2px 2px 0 var(--ink)}
+
 @media (max-width:760px){
   .intro{grid-template-columns:1fr}
   .hero{padding:24px 20px}
@@ -462,6 +481,36 @@ button{font:inherit;color:inherit}
           <li>Limits count the whole account; the Worker picker narrows only the D1 and Worker tabs.</li>
           <li>The bill is an estimate until Cloudflare's invoice.</li>
         </ol>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Settings</h2>
+  <p class="section-sub">Opened from <b>⚙ → Settings…</b> in the popover. Everything the popover offers, plus what only a window has room for: how often to read, starting at login, and updates. Changes save at once; there is no Save button.</p>
+  <div class="stage">
+    <div class="win">
+      <div class="win-bar"><i style="background:var(--coral)"></i><i style="background:var(--butter)"></i><i style="background:var(--mint)"></i><b>Edge Meter Settings</b></div>
+      <div class="win-body">
+        <div class="card set">
+          <h4>Account</h4>
+          <div class="set-row"><div>acme<small>Cloudflare account · token ••••7f3a in your Keychain</small></div><div class="end"><span class="plan-chip" style="box-shadow:none">FREE</span><span class="btn-s">Disconnect</span></div></div>
+          <div class="set-row"><div>Worker in focus<small>the D1 and Worker tabs; limits always count every Worker</small></div><div class="end"><span class="btn-s">leaderboard ▾</span></div></div>
+        </div>
+        <div class="card set">
+          <h4>Reading</h4>
+          <div class="set-row"><div>Read every<small>STALE after two missed reads</small></div><div class="end"><div class="seg" onclick="event.target.parentNode.querySelectorAll('span').forEach(x=>x.classList.toggle('on',x===event.target))"><span class="on">5 min</span><span>10</span><span>15</span><span>30</span></div></div></div>
+        </div>
+        <div class="card set">
+          <h4>Warnings</h4>
+          <div class="set-row"><div>Warn me at<small>once per limit, per level, per reset</small></div><div class="end"><span class="lvl l50 on">50%</span><span class="lvl l75 on">75%</span><span class="lvl l90 on">90%</span></div></div>
+          <div class="set-row"><div>Warn on pace<small>when the rate would cross 90% before the reset</small></div><div class="end"><span class="toggle"><span class="sw-t"></span></span></div></div>
+          <div class="set-row"><div>Notifications</div><div class="end"><span class="toggle"><span class="sw-t"></span></span></div></div>
+        </div>
+        <div class="card set">
+          <h4>General</h4>
+          <div class="set-row"><div>Start at login</div><div class="end"><span class="toggle off"><span class="sw-t"></span></span></div></div>
+          <div class="set-row"><div>Check for updates automatically<small>Edge Meter 0.1.0 · last checked today</small></div><div class="end"><span class="toggle"><span class="sw-t"></span></span><span class="btn-s">Check now</span></div></div>
+        </div>
       </div>
     </div>
   </div>
