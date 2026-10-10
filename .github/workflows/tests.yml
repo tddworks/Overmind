@@ -25,8 +25,8 @@ jobs:
           path: |
             ~/Library/Caches/tuist
             Tuist/.build
-          key: tuist-v1-${{ runner.os }}-${{ hashFiles('Tuist/Package.swift', 'Tuist.swift', 'Project.swift') }}
-          restore-keys: tuist-v1-${{ runner.os }}-
+          key: tuist-v2-${{ runner.os }}-${{ hashFiles('Tuist/Package.swift', 'Tuist.swift', 'Project.swift') }}
+          restore-keys: tuist-v2-${{ runner.os }}-
 
       - name: Install Tuist
         run: |
