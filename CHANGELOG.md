@@ -7,6 +7,7 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 ### Changed
 
 - Edge Meter is now Overmind. It is a new app to macOS: download it once from [Releases](https://github.com/tddworks/Overmind/releases) (Edge Meter won't offer the update), paste your API token again, and set your warnings and Start at login again. Delete Edge Meter.app afterwards.
+- A new icon: an eye in a cloud, watching your Cloudflare account.
 
 ---
 

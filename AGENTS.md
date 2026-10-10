@@ -73,7 +73,7 @@ UI changes come with a mockup in `design-concept/` first.
 
 - Tag `vX.Y.Z` and push: `.github/workflows/release.yml` tests, builds a universal app, signs, notarizes, publishes the DMG and ZIP, promotes `[Unreleased]` and updates `docs/appcast.xml` → [docs/release/RELEASE_SETUP.md](docs/release/RELEASE_SETUP.md).
 - `docs/appcast.xml` is Sparkle's live feed. Never move or hand-edit it.
-- The app icon is drawn by `swift scripts/make-app-icon.swift`; change the script, not the PNGs.
+- The app icon is drawn by `swift scripts/make-app-icon.swift` from the logo, `design-concept/logos/overmind-cloud-eye-concept.png`; change the logo or the script, never the icon PNGs.
 
 ## When you are…
 

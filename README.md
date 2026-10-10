@@ -1,3 +1,5 @@
+<img src="Sources/App/Resources/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png" width="96" alt="Overmind's logo: an eye in a cloud">
+
 # Overmind
 
 **Know before the free tier says no.** A macOS menu bar app that watches a Cloudflare
