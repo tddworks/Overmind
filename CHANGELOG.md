@@ -4,6 +4,10 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 
 ## [Unreleased]
 
+---
+
+## [0.2.1] - 2026-10-10
+
 ### Changed
 
 - Edge Meter is now Overmind. It is a new app to macOS: download it once from [Releases](https://github.com/tddworks/Overmind/releases) (Edge Meter won't offer the update), paste your API token again, and set your warnings and Start at login again. Delete Edge Meter.app afterwards.
@@ -20,7 +24,3 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 ### Added
 
 - Upgrade on Cloudflare ↗ under Workers Paid's month, and the plan is re-read when the Bill tab opens, so an upgrade shows without a restart → [docs](https://github.com/tddworks/Overmind/blob/main/docs/features/bill/README.md)
-
-## Older releases
-
-[0.1](docs/changelog/0.1.md)
