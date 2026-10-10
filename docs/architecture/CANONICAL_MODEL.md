@@ -1,8 +1,8 @@
 ---
-description: The normative tree Edge Meter binds to. It covers every node from the Account down, the word the screen prints for it, its laws and their one owner, and the bounded contexts. Read before adding or changing any domain type, service or plan.
+description: The normative tree Overmind binds to. It covers every node from the Account down, the word the screen prints for it, its laws and their one owner, and the bounded contexts. Read before adding or changing any domain type, service or plan.
 ---
 
-# Edge Meter — the canonical model
+# Overmind — the canonical model
 
 > ONE tree. The menu bar, the popover, the Connect sheet and the
 > notifications all read it, and none of them adds a rule to it. A node is
@@ -28,7 +28,7 @@ description: The normative tree Edge Meter binds to. It covers every node from t
 
 The words are the ones the screen prints ([USER_JOURNEYS §4](USER_JOURNEYS.md#4--the-words-the-screens-print)).
 Where ClaudeBar or AgentNexus already has a word for the same thing (`Money`,
-`Period`, `CredentialLookup`, `AppLog`), Edge Meter uses it.
+`Period`, `CredentialLookup`, `AppLog`), Overmind uses it.
 
 | On screen | The node | Why this word |
 |---|---|---|
@@ -104,7 +104,7 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | Kind | Examples | Home | Changes when |
 |---|---|---|---|
 | **Definitions** (data) | D1 counts *rows read* from `d1AnalyticsAdaptiveGroups`; Free allows 5M per day | `Resources/Services/*.json` · `Resources/Plans/*.json` | Cloudflare changes a product or a price |
-| **Choices** (settings) | the account, the focus, the read interval, the alert levels | `~/.edgemeter/settings.json`; the token in the Keychain | the person changes them |
+| **Choices** (settings) | the account, the focus, the read interval, the alert levels | `~/.overmind/settings.json`; the token in the Keychain | the person changes them |
 | **Readings** (state) | 912k read at 14:20; the warnings already sent | memory; the sent-warnings log in settings | every refresh |
 
 **No Swift names a Cloudflare product or a number Cloudflare can change.**

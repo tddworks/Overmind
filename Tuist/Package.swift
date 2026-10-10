@@ -15,7 +15,7 @@ let packageSettings = PackageSettings(
 #endif
 
 let package = Package(
-    name: "EdgeMeter",
+    name: "Overmind",
     dependencies: [
         // @Mockable ports, as in ClaudeBar: tests stub what lies outside the app (Chicago school).
         .package(url: "https://github.com/Kolos65/Mockable.git", from: "0.6.4"),

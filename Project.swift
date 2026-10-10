@@ -11,7 +11,7 @@ func module(_ name: String, dependencies: [TargetDependency] = [], resources: Bo
         name: name,
         destinations: .macOS,
         product: .staticFramework,
-        bundleId: "com.tddworks.edgemeter.\(name.lowercased())",
+        bundleId: "com.tddworks.overmind.\(name.lowercased())",
         deploymentTargets: deployment,
         sources: ["Modules/\(name)/Sources/**"],
         resources: resources ? ["Modules/\(name)/Resources/**"] : nil,
@@ -25,7 +25,7 @@ func tests(_ name: String, dependencies: [TargetDependency] = []) -> Target {
         name: "\(name)Tests",
         destinations: .macOS,
         product: .unitTests,
-        bundleId: "com.tddworks.edgemeter.\(name.lowercased())-tests",
+        bundleId: "com.tddworks.overmind.\(name.lowercased())-tests",
         deploymentTargets: deployment,
         sources: ["Modules/\(name)/Tests/**"],
         dependencies: [.target(name: name)] + dependencies
@@ -33,7 +33,7 @@ func tests(_ name: String, dependencies: [TargetDependency] = []) -> Target {
 }
 
 let project = Project(
-    name: "EdgeMeter",
+    name: "Overmind",
     options: .options(defaultKnownRegions: ["en"], developmentRegion: "en"),
     settings: .settings(
         base: [
@@ -46,10 +46,10 @@ let project = Project(
     targets: [
         // The app: views and the composition root. A menu bar app, no Dock icon.
         .target(
-            name: "EdgeMeter",
+            name: "Overmind",
             destinations: .macOS,
             product: .app,
-            bundleId: "com.tddworks.edgemeter",
+            bundleId: "com.tddworks.overmind",
             deploymentTargets: deployment,
             infoPlist: .file(path: "Sources/App/Info.plist"),
             sources: ["Sources/App/**"],
@@ -69,7 +69,7 @@ let project = Project(
                 debug: [
                     // A debug copy never shares the installed app's bundle ID, so it never takes
                     // its Sparkle update (ClaudeBar issue #450).
-                    "PRODUCT_BUNDLE_IDENTIFIER": "com.tddworks.edgemeter.debug",
+                    "PRODUCT_BUNDLE_IDENTIFIER": "com.tddworks.overmind.debug",
                 ]
             )
         ),

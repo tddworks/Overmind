@@ -10,7 +10,7 @@ public struct PlanDefinition: Sendable, Equatable, Identifiable {
     public let matches: [String]
     let allowances: [LimitID: Allowance]
     let prices: [LimitID: Price]
-    /// Its page on Cloudflare's dashboard, `{account}` for the account ID. Edge Meter only
+    /// Its page on Cloudflare's dashboard, `{account}` for the account ID. Overmind only
     /// links to it; plans change on Cloudflare.
     let upgradeTemplate: String?
 

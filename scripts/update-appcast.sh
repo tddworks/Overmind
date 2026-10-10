@@ -109,10 +109,10 @@ NEW_ITEM=$(cat << EOF
             <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
 ${CHANNEL_TAG}
-            <description><![CDATA[<h2>Edge Meter ${VERSION}</h2>
+            <description><![CDATA[<h2>Overmind ${VERSION}</h2>
 <p><em>Released ${DISPLAY_DATE}</em></p>
 ${HTML_NOTES}
-<p><a href="https://github.com/tddworks/EdgeMeter/releases/tag/v${VERSION}">View full release notes</a></p>
+<p><a href="https://github.com/tddworks/Overmind/releases/tag/v${VERSION}">View full release notes</a></p>
 ]]></description>
             <enclosure url="${DOWNLOAD_URL}" length="${FILE_SIZE}" type="application/octet-stream" sparkle:edSignature="${ED_SIGNATURE}"/>
         </item>
@@ -199,7 +199,7 @@ cat > "$APPCAST_FILE" << EOF
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
-        <title>Edge Meter</title>
+        <title>Overmind</title>
 $ITEMS_TO_WRITE
     </channel>
 </rss>

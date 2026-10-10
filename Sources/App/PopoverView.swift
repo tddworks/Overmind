@@ -27,7 +27,7 @@ extension Level {
 }
 
 /// The popover: the header, the tabs (Today, one per service, Bill) and the footer
-/// (design-concept/edgemeter-pop.html). Renders the Account and tells it what happened.
+/// (design-concept/overmind-pop.html). Renders the Account and tells it what happened.
 struct PopoverView: View {
     let account: Account
     @Environment(\.openSettings) private var openSettings
@@ -69,7 +69,7 @@ struct PopoverView: View {
             Badge(glyph: "☁", fill: Pop.edge, size: 34, foreground: .white)
                 .background(RoundedRectangle(cornerRadius: 10).fill(Pop.ink).offset(x: 2, y: 2))
             VStack(alignment: .leading, spacing: 0) {
-                Text("Edge Meter").font(Pop.display(21)).foregroundStyle(Pop.ink)
+                Text("Overmind").font(Pop.display(21)).foregroundStyle(Pop.ink)
                 Text(account.summary.map { "\($0.name) · Cloudflare account" } ?? "Cloudflare usage and billing")
                     .font(Pop.label(10)).foregroundStyle(Pop.muted).lineLimit(1)
             }

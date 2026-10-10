@@ -1,4 +1,4 @@
-# Builds, tests, signs, notarizes and publishes Edge Meter, then updates the Sparkle feed.
+# Builds, tests, signs, notarizes and publishes Overmind, then updates the Sparkle feed.
 # Adapted from ClaudeBar's release.yml; setup: docs/release/RELEASE_SETUP.md.
 name: Release
 
@@ -29,8 +29,8 @@ permissions:
   id-token: write
 
 env:
-  APP_NAME: EdgeMeter
-  BUNDLE_ID: com.tddworks.edgemeter
+  APP_NAME: Overmind
+  BUNDLE_ID: com.tddworks.overmind
 
 jobs:
   release:
@@ -112,11 +112,11 @@ jobs:
         run: |
           tuist generate --no-open
           echo "=== Available schemes ==="
-          xcodebuild -workspace EdgeMeter.xcworkspace -list
+          xcodebuild -workspace Overmind.xcworkspace -list
 
       - name: Test
         run: |
-          xcodebuild test -workspace "${APP_NAME}.xcworkspace" -scheme EdgeMeter-Workspace \
+          xcodebuild test -workspace "${APP_NAME}.xcworkspace" -scheme Overmind-Workspace \
             -destination 'platform=macOS,arch=arm64' -derivedDataPath .derivedData -skipMacroValidation
 
       - name: Build Universal App Bundle
@@ -334,7 +334,7 @@ jobs:
 
           # Create DMG (create-dmg may return non-zero even on success)
           create-dmg \
-            --volname "Edge Meter" \
+            --volname "Overmind" \
             --window-pos 200 120 \
             --window-size 600 400 \
             --icon-size 100 \
@@ -364,7 +364,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          name: Edge Meter v${{ steps.version.outputs.version }}
+          name: Overmind v${{ steps.version.outputs.version }}
           draft: false
           prerelease: ${{ steps.version.outputs.is_prerelease }}
           files: |
@@ -383,19 +383,19 @@ jobs:
 
             **Option 1: DMG (Recommended)**
             1. Download `${{ env.DMG_FILE }}`
-            2. Open the DMG and drag EdgeMeter.app to Applications
+            2. Open the DMG and drag Overmind.app to Applications
             3. Launch from Applications folder
 
             **Option 2: ZIP**
             1. Download `${{ env.NOTARIZED_ZIP }}`
-            2. Unzip and move EdgeMeter.app to Applications
+            2. Unzip and move Overmind.app to Applications
             3. Launch from Applications folder
 
             ## Verification
 
             SHA256 checksums are provided. Verify with:
             ```bash
-            shasum -a 256 -c EdgeMeter-${{ steps.version.outputs.version }}.zip.sha256
+            shasum -a 256 -c Overmind-${{ steps.version.outputs.version }}.zip.sha256
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

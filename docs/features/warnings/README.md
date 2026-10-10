@@ -1,5 +1,5 @@
 ---
-description: When Edge Meter sends a notification — at 50%, 75% and 90%, on pace, and when Cloudflare stopped Worker invocations — and how to change it. Read when you get too many or too few warnings.
+description: When Overmind sends a notification — at 50%, 75% and 90%, on pace, and when Cloudflare stopped Worker invocations — and how to change it. Read when you get too many or too few warnings.
 ---
 
 # Warnings

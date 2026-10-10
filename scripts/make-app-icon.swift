@@ -1,4 +1,4 @@
-// Draws Edge Meter's app icon in the Pop style (an orange tile, an ink outline and hard shadow,
+// Draws Overmind's app icon in the Pop style (an orange tile, an ink outline and hard shadow,
 // a white cloud) and writes Sources/App/Resources/Assets.xcassets/AppIcon.appiconset.
 // Run: swift scripts/make-app-icon.swift
 import AppKit

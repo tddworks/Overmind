@@ -1,14 +1,14 @@
 ---
 name: fix-bug
 description: |
-  Guide for fixing bugs in EdgeMeter following Chicago School TDD and rich domain design. Use this skill when:
+  Guide for fixing bugs in Overmind following Chicago School TDD and rich domain design. Use this skill when:
   (1) User reports a bug or unexpected behavior
   (2) Fixing a defect in existing functionality
   (3) User asks "fix this bug" or "this doesn't work correctly"
   (4) Correcting behavior that violates the person's mental model
 ---
 
-# Fix Bug in EdgeMeter
+# Fix Bug in Overmind
 
 ```
 1. REPRODUCE & UNDERSTAND  →  2. WRITE FAILING TEST (Red)  →  3. FIX & VERIFY (Green)
@@ -71,7 +71,7 @@ Run it and watch it fail: `tuist test <Module>`.
 4. **No unrelated refactors.**
 
 Then run the full suite:
-`xcodebuild test -workspace EdgeMeter.xcworkspace -scheme EdgeMeter-Workspace -destination 'platform=macOS,arch=arm64'`.
+`xcodebuild test -workspace Overmind.xcworkspace -scheme Overmind-Workspace -destination 'platform=macOS,arch=arm64'`.
 
 ## Checklist
 

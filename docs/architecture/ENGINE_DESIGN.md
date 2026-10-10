@@ -1,8 +1,8 @@
 ---
-description: How each case works in Edge Meter. Covers the closed sums a service or plan file can use (how a limit is read, allowances, prices, breakdowns, periods), the JSON shapes, Cloudflare's datasets and endpoints as verified, and what is still unverified. Read before adding a service, a plan or a case.
+description: How each case works in Overmind. Covers the closed sums a service or plan file can use (how a limit is read, allowances, prices, breakdowns, periods), the JSON shapes, Cloudflare's datasets and endpoints as verified, and what is still unverified. Read before adding a service, a plan or a case.
 ---
 
-# Edge Meter — the engine
+# Overmind — the engine
 
 > **#5 of 5** in [the design](ARCHITECTURE.md) · **Answers:** how each case
 > works · **Builds on:** [MODULAR_DESIGN.md](MODULAR_DESIGN.md)
@@ -60,7 +60,7 @@ number of limits.
 | `perMonthOver(Money, per: Quantity)` | storage: billed on the month's average past the allowance (*$0.75 per GB-month*) |
 
 A plan also carries `subscription` (`$5` a month), `upgradeURL` (its page on Cloudflare's
-dashboard, with `{account}` for the account ID; Edge Meter only links to it) and `matches`: the
+dashboard, with `{account}` for the account ID; Overmind only links to it) and `matches`: the
 `rate_plan` ids from `/accounts/{id}/subscriptions` that mean this plan.
 No match means Free.
 

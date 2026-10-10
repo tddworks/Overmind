@@ -1,5 +1,5 @@
 ---
-description: Where Edge Meter stands — what is built per module with test counts, the decisions taken, open questions, and the slices in order. Read before picking up work.
+description: Where Overmind stands — what is built per module with test counts, the decisions taken, open questions, and the slices in order. Read before picking up work.
 ---
 
 # Status
@@ -13,7 +13,7 @@ description: Where Edge Meter stands — what is built per module with test coun
 | Piece | Holds | Tests |
 |---|---|---|
 | Design: the five docs, the mockup | approved | — |
-| `EdgeMeter` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect, the Settings window, `LoginItem`, `Updater` (Sparkle), the icon; demo mode and screenshots | — |
+| `Overmind` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect, the Settings window, `LoginItem`, `Updater` (Sparkle), the icon; demo mode and screenshots | — |
 | Release | `tests.yml`, `release.yml` (sign, notarize, DMG, appcast), ClaudeBar's scripts; a universal Release archive built and Developer-ID-signed locally | — |
 | `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 18 |
 | `Services` | `ServiceDefinition`, `LimitDefinition`, `Read`, `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json` | 10 |
@@ -53,7 +53,7 @@ description: Where Edge Meter stands — what is built per module with test coun
 
 - The first release needs the GitHub repo, its secrets and Pages turned on ([release setup](release/RELEASE_SETUP.md)); notarization has not run yet.
 
-- The name *Edge Meter* is a working name.
+- The name *Overmind* is a working name.
 - Workers Paid's `rate_plan` id (`workers_paid`) is unverified: no Paid account has been read.
 - Invoices have only been read as *forbidden* (the `cf` login has no billing scope); a token with Billing Read will show them.
 - Checked end to end on a real Free account on 2026-10-09: plan, 5 limits, both tabs with 10 deployment pins, and the Workers Paid quote ($5).

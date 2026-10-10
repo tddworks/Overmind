@@ -3,7 +3,7 @@ import Analytics
 import Alerts
 import Monitor
 
-/// The Settings window (design-concept/edgemeter-pop.html → Settings): renders the Account and
+/// The Settings window (design-concept/overmind-pop.html → Settings): renders the Account and
 /// tells it, like the popover; changes save at once.
 struct SettingsView: View {
     let account: Account
@@ -116,9 +116,9 @@ struct SettingsView: View {
     }
 
     private var updateNote: String {
-        guard updater.isAvailable else { return "Edge Meter \(Updater.version) · updates are off in this copy" }
-        guard let checked = updater.lastChecked else { return "Edge Meter \(Updater.version) · not checked yet" }
-        return "Edge Meter \(Updater.version) · last checked \(Say.ago(checked, now: .now))"
+        guard updater.isAvailable else { return "Overmind \(Updater.version) · updates are off in this copy" }
+        guard let checked = updater.lastChecked else { return "Overmind \(Updater.version) · not checked yet" }
+        return "Overmind \(Updater.version) · last checked \(Say.ago(checked, now: .now))"
     }
 }
 

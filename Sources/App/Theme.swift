@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// AgentNexus's Pop language (design-concept/edgemeter-pop.html): cream paper, ink outlines,
+/// AgentNexus's Pop language (design-concept/overmind-pop.html): cream paper, ink outlines,
 /// hard shadows; Cloudflare orange for today's use.
 enum Pop {
     static let cream = Color(red: 0.992, green: 0.961, blue: 0.918)

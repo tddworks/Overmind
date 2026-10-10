@@ -7,7 +7,7 @@ Warning, Breakdown, Deployment, Focus, Bill.
 ## The modules
 
 ```text
-                     EdgeMeter (App)
+                     Overmind (App)
                           │
                        Monitor ─────────────── Storage (implements its ports)
      ┌──────────┬─────────┼─────────┬──────────┐

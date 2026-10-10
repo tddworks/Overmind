@@ -1,7 +1,7 @@
 ---
 name: improvement
 description: |
-  Guide for making improvements to existing Edge Meter functionality using TDD. Use this skill when:
+  Guide for making improvements to existing Overmind functionality using TDD. Use this skill when:
   (1) Enhancing existing features (not adding new ones)
   (2) Improving UX, performance, or code quality
   (3) User asks "improve X", "make Y better", or "enhance Z"
@@ -9,7 +9,7 @@ description: |
   For NEW features, use implement-feature instead.
 ---
 
-# Improve EdgeMeter
+# Improve Overmind
 
 | Scenario | Skill |
 |---|---|

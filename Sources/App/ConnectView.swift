@@ -22,7 +22,7 @@ struct ConnectView: View {
                 }
             default:
                 Text("Connect Cloudflare").font(Pop.display(20))
-                Text("Paste an API token. Edge Meter only reads; it can't deploy, change or delete anything.")
+                Text("Paste an API token. Overmind only reads; it can't deploy, change or delete anything.")
                     .font(Pop.body(11.5)).foregroundStyle(Pop.muted).fixedSize(horizontal: false, vertical: true)
                 if case .refused(let refusal) = account.phase {
                     Notice(text: Self.words(refusal), fill: Pop.coralSoft)
@@ -50,7 +50,7 @@ struct ConnectView: View {
                 Text("Kept in your Keychain. Read every 5 minutes.").font(Pop.body(10.5)).foregroundStyle(Pop.muted)
                 HStack {
                     Spacer()
-                    Button("Quit Edge Meter") { NSApplication.shared.terminate(nil) }.buttonStyle(.plain)
+                    Button("Quit Overmind") { NSApplication.shared.terminate(nil) }.buttonStyle(.plain)
                         .font(Pop.label(10.5)).foregroundStyle(Pop.muted)
                 }
             }

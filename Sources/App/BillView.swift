@@ -127,7 +127,7 @@ struct PlanDetail: View {
                     if !isCurrent, let url = quote?.upgradeURL {
                         VStack(alignment: .leading, spacing: 8) {
                             PopButton(title: "Upgrade on Cloudflare ↗", fill: Pop.mint) { NSWorkspace.shared.open(url) }
-                            Text("Edge Meter only reads: Cloudflare takes the payment. After you upgrade, the next look here shows \(plan.name).")
+                            Text("Overmind only reads: Cloudflare takes the payment. After you upgrade, the next look here shows \(plan.name).")
                                 .font(Pop.label(10)).foregroundStyle(Pop.muted).fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(12)

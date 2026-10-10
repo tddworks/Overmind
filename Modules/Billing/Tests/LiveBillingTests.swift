@@ -2,10 +2,10 @@ import Foundation
 import Testing
 @testable import Billing
 
-/// Runs against Cloudflare only when `EDGEMETER_LIVE_TOKEN` is set. Prints counts, never ids.
-@Suite(.enabled(if: ProcessInfo.processInfo.environment["EDGEMETER_LIVE_TOKEN"] != nil))
+/// Runs against Cloudflare only when `OVERMIND_LIVE_TOKEN` is set. Prints counts, never ids.
+@Suite(.enabled(if: ProcessInfo.processInfo.environment["OVERMIND_LIVE_TOKEN"] != nil))
 struct LiveBillingTests {
-    let token = ProcessInfo.processInfo.environment["EDGEMETER_LIVE_TOKEN"] ?? ""
+    let token = ProcessInfo.processInfo.environment["OVERMIND_LIVE_TOKEN"] ?? ""
 
     @Test func `should read a real account's plan, Workers and deployments`() async throws {
         let api = Billing.make(bearer: { [token] in token })

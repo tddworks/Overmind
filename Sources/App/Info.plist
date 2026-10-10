@@ -5,7 +5,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>EdgeMeter</string>
+    <string>Overmind</string>
     <key>CFBundleIconName</key>
     <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>EdgeMeter</string>
+    <string>Overmind</string>
     <key>CFBundleDisplayName</key>
-    <string>Edge Meter</string>
+    <string>Overmind</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -33,7 +33,7 @@
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>SUFeedURL</key>
-    <string>https://tddworks.github.io/EdgeMeter/appcast.xml</string>
+    <string>https://tddworks.github.io/Overmind/appcast.xml</string>
     <key>SUPublicEDKey</key>
     <string>2Kn6vvvrrNqgAWrzOiq5Ae+abMjEqlu2MOOM/YBlsw0=</string>
     <key>SUEnableAutomaticChecks</key>

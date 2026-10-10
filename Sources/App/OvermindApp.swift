@@ -11,7 +11,7 @@ import Storage
 /// The composition root: builds every module once and starts the refresher. Names no
 /// Cloudflare product.
 @main
-struct EdgeMeterApp: App {
+struct OvermindApp: App {
     @State private var account: Account
     @State private var loginItem = LoginItem()
     @State private var updater = Updater(enabled: !Demo.isOn)
@@ -34,7 +34,7 @@ struct EdgeMeterApp: App {
         _account = State(initialValue: account)
         refresher = Refresher(account: account, clock: { Demo.now ?? .now })
         refresher.start()
-        if let folder = ProcessInfo.processInfo.environment["EDGEMETER_SNAPSHOT_DIR"] { Snapshots.schedule(account, into: folder) }
+        if let folder = ProcessInfo.processInfo.environment["OVERMIND_SNAPSHOT_DIR"] { Snapshots.schedule(account, into: folder) }
     }
 
     var body: some Scene {
@@ -51,7 +51,7 @@ struct EdgeMeterApp: App {
     }
 }
 
-/// Screenshots of each tab on demo data (EDGEMETER_DEMO=1 EDGEMETER_SNAPSHOT_DIR=…): written
+/// Screenshots of each tab on demo data (OVERMIND_DEMO=1 OVERMIND_SNAPSHOT_DIR=…): written
 /// after a pause, then the app quits.
 @MainActor
 enum Snapshots {
@@ -67,7 +67,7 @@ enum Snapshots {
             write(PopoverView(account: account, tab: "bill", scrolls: false, billChoice: "workers-paid"), to: folder, name: "bill-paid")
             await writeLive(SettingsView(account: account, loginItem: LoginItem(), updater: Updater(enabled: false)),
                             to: folder, name: "settings")
-            if ProcessInfo.processInfo.environment["EDGEMETER_LIVE_SHOT"] == "1" {
+            if ProcessInfo.processInfo.environment["OVERMIND_LIVE_SHOT"] == "1" {
                 await writeLive(PopoverView(account: account), to: folder, name: "live-today")
             }
             let fresh = try! Account(services: .builtIns(), plans: .builtIns(), analytics: DemoCloudflare(), billing: DemoCloudflare(),

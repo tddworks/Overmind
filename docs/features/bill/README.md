@@ -7,7 +7,7 @@ description: What the Bill tab says — this month's estimate, the forecast, the
 - **This month · est.** — what the month has cost so far by the plan's prices. On Free it is always $0: Free stops at its limits instead of charging.
 - **Forecast** — the month at its pace.
 - **If you upgraded** — first a verdict: *Free is enough*, or *Free stopped you on N days* (days a daily limit ran out). Then both plans for this month, and *This month on Workers Paid*: the subscription and one line per limit, so you see where each dollar would come from.
-- **Upgrade on Cloudflare ↗** — opens Cloudflare's Workers plans page; Cloudflare takes the payment. Edge Meter never changes your plan; after you upgrade, the next look at the Bill tab shows Workers Paid.
+- **Upgrade on Cloudflare ↗** — opens Cloudflare's Workers plans page; Cloudflare takes the payment. Overmind never changes your plan; after you upgrade, the next look at the Bill tab shows Workers Paid.
 - **Invoices** — need a token with **Billing: Read**. Once Cloudflare invoices the month, the invoice replaces the estimate.
 
 Prices are in `Modules/Plans/Resources/Plans/*.json`, checked against Cloudflare's pricing on the date in [ENGINE §6](../../architecture/ENGINE_DESIGN.md#6--cloudflare-as-verified-2026-10-09).

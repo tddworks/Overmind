@@ -8,7 +8,7 @@ import Monitor
 
 @Suite
 struct SettingsFileTests {
-    let folder = FileManager.default.temporaryDirectory.appendingPathComponent("edgemeter-\(UUID().uuidString)")
+    let folder = FileManager.default.temporaryDirectory.appendingPathComponent("overmind-\(UUID().uuidString)")
 
     @Test func `should remember the account, the focus and the warnings already sent across a relaunch`() {
         let saved = Settings(account: AccountSummary(id: "acc1", name: "Acme"),
@@ -34,7 +34,7 @@ struct SettingsFileTests {
 @Suite
 struct OlderSettingsFileTests {
     @Test func `should read every 5 minutes from a settings file written before the interval could be chosen`() throws {
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("edgemeter-\(UUID().uuidString)")
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("overmind-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let older = #"{"account":{"id":"acc1","name":"Acme"},"focus":{},"alerts":{"levels":[90],"pace":false,"isOn":true},"sent":[]}"#
         try Data(older.utf8).write(to: folder.appendingPathComponent("settings.json"))

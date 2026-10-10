@@ -12,7 +12,7 @@ public protocol TokenVault: Sendable {
     func delete()
 }
 
-/// Keeps the person's choices and the sent-warnings log: `~/.edgemeter/settings.json`.
+/// Keeps the person's choices and the sent-warnings log: `~/.overmind/settings.json`.
 @Mockable
 public protocol SettingsStore: Sendable {
     func load() -> Settings

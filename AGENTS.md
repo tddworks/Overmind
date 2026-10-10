@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Rules for AI coding agents (Claude Code, Codex, Cursor, …) in this repo. This is the only agent-instructions file; there is no `CLAUDE.md`. Everything else is one link away: [architecture](docs/architecture/ARCHITECTURE.md) · [status](docs/status.md) · [docs design](docs/documentation-design/README.md) · [mockup](design-concept/edgemeter-pop.html).
+Rules for AI coding agents (Claude Code, Codex, Cursor, …) in this repo. This is the only agent-instructions file; there is no `CLAUDE.md`. Everything else is one link away: [architecture](docs/architecture/ARCHITECTURE.md) · [status](docs/status.md) · [docs design](docs/documentation-design/README.md) · [mockup](design-concept/overmind-pop.html).
 
-Edge Meter is a macOS menu bar app that watches a Cloudflare account's usage and bill, read-only. It is ClaudeBar's and AgentNexus's sibling. **Cloudflare products and plans are JSON definitions** in `Modules/Services/Resources/Services/` and `Modules/Plans/Resources/Plans/`, and no Swift names a product, a dataset or a number Cloudflare can change.
+Overmind is a macOS menu bar app that watches a Cloudflare account's usage and bill, read-only. It is ClaudeBar's and AgentNexus's sibling. **Cloudflare products and plans are JSON definitions** in `Modules/Services/Resources/Services/` and `Modules/Plans/Resources/Plans/`, and no Swift names a product, a dataset or a number Cloudflare can change.
 
 ## Build & test
 
@@ -10,7 +10,7 @@ Edge Meter is a macOS menu bar app that watches a Cloudflare account's usage and
 tuist install && tuist generate          # generated *.xcodeproj / *.xcworkspace are git-ignored
 tuist test                               # every test target
 tuist test Limits                        # one scheme
-xcodebuild test -workspace EdgeMeter.xcworkspace -scheme EdgeMeter-Workspace \
+xcodebuild test -workspace Overmind.xcworkspace -scheme Overmind-Workspace \
   -destination 'platform=macOS,arch=arm64'                    # bypasses Tuist's result cache
 ```
 
@@ -57,9 +57,9 @@ UI changes come with a mockup in `design-concept/` first.
 ## Privacy and logging
 
 - **Never log, store outside the Keychain, or commit a token**, an `Authorization` header, an account ID or an invoice. Fixtures use placeholders.
-- Use `AppLog.<category>` (`monitor`, `analytics`, `billing`, `alerts`). Log that something happened, never what it carried. A refusal logs its HTTP status and the path's first word: `log show --last 1h --predicate 'subsystem == "com.tddworks.edgemeter"'`.
-- Live checks against a real account run only with `TEST_RUNNER_EDGEMETER_LIVE_TOKEN` (and `…_LIVE_ACCOUNT` for Analytics) set; they print numbers, never ids.
-- Screenshots come from demo data only: `EDGEMETER_DEMO=1 EDGEMETER_SNAPSHOT_DIR=$PWD/design-concept/screenshots <app>/Contents/MacOS/EdgeMeter`.
+- Use `AppLog.<category>` (`monitor`, `analytics`, `billing`, `alerts`). Log that something happened, never what it carried. A refusal logs its HTTP status and the path's first word: `log show --last 1h --predicate 'subsystem == "com.tddworks.overmind"'`.
+- Live checks against a real account run only with `TEST_RUNNER_OVERMIND_LIVE_TOKEN` (and `…_LIVE_ACCOUNT` for Analytics) set; they print numbers, never ids.
+- Screenshots come from demo data only: `OVERMIND_DEMO=1 OVERMIND_SNAPSHOT_DIR=$PWD/design-concept/screenshots <app>/Contents/MacOS/Overmind`.
 
 ## Gotchas
 

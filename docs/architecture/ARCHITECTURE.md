@@ -1,10 +1,10 @@
 ---
-description: The map of Edge Meter's design. Five documents are read in order, from the person's question to how each case runs, and this map says which one to open for a change. Start here before any design or code change.
+description: The map of Overmind's design. Five documents are read in order, from the person's question to how each case runs, and this map says which one to open for a change. Start here before any design or code change.
 ---
 
-# Edge Meter — architecture
+# Overmind — architecture
 
-Edge Meter is a macOS menu bar app that watches a Cloudflare account's
+Overmind is a macOS menu bar app that watches a Cloudflare account's
 usage and bill: the limit closest to running out, a warning before it does,
 where the use came from, and what the month costs. It reads with a read-only
 token and never changes anything. It is ClaudeBar's and AgentNexus's sibling,
@@ -24,7 +24,7 @@ may cite an earlier one, never the reverse.
 | 5 | [ENGINE_DESIGN.md](ENGINE_DESIGN.md) | **How does each case work?** Reads, allowances, prices, breakdowns, and Cloudflare's APIs as verified |
 
 **The mockup** for every screen named here:
-[design-concept/edgemeter-pop.html](../../design-concept/edgemeter-pop.html).
+[design-concept/overmind-pop.html](../../design-concept/overmind-pop.html).
 
 ## Why this order
 

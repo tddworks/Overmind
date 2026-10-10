@@ -88,7 +88,7 @@ public struct AlertSettings: Sendable, Equatable, Codable {
     public static let offered = [50, 75, 90]
 }
 
-/// A notification Edge Meter sent.
+/// A notification Overmind sent.
 public struct Warning: Sendable, Equatable {
     public let key: Key
     public let title: String

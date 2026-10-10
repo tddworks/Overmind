@@ -33,7 +33,7 @@ struct LimitCard: View {
 
 ```swift
 @main
-struct EdgeMeterApp: App {
+struct OvermindApp: App {
     @State private var account: Account     // built in init(), the composition root
     var body: some Scene {
         MenuBarExtra { PopoverView(account: account) } label: { MenuBarLabel(account: account) }

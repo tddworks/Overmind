@@ -1,8 +1,8 @@
 ---
-description: How Edge Meter runs. It covers the pieces, each with one job, and the flows: connect, the refresh, a warning, opening a service tab, the bill, plus concurrency, errors and logging. Read before adding a piece or changing a flow.
+description: How Overmind runs. It covers the pieces, each with one job, and the flows: connect, the refresh, a warning, opening a service tab, the bill, plus concurrency, errors and logging. Read before adding a piece or changing a flow.
 ---
 
-# Edge Meter — target architecture
+# Overmind — target architecture
 
 > **#3 of 5** in [the design](ARCHITECTURE.md) · **Answers:** how it runs:
 > the pieces and the flows · **Builds on:** [CANONICAL_MODEL.md](CANONICAL_MODEL.md)
@@ -50,10 +50,10 @@ description: How Edge Meter runs. It covers the pieces, each with one job, and t
 | `Account` | the root; owns the refresh and every law that spans services | Monitor | all of the above |
 | `Refresher` | tell `Account.refresh` every 5 minutes, on wake and on *Refresh* | Monitor | a clock → commands |
 | `TokenVault` (port) | keep the token | Monitor | Keychain |
-| `SettingsStore` (port) | keep the choices and the sent-warnings log | Monitor | `~/.edgemeter/settings.json` |
+| `SettingsStore` (port) | keep the choices and the sent-warnings log | Monitor | `~/.overmind/settings.json` |
 | `SettingsView` | the Settings window: renders `Account` and tells it, like the popover | App | — |
 | `LoginItem` | *Start at login*, over `SMAppService.mainApp` | App | the system's login items |
-| `Updater` | Sparkle: checks the appcast, installs signed updates | App | `https://tddworks.github.io/EdgeMeter/appcast.xml` |
+| `Updater` | Sparkle: checks the appcast, installs signed updates | App | `https://tddworks.github.io/Overmind/appcast.xml` |
 
 ## 3 · Flows
 

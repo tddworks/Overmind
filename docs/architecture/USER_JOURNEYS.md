@@ -1,8 +1,8 @@
 ---
-description: Who uses Edge Meter and what they ask. It covers the people and the moments, from connecting a Cloudflare account and glancing at the menu bar to being warned, finding the cause and reading the bill, plus the words each screen prints. Read first.
+description: Who uses Overmind and what they ask. It covers the people and the moments, from connecting a Cloudflare account and glancing at the menu bar to being warned, finding the cause and reading the bill, plus the words each screen prints. Read first.
 ---
 
-# Edge Meter — user journeys
+# Overmind — user journeys
 
 > **#1 of 5** in [the design](ARCHITECTURE.md) · **Answers:** who is asking,
 > and what · **Builds on:** nothing; every other document answers this one ·
@@ -10,7 +10,7 @@ description: Who uses Edge Meter and what they ask. It covers the people and the
 >
 > Where a journey and the model disagree, the journey wins and the model moves.
 >
-> **The mockup:** [edgemeter-pop.html](../../design-concept/edgemeter-pop.html):
+> **The mockup:** [overmind-pop.html](../../design-concept/overmind-pop.html):
 > the menu bar states, the popover (Today · D1 · Worker · Bill), the
 > notifications and the *Connect Cloudflare* sheet.
 
@@ -36,7 +36,7 @@ do, the command that lands on the domain, and the node that answers.
 
 | # | Moment | Sees | Does | Command | Node |
 |---|---|---|---|---|---|
-| 1 | Lee opens Edge Meter the first time | *Connect Cloudflare* · *API token* · *Token needs: Account Analytics · D1 · Workers Scripts · Billing — READ* · *Edge Meter only reads* | pastes a token | `account.connect(token)` | `Connection` |
+| 1 | Lee opens Overmind the first time | *Connect Cloudflare* · *API token* · *Token needs: Account Analytics · D1 · Workers Scripts · Billing — READ* · *Overmind only reads* | pastes a token | `account.connect(token)` | `Connection` |
 | 2 | The token answers for two accounts | *Account ▾ tddworks · personal* | picks *tddworks* | `account.choose(accountID)` | `Connection` |
 | 3 | The token can't read billing | *Connected · Bill needs Billing Read* | carries on | — | `Connection.missing` — a reading the token can't do is a reason on that tab, never a failed connect |
 | 4 | Kai glances at the menu bar | *D1 18%* | nothing | `account.menuBar` | the closest `Limit` |
@@ -52,7 +52,7 @@ do, the command that lands on the domain, and the node that answers.
 | 14 | Kai picks *All workers* in the strip | the breakdowns cover every Worker; the limits don't change | — | `account.focus = .allWorkers` | `Focus` — a limit is the account's, a focus only narrows breakdowns |
 | 15 | Lee opens *Bill* | *October so far $0.00* · *Forecast · Oct 31* · *IF YOU UPGRADED* · *Free is enough* or *Free stopped you on 2 days* · *Free · YOUR PLAN $0.00 this month* · *Workers Paid · $5 / mo · $5.00 this month, if you'd been on it* · *This month on Workers Paid*, one line per limit · *Invoices* | reads | `account.bill` · `bill.verdict` · `quote.lines` | `Bill` · `Plan` |
 | 15c | Lee taps a plan card | the chosen card is purple; below it, *This month on Free* (each limit's allowance, busiest day, days it stopped you, $0.00) or *This month on Workers Paid* (the subscription and one line per limit) | taps the other card | — (the view's choice) | `Bill` · `Quote` |
-| 15a | Lee decides to upgrade | at the foot of *This month on Workers Paid*: *Upgrade on Cloudflare ↗* · *Edge Meter only reads: Cloudflare takes the payment* (only under a plan you are not on) | clicks it; pays on Cloudflare | — | the plan file's `upgradeURL` |
+| 15a | Lee decides to upgrade | at the foot of *This month on Workers Paid*: *Upgrade on Cloudflare ↗* · *Overmind only reads: Cloudflare takes the payment* (only under a plan you are not on) | clicks it; pays on Cloudflare | — | the plan file's `upgradeURL` |
 | 15b | Lee comes back after upgrading | *WORKERS PAID* in the header; monthly allowances on the cards | nothing; no restart | `account.openBill(at:)` · `refresh(at:)` | `Account` re-reads the plan (law 18) |
 | 16 | The Mac slept for a night | the strip reads *STALE · read 9h ago* until the next read lands | nothing | `account.refresh()` | `Connection.freshness` |
 | 17 | The token is revoked | *Cloudflare refused the token* · *Connect again* | pastes a new one | `account.connect(token)` | `Connection` |
@@ -60,7 +60,7 @@ do, the command that lands on the domain, and the node that answers.
 | 18 | Kai opens *⚙ → Settings…* | the Settings window: *Account* · *Reading* · *Warnings* · *General* | — | — | the same `Account` the popover reads |
 | 19 | Kai wants fewer reads | *Read every 5 min · 10 · 15 · 30*; *STALE* waits for two missed reads | picks *15* | `account.setInterval(minutes:)` | `Account.interval` (law 17) |
 | 20 | Lee wants it there after a restart | *Start at login* | turns it on | — | the system's login items (`LoginItem`, App) |
-| 22 | A new version is out | Sparkle's *A new version of Edge Meter is available* · *Check now* in Settings | installs | — | `Updater` (App, Sparkle) |
+| 22 | A new version is out | Sparkle's *A new version of Overmind is available* · *Check now* in Settings | installs | — | `Updater` (App, Sparkle) |
 
 ## 3 · What the person never has to know
 
@@ -80,7 +80,7 @@ do, the command that lands on the domain, and the node that answers.
 | **Used** — *912k* | how much of the allowance this period has used | consumption |
 | **Pace** — *on pace for 31% by midnight* | where today's rate ends the period | forecast (that's the Bill's word) |
 | **Level** — *OK · WATCH · ACT NOW* | under 50% · 50 to 90% · 90% and over | |
-| **Warning** | a notification Edge Meter sent | alert (the setting is *Warn me at*) |
+| **Warning** | a notification Overmind sent | alert (the setting is *Warn me at*) |
 | **Service** — *D1*, *Worker* | a Cloudflare product with its own tab | product |
 | **Breakdown** | a chart or list that says where a limit's use came from | report |
 | **Deployment** — *d605dc93* | a Worker version going live, pinned on charts | release |
@@ -95,5 +95,5 @@ do, the command that lands on the domain, and the node that answers.
 - **Several accounts at once.** One connected account; switching is *Connect again*.
 - **Services other than Workers and D1.** KV, R2, Queues and Durable Objects are one JSON file each once someone needs them ([ENGINE_DESIGN](ENGINE_DESIGN.md)); none ships in v1.
 - **The `cf` CLI's login.** v1 connects with an API token. `Analytics` and `BillingAPI` are ports, so a `cf`-backed credential or adapter can come later without touching the domain.
-- **Changing the plan from Edge Meter.** Cloudflare's API can (`POST`/`PUT`/`DELETE /accounts/{id}/subscriptions`), but it needs *Billing: Edit*, which can cancel any subscription, and the payment belongs in Cloudflare's own flow. Decided 2026-10-09: a link to Cloudflare's plans page instead; revisit as an opt-in capability once a Paid account can verify it.
+- **Changing the plan from Overmind.** Cloudflare's API can (`POST`/`PUT`/`DELETE /accounts/{id}/subscriptions`), but it needs *Billing: Edit*, which can cancel any subscription, and the payment belongs in Cloudflare's own flow. Decided 2026-10-09: a link to Cloudflare's plans page instead; revisit as an opt-in capability once a Paid account can verify it.
 - **Rate limits.** Cloudflare keeps no analytics for Rate Limiting bindings, and a request the Worker answers with 429 is a *success* to Workers analytics. Once a Worker writes an Analytics Engine data point per block, a *Blocked by rate limit* breakdown is one entry in `worker.json`. Decided 2026-10-09: not in v1.

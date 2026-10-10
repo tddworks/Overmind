@@ -47,7 +47,7 @@ struct ServiceDefinitionTests {
         #expect(acme.breakdowns[0].kind == .series(limit: "acme.widgets", by: .day, last: 7))
     }
 
-    @Test func `should refuse a limit that is read in a way Edge Meter doesn't know`() {
+    @Test func `should refuse a limit that is read in a way Overmind doesn't know`() {
         let odd = Self.acme.replacingOccurrences(of: "\"sum\": { \"dataset\"", with: "\"median\": { \"dataset\"")
         #expect(throws: DefinitionError.self) { try ServiceDefinition(json: Data(odd.utf8)) }
     }

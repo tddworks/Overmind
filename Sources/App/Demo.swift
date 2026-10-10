@@ -4,10 +4,10 @@ import Billing
 import Alerts
 import Monitor
 
-/// Made-up data for screenshots and trying the app without an account (EDGEMETER_DEMO=1).
+/// Made-up data for screenshots and trying the app without an account (OVERMIND_DEMO=1).
 /// Nothing here reaches Cloudflare, the Keychain or the settings file.
 enum Demo {
-    static let isOn = ProcessInfo.processInfo.environment["EDGEMETER_DEMO"] == "1"
+    static let isOn = ProcessInfo.processInfo.environment["OVERMIND_DEMO"] == "1"
 
     /// The demo's fixed clock, so the screenshots match the mockup.
     static let now: Date? = isOn ? ISO8601DateFormatter().date(from: "2026-10-09T14:20:00Z") : nil

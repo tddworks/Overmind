@@ -5,8 +5,8 @@
 # Usage: ./scripts/sign-app.sh <app-bundle> <signing-identity> [entitlements-path]
 #
 # Example:
-#   ./scripts/sign-app.sh EdgeMeter.app "Developer ID Application: Your Name (TEAMID)"
-#   ./scripts/sign-app.sh EdgeMeter.app "Developer ID Application: Your Name" Sources/App/entitlements.plist
+#   ./scripts/sign-app.sh Overmind.app "Developer ID Application: Your Name (TEAMID)"
+#   ./scripts/sign-app.sh Overmind.app "Developer ID Application: Your Name" Sources/App/entitlements.plist
 #
 
 set -e
@@ -25,7 +25,7 @@ if [ -z "$APP_BUNDLE" ] || [ -z "$SIGNING_IDENTITY" ]; then
     echo "Usage: $0 <app-bundle> <signing-identity> [entitlements-path]"
     echo ""
     echo "Arguments:"
-    echo "  app-bundle        Path to the .app bundle (e.g., EdgeMeter.app)"
+    echo "  app-bundle        Path to the .app bundle (e.g., Overmind.app)"
     echo "  signing-identity  Code signing identity (e.g., 'Developer ID Application: Name (TEAMID)')"
     echo "  entitlements      Path to entitlements.plist (default: Sources/App/entitlements.plist)"
     echo ""

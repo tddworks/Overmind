@@ -14,4 +14,4 @@ description: Connecting a Cloudflare account — the API token and its permissio
 | *The token can't read usage (403)* | it lacks Account Analytics | add *Account Analytics: Read* |
 | *Couldn't read the token back from the Keychain* | the Keychain refused this build | connect again; a signed release doesn't hit this |
 
-Logs: `log show --last 1h --predicate 'subsystem == "com.tddworks.edgemeter"'` (codes only, never the token).
+Logs: `log show --last 1h --predicate 'subsystem == "com.tddworks.overmind"'` (codes only, never the token).

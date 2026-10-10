@@ -1,5 +1,5 @@
 ---
-description: The Settings window — account, Worker focus, how often to read, warnings, start at login and updates. Read to change how Edge Meter behaves.
+description: The Settings window — account, Worker focus, how often to read, warnings, start at login and updates. Read to change how Overmind behaves.
 ---
 
 # Settings
@@ -13,4 +13,4 @@ Open it from the popover: **⚙ → Settings…**. Changes save at once.
 | **Warnings** | *Warn me at 50% 75% 90%* · *Warn on pace* · *Notifications* |
 | **General** | *Start at login* · *Check for updates automatically* · *Check now* |
 
-Everything but *Start at login* and updates lives in `~/.edgemeter/settings.json`.
+Everything but *Start at login* and updates lives in `~/.overmind/settings.json`.

@@ -43,8 +43,8 @@ jobs:
       - name: Test
         run: |
           xcodebuild test \
-            -workspace EdgeMeter.xcworkspace \
-            -scheme EdgeMeter-Workspace \
+            -workspace Overmind.xcworkspace \
+            -scheme Overmind-Workspace \
             -destination 'platform=macOS,arch=arm64' \
             -derivedDataPath .derivedData \
             -skipMacroValidation

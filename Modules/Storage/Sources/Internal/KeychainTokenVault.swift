@@ -4,7 +4,7 @@ import Monitor
 
 /// The `TokenVault` port over the login Keychain: one generic password (CANONICAL law 15).
 struct KeychainTokenVault: TokenVault {
-    let service = "com.tddworks.edgemeter"
+    let service = "com.tddworks.overmind"
     let account = "cloudflare-api-token"
 
     private var query: [String: Any] {

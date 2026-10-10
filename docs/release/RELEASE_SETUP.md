@@ -1,5 +1,5 @@
 ---
-description: How to release Edge Meter — the GitHub secrets, tagging a version, what release.yml does, and the one-time setup. Read before the first release or when a release fails.
+description: How to release Overmind — the GitHub secrets, tagging a version, what release.yml does, and the one-time setup. Read before the first release or when a release fails.
 ---
 
 # Release setup
@@ -20,7 +20,7 @@ explains each secret step by step).
 
 ## One-time setup
 
-1. Create `tddworks/EdgeMeter` on GitHub and push `main`.
+1. Create `tddworks/Overmind` on GitHub and push `main`.
 2. Add the secrets above.
 3. **Settings → Pages → Source: GitHub Actions**, so the release can publish `docs/appcast.xml`.
 

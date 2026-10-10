@@ -1,11 +1,11 @@
 ---
-description: How Edge Meter's docs are layered and where each kind of content lives. It adopts ClaudeBar's documentation design and records only what differs. Read before adding or restructuring any doc.
+description: How Overmind's docs are layered and where each kind of content lives. It adopts ClaudeBar's documentation design and records only what differs. Read before adding or restructuring any doc.
 ---
 
 # Documentation Design
 
 > Adopted from [ClaudeBar's documentation design](https://github.com/tddworks/ClaudeBar/blob/main/docs/documentation-design/README.md),
-> as AgentNexus did. This file holds **only what Edge Meter does differently**.
+> as AgentNexus did. This file holds **only what Overmind does differently**.
 
 ## Goal
 
@@ -14,7 +14,7 @@ between two options, pick the one where *the next change touches fewer places*.
 
 ## What differs
 
-| Topic | ClaudeBar | Edge Meter | Why |
+| Topic | ClaudeBar | Overmind | Why |
 |---|---|---|---|
 | Units of docs | providers, then features | **services, then features** | A service (`d1`, `workers`) is what drifts with Cloudflare |
 | A service `design.md` covers | — | its datasets and fields as found by introspection, what the dashboard shows that the API doesn't | the code can't explain Cloudflare's schema |

@@ -4,13 +4,13 @@ import Analytics
 import Billing
 @testable import Monitor
 
-/// The whole flow against Cloudflare, only when `EDGEMETER_LIVE_TOKEN` is set: connect, read,
+/// The whole flow against Cloudflare, only when `OVERMIND_LIVE_TOKEN` is set: connect, read,
 /// open each tab, price the month. Keeps nothing; prints numbers, never ids.
 @MainActor
-@Suite(.enabled(if: ProcessInfo.processInfo.environment["EDGEMETER_LIVE_TOKEN"] != nil))
+@Suite(.enabled(if: ProcessInfo.processInfo.environment["OVERMIND_LIVE_TOKEN"] != nil))
 struct LiveAccountTests {
     @Test func `should connect, read and price a real account end to end`() async throws {
-        let token = ProcessInfo.processInfo.environment["EDGEMETER_LIVE_TOKEN"] ?? ""
+        let token = ProcessInfo.processInfo.environment["OVERMIND_LIVE_TOKEN"] ?? ""
         let vault = FakeVault()
         let bearer: @Sendable () async throws -> String = { token }
         let account = try Account(services: .builtIns(), plans: .builtIns(), analytics: Analytics.make(bearer: bearer),

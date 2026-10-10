@@ -1,8 +1,8 @@
 ---
-description: How Edge Meter's code is cut into modules. There is one module per bounded context, each with its domain at the root and its implementations in Internal/; there is no Infrastructure layer. Covers the factories, the dependency rules, ports and testing. Read before adding a file, a type or a module.
+description: How Overmind's code is cut into modules. There is one module per bounded context, each with its domain at the root and its implementations in Internal/; there is no Infrastructure layer. Covers the factories, the dependency rules, ports and testing. Read before adding a file, a type or a module.
 ---
 
-# Edge Meter — the modular design
+# Overmind — the modular design
 
 > **#4 of 5** in [the design](ARCHITECTURE.md) · **Answers:** where the code
 > lives: which module a file goes in, what a module shows and hides, and what
@@ -65,7 +65,7 @@ Refresher(account: account, every: .minutes(5)).start()
 | `Storage` | generic | `Storage.makeVault()` (`TokenVault`), `.makeSettings()` (`SettingsStore`) | `KeychainTokenVault`, `JSONSettingsFile` |
 | `Diagnostics` | cross-cutting | `AppLog` and its categories (OSLog) | — |
 | `Monitor` | core · the root | `Account` (`@MainActor @Observable`), `Connection`, `Focus`, `MenuBarState`, `Refresher`, the ports `TokenVault` · `SettingsStore` | — |
-| `EdgeMeter` (App) | the composition root | SwiftUI views (popover, Settings), the Pop theme (AgentNexus's), the menu-bar label, `LoginItem`, `Updater` (Sparkle, the only module that links it) | — |
+| `Overmind` (App) | the composition root | SwiftUI views (popover, Settings), the Pop theme (AgentNexus's), the menu-bar label, `LoginItem`, `Updater` (Sparkle, the only module that links it) | — |
 
 The HTTP call itself is a small `internal` type in each of `Analytics` and
 `Billing`, so neither imports the other. The two copies are a few lines;
@@ -83,7 +83,7 @@ sharing them would cost a module.
 | `Alerts` | `Measures` · `Limits` |
 | `Storage` | `Measures` · `Alerts` · `Monitor` (it implements their ports) |
 | `Monitor` | all of the above but `Storage` |
-| `EdgeMeter` (App) | everything; it is the only place `Storage` meets `Monitor` |
+| `Overmind` (App) | everything; it is the only place `Storage` meets `Monitor` |
 | any | `Diagnostics` |
 
 

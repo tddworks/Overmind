@@ -1,8 +1,8 @@
 ---
 name: add-service
 description: |
-  Add a Cloudflare product (KV, R2, Queues, Durable Objects …) to Edge Meter as a JSON service file plus its allowances in each plan file. Use this skill when:
-  (1) Someone wants Edge Meter to watch another Cloudflare product
+  Add a Cloudflare product (KV, R2, Queues, Durable Objects …) to Overmind as a JSON service file plus its allowances in each plan file. Use this skill when:
+  (1) Someone wants Overmind to watch another Cloudflare product
   (2) Cloudflare changed a dataset, field, limit or price
   (3) User asks "how do I add a service" or "track X on Cloudflare"
 ---

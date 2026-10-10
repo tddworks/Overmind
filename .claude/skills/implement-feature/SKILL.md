@@ -1,7 +1,7 @@
 ---
 name: implement-feature
 description: |
-  Guide for implementing features in Edge Meter following architecture-first design, TDD, rich domain models, and Swift 6.2 patterns. Use this skill when:
+  Guide for implementing features in Overmind following architecture-first design, TDD, rich domain models, and Swift 6.2 patterns. Use this skill when:
   (1) Adding new functionality to the app
   (2) Creating domain models that follow the person's mental model
   (3) Building SwiftUI views that consume domain models directly
@@ -9,7 +9,7 @@ description: |
   (5) Implementing anything that spans modules (Limits, Analytics, Billing, Alerts, Monitor …) and the App
 ---
 
-# Implement Feature in Edge Meter
+# Implement Feature in Overmind
 
 Adapted from ClaudeBar's and AgentNexus's skill of the same name; the method is the same.
 
@@ -110,7 +110,7 @@ struct PaceTests {
 
 ```bash
 tuist test Limits            # one module while working
-xcodebuild test -workspace EdgeMeter.xcworkspace -scheme EdgeMeter-Workspace \
+xcodebuild test -workspace Overmind.xcworkspace -scheme Overmind-Workspace \
   -destination 'platform=macOS,arch=arm64'   # the final check
 ```
 

@@ -4,12 +4,12 @@ import Measures
 import Services
 @testable import Analytics
 
-/// Runs the real queries against Cloudflare, only when `EDGEMETER_LIVE_TOKEN` and
-/// `EDGEMETER_LIVE_ACCOUNT` are set. Prints numbers, never the token or the account.
-@Suite(.enabled(if: ProcessInfo.processInfo.environment["EDGEMETER_LIVE_TOKEN"] != nil))
+/// Runs the real queries against Cloudflare, only when `OVERMIND_LIVE_TOKEN` and
+/// `OVERMIND_LIVE_ACCOUNT` are set. Prints numbers, never the token or the account.
+@Suite(.enabled(if: ProcessInfo.processInfo.environment["OVERMIND_LIVE_TOKEN"] != nil))
 struct LiveReadTests {
-    let token = ProcessInfo.processInfo.environment["EDGEMETER_LIVE_TOKEN"] ?? ""
-    let account = ProcessInfo.processInfo.environment["EDGEMETER_LIVE_ACCOUNT"] ?? ""
+    let token = ProcessInfo.processInfo.environment["OVERMIND_LIVE_TOKEN"] ?? ""
+    let account = ProcessInfo.processInfo.environment["OVERMIND_LIVE_ACCOUNT"] ?? ""
 
     @Test func `should read every built-in limit from a real account`() async throws {
         let api = Analytics.make(bearer: { [token] in token })

@@ -1,7 +1,7 @@
 import ServiceManagement
 import Diagnostics
 
-/// *Start at login*, over the system's login items. The system owns it; Edge Meter only asks.
+/// *Start at login*, over the system's login items. The system owns it; Overmind only asks.
 @MainActor @Observable
 final class LoginItem {
     private(set) var isOn = SMAppService.mainApp.status == .enabled

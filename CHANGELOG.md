@@ -1,8 +1,12 @@
 # Changelog
 
-All notable changes to Edge Meter are recorded here, in the reader's order: Removed → Changed → Fixed → Added.
+All notable changes to Overmind are recorded here, in the reader's order: Removed → Changed → Fixed → Added.
 
 ## [Unreleased]
+
+### Changed
+
+- Edge Meter is now Overmind. It is a new app to macOS: download it once from [Releases](https://github.com/tddworks/Overmind/releases) (Edge Meter won't offer the update), paste your API token again, and set your warnings and Start at login again. Delete Edge Meter.app afterwards.
 
 ---
 
@@ -10,11 +14,11 @@ All notable changes to Edge Meter are recorded here, in the reader's order: Remo
 
 ### Changed
 
-- The Bill tab answers "should I upgrade?": Free is enough, or the days it stopped you; choose Free or Workers Paid to see that plan's month line by line → [docs](https://github.com/tddworks/EdgeMeter/blob/main/docs/features/bill/README.md)
+- The Bill tab answers "should I upgrade?": Free is enough, or the days it stopped you; choose Free or Workers Paid to see that plan's month line by line → [docs](https://github.com/tddworks/Overmind/blob/main/docs/features/bill/README.md)
 
 ### Added
 
-- Upgrade on Cloudflare ↗ under Workers Paid's month, and the plan is re-read when the Bill tab opens, so an upgrade shows without a restart → [docs](https://github.com/tddworks/EdgeMeter/blob/main/docs/features/bill/README.md)
+- Upgrade on Cloudflare ↗ under Workers Paid's month, and the plan is re-read when the Bill tab opens, so an upgrade shows without a restart → [docs](https://github.com/tddworks/Overmind/blob/main/docs/features/bill/README.md)
 
 ## Older releases
 
