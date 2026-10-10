@@ -17,10 +17,11 @@ explains each secret step by step).
 | `APP_STORE_CONNECT_API_KEY_P8` | App Store Connect API key, base64 (notarization) | yes |
 | `APP_STORE_CONNECT_KEY_ID` · `APP_STORE_CONNECT_ISSUER_ID` | the key's ids | yes |
 | `SPARKLE_EDDSA_PRIVATE_KEY` | signs updates; its public half is `SUPublicEDKey` | yes ([why](../features/updates/design.md)) |
+| `TAP_GITHUB_TOKEN` | a token that can push to `tddworks/homebrew-tap`, for the cask | baguette's and asc-cli's |
 
 ## One-time setup
 
-1. Create `tddworks/Overmind` on GitHub and push `main`.
+1. Create `tddworks/Overmind` on GitHub, **public**, and push `main`. Sparkle and Homebrew download the release's DMG without a login, so a private repo answers them 404.
 2. Add the secrets above.
 3. **Settings → Pages → Source: GitHub Actions**, so the release can publish `docs/appcast.xml`.
 
@@ -29,3 +30,4 @@ explains each secret step by step).
 1. Move the lines under `## [Unreleased]` in `CHANGELOG.md` into shape.
 2. Tag and push: `git tag v0.1.0 && git push origin v0.1.0` (or run *Release* by hand with a version).
 3. The workflow tests, builds a universal app, signs it with hardened runtime, notarizes and staples it, makes a ZIP and a DMG, publishes the GitHub Release with the CHANGELOG's notes, promotes `[Unreleased]` to the version, and updates the appcast. A version with `-beta` goes to Sparkle's beta channel.
+4. A stable version then updates the cask in `tddworks/homebrew-tap` (`.github/workflows/update-homebrew-tap.yml`, from `.github/homebrew/overmind.rb.template`), so `brew install --cask tddworks/tap/overmind` gets it. Run *Update Homebrew Tap* by hand to republish one.

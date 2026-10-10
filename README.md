@@ -14,7 +14,11 @@ database and bucket on the account at once.
 
 ## Install
 
-Download the DMG from [Releases](https://github.com/tddworks/Overmind/releases), open it and drag
+```bash
+brew install --cask tddworks/tap/overmind
+```
+
+Or download the DMG from [Releases](https://github.com/tddworks/Overmind/releases), open it and drag
 Overmind to Applications. It updates itself (Settings → General).
 
 Or build from source (macOS 15+, Xcode, [Tuist](https://tuist.dev)):

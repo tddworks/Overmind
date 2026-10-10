@@ -1,0 +1,49 @@
+# Publishes the Overmind cask to tddworks/homebrew-tap: `brew install --cask tddworks/tap/overmind`.
+# Called by release.yml after a release; run it by hand to republish one. Needs TAP_GITHUB_TOKEN,
+# a token that can push to tddworks/homebrew-tap.
+name: Update Homebrew Tap
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 0.2.1)'
+        required: true
+        type: string
+
+jobs:
+  update-tap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Update Homebrew tap
+        env:
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${VERSION#v}"
+          SHA256=$(curl -sfL "https://github.com/tddworks/Overmind/releases/download/v${VERSION}/Overmind-${VERSION}.dmg.sha256" | awk '{print $1}')
+          if [[ ! "$SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "Invalid DMG checksum: '${SHA256}'"
+            exit 1
+          fi
+
+          git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/tddworks/homebrew-tap.git homebrew-tap
+
+          mkdir -p homebrew-tap/Casks
+          sed -e "s/__VERSION__/${VERSION}/g" \
+              -e "s/__SHA256__/${SHA256}/g" \
+              .github/homebrew/overmind.rb.template > homebrew-tap/Casks/overmind.rb
+
+          cd homebrew-tap
+          git config user.name "itshan"
+          git config user.email "itshan@tddworks.com"
+          git add Casks/overmind.rb
+          git commit -m "Update overmind to ${VERSION}" || echo "No changes to commit"
+          git push

@@ -4,6 +4,10 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 
 ## [Unreleased]
 
+### Added
+
+- Install with Homebrew: `brew install --cask tddworks/tap/overmind`.
+
 ---
 
 ## [0.2.1] - 2026-10-10

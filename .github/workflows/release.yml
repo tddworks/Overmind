@@ -36,6 +36,9 @@ jobs:
   release:
     name: Build, Sign, Notarize & Release
     runs-on: macos-26
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
 
     steps:
       - name: Checkout
@@ -522,3 +525,12 @@ jobs:
           # Remove sensitive files
           rm -f "$RUNNER_TEMP/certificate.p12" || true
           rm -f "$RUNNER_TEMP/AuthKey_"*.p8 || true
+
+  homebrew:
+    name: Update Homebrew Tap
+    needs: release
+    if: ${{ needs.release.outputs.is_prerelease != 'true' }}
+    uses: ./.github/workflows/update-homebrew-tap.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
