@@ -1,6 +1,7 @@
 // Draws Overmind's app icon in the Pop style: the logo (design-concept/logos/overmind-cloud-eye-concept.png,
 // an eye in a cloud on an orange tile) cut to a clean tile on the macOS icon grid, with an ink outline
-// and hard shadow. Writes Sources/App/Resources/Assets.xcassets/AppIcon.appiconset.
+// and hard shadow. Writes Sources/App/Resources/Assets.xcassets/AppIcon.appiconset, and Logo.imageset:
+// the tile alone, for the popover's header, which draws its own outline and shadow.
 // Run: swift scripts/make-app-icon.swift
 import AppKit
 
@@ -52,4 +53,24 @@ try JSONSerialization.data(withJSONObject: contents, options: [.prettyPrinted, .
 let catalog: [String: Any] = ["info": ["author": "xcode", "version": 1]]
 try JSONSerialization.data(withJSONObject: catalog, options: [.prettyPrinted])
     .write(to: folder.deletingLastPathComponent().appendingPathComponent("Contents.json"))
-print("wrote \(images.count) icons")
+
+let logoFolder = folder.deletingLastPathComponent().appendingPathComponent("Logo.imageset")
+try FileManager.default.createDirectory(at: logoFolder, withIntermediateDirectories: true)
+var logoImages: [[String: String]] = []
+for scale in [1, 2] {
+    let size = 64 * scale, name = "logo\(scale == 2 ? "@2x" : "").png"
+    let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
+                               samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+                               bytesPerRow: 0, bitsPerPixel: 0)!
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+    NSGraphicsContext.current?.imageInterpolation = .high
+    logo.draw(in: NSRect(x: 0, y: 0, width: size, height: size), from: logoTile, operation: .copy, fraction: 1)
+    NSGraphicsContext.restoreGraphicsState()
+    try rep.representation(using: .png, properties: [:])!.write(to: logoFolder.appendingPathComponent(name))
+    logoImages.append(["idiom": "universal", "scale": "\(scale)x", "filename": name])
+}
+try JSONSerialization.data(withJSONObject: ["images": logoImages, "info": ["author": "xcode", "version": 1]],
+                           options: [.prettyPrinted, .sortedKeys])
+    .write(to: logoFolder.appendingPathComponent("Contents.json"))
+print("wrote \(images.count) icons and the logo")

@@ -66,8 +66,7 @@ struct PopoverView: View {
 
     private func header(_ now: Date) -> some View {
         HStack(spacing: 9) {
-            Badge(glyph: "☁", fill: Pop.edge, size: 34, foreground: .white)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Pop.ink).offset(x: 2, y: 2))
+            Logo(size: 34)
             VStack(alignment: .leading, spacing: 0) {
                 Text("Overmind").font(Pop.display(21)).foregroundStyle(Pop.ink)
                 Text(account.summary.map { "\($0.name) · Cloudflare account" } ?? "Cloudflare usage and billing")

@@ -64,7 +64,8 @@ button{font:inherit;color:inherit}
 .popover::before{content:"";position:absolute;top:-11px;right:70px;width:18px;height:18px;background:var(--cream);border-left:3px solid var(--ink);border-top:3px solid var(--ink);transform:rotate(45deg)}
 .p-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
 .p-brand{display:flex;align-items:center;gap:9px}
-.logo{width:34px;height:34px;border:var(--b);border-radius:11px;background:var(--cf);color:#fff;display:grid;place-items:center;font-size:17px;font-weight:800;box-shadow:2px 2px 0 var(--ink)}
+.logo{width:34px;height:34px;border:var(--b);border-radius:11px;background:var(--cf);box-shadow:2px 2px 0 var(--ink);overflow:hidden;flex:none}
+.logo img{width:100%;height:100%;display:block}
 .p-brand .display{font-size:22px}
 .p-brand small{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-top:-2px}
 .plan-chip{border:2px solid var(--ink);border-radius:999px;padding:5px 11px;font-size:10.5px;font-weight:800;background:var(--mint);box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
@@ -201,7 +202,7 @@ button{font:inherit;color:inherit}
 
 /* side pieces */
 .note{width:330px;max-width:100%;padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
-.note .logo{width:30px;height:30px;font-size:14px}
+.note .logo{width:30px;height:30px}
 .note h5{font-size:12.5px;font-weight:800}
 .note p{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:3px;line-height:1.45}
 .note .when{margin-left:auto;font-size:10px;font-weight:800;color:var(--muted);white-space:nowrap}
@@ -294,7 +295,7 @@ button{font:inherit;color:inherit}
       <div class="popover" id="pop">
         <div class="p-head">
           <div class="p-brand">
-            <div class="logo">☁</div>
+            <div class="logo"><img src="../Sources/App/Resources/Assets.xcassets/Logo.imageset/logo@2x.png" alt="Overmind"></div>
             <div><div class="display">Overmind</div><small>tddworks · Cloudflare account</small></div>
           </div>
           <span class="plan-chip" id="planChip">FREE · resets in 9h 40m</span>
@@ -475,7 +476,7 @@ button{font:inherit;color:inherit}
     <div class="col">
       <span class="label">The warning · 2026-10-07, 21:14 UTC</span>
       <div class="card note">
-        <div class="logo">☁</div>
+        <div class="logo"><img src="../Sources/App/Resources/Assets.xcassets/Logo.imageset/logo@2x.png" alt="Overmind"></div>
         <div>
           <h5>D1 rows read at 75%</h5>
           <p>3.75M of 5M free · on pace for 101% by 00:00 UTC. Reads stop at the limit until reset.</p>

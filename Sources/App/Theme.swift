@@ -125,6 +125,20 @@ struct Badge: View {
     }
 }
 
+/// Overmind's logo, an eye in a cloud, as a Pop tile: ink outline, hard shadow.
+struct Logo: View {
+    var size: CGFloat = 34
+
+    var body: some View {
+        let tile = RoundedRectangle(cornerRadius: size * 0.3)
+        Image("Logo").resizable().interpolation(.high)
+            .frame(width: size, height: size)
+            .clipShape(tile)
+            .overlay(tile.stroke(Pop.ink, lineWidth: 2))
+            .background(tile.fill(Pop.ink).offset(x: 2, y: 2))
+    }
+}
+
 /// The tilted sticker on a card: "CLOSEST TO THE LIMIT".
 struct Sticker: View {
     let text: String
