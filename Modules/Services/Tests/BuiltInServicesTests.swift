@@ -27,7 +27,7 @@ struct BuiltInServicesTests {
         #expect(operations.id == "queues.operations")
         #expect(operations.unit == .operations)
         #expect(operations.read == .sum(Read.Source(dataset: "queueMessageOperationsAdaptiveGroups", field: "sum.billableOperations",
-                                                    time: .datetime, focus: "queueID")))
+                                                    time: .datetime, focus: "queueId")))
         #expect(queues.watchedByDefault == false)
     }
 
@@ -39,6 +39,12 @@ struct BuiltInServicesTests {
                                                 where: Read.Where(dimension: "actionType", in: ["write"]))))
         #expect(kv.limits.map(\.id) == ["kv.reads", "kv.writes", "kv.deletes", "kv.lists", "kv.storage"])
         #expect(kv.watchedByDefault == false)
+    }
+
+    @Test func `should add up every KV namespace's size for storage, since the 1 GB covers them all`() throws {
+        let storage = try #require(try ServiceCatalog.builtIn("kv").limits.first { $0.id == "kv.storage" })
+        #expect(storage.read == .max(Read.Source(dataset: "kvStorageAdaptiveGroups", field: "max.byteCount",
+                                                 time: .date, focus: "namespaceId")))
     }
 
     @Test func `should watch Workers and D1 for someone who never chose`() throws {

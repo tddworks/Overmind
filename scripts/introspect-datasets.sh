@@ -15,11 +15,13 @@ ask() {
 }
 
 type_of='fields { name type { name kind ofType { name kind ofType { name ofType { name } } } } }'
-account="$(ask "{ __type(name: \"AccountTypes\") { ${type_of} } }")"
+account="$(ask "{ __type(name: \"account\") { ${type_of} } }")"
 
 python3 -I - "$pattern" "$account" <<'EOF' > /tmp/overmind-datasets.$$
 import json, re, sys
 pattern, answer = sys.argv[1], json.loads(sys.argv[2])
+if not answer.get("data") or not answer["data"].get("__type"):
+    sys.exit("Cloudflare said: " + "; ".join(e.get("message", "?") for e in answer.get("errors") or []) or "no schema")
 def name(t):
     while t and not t.get("name"): t = t.get("ofType")
     return t and t["name"]

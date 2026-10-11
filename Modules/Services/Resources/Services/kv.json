@@ -18,7 +18,7 @@
       "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date",
                          "where": { "dimension": "actionType", "in": ["list"] } } } },
     { "id": "kv.storage", "name": "KV storage", "short": "KV storage", "unit": "bytes",
-      "read": { "max": { "dataset": "kvStorageAdaptiveGroups", "field": "max.byteCount", "time": "date" } } }
+      "read": { "max": { "dataset": "kvStorageAdaptiveGroups", "field": "max.byteCount", "time": "date", "focus": "namespaceId" } } }
   ],
   "breakdowns": [
     { "title": "Reads · last 7 days", "series": { "limit": "kv.reads", "by": "day", "last": 7 } },

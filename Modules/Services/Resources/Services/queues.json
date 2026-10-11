@@ -7,12 +7,12 @@
   "limits": [
     { "id": "queues.operations", "name": "Queues operations", "short": "Queues", "unit": "operations",
       "read": { "sum": { "dataset": "queueMessageOperationsAdaptiveGroups", "field": "sum.billableOperations",
-                         "time": "datetime", "focus": "queueID" } } }
+                         "time": "datetime", "focus": "queueId" } } }
   ],
   "breakdowns": [
     { "title": "Operations · per hour today", "series": { "limit": "queues.operations", "by": "hour", "last": 24 } },
     { "title": "Operations by type",
       "split": { "dataset": "queueMessageOperationsAdaptiveGroups", "dimension": "actionType",
-                 "measure": "sum.billableOperations", "time": "datetime", "focus": "queueID" } }
+                 "measure": "sum.billableOperations", "time": "datetime", "focus": "queueId" } }
   ]
 }
