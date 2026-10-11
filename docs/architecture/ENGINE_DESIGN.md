@@ -38,7 +38,19 @@ Every `Read` names:
 - `scale`, when the answer's unit isn't the limit's: CPU comes in microseconds,
   so `0.001` turns it into milliseconds;
 - `failures`, for a `quantile`: the dimension value that marks an invocation
-  that went past the allowance (`status = exceededResources`).
+  that went past the allowance (`status = exceededResources`);
+- `where`, for any case: only the groups whose `dimension` is one of `in`. One
+  dataset can then hold several limits: KV's reads and writes are both
+  `kvOperationsAdaptiveGroups`, told apart by `actionType`; R2's Class A is a
+  set of action types. `ReadPlan` adds it as `<dimension>_in: [...]` to the
+  limit's read, its daily read (law 19) and its `series` charts. It is part of
+  what the limit **is**, so unlike `focus` it always applies (law 1 holds).
+
+```jsonc
+{ "id": "kv.writes", "name": "KV writes", "short": "KV writes", "unit": "requests",
+  "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date",
+                     "where": { "dimension": "actionType", "in": ["write"] } } } }
+```
 
 `ReadPlan` writes each limit as an aliased field of one `viewer.accounts`
 query filtered by `accountTag`, so a refresh is one request whatever the
@@ -129,6 +141,9 @@ by `date`, in one query; `Bill` counts the days whose use reached the allowance 
 | Workers by hour | `datetimeHour` (also `datetimeFifteenMinutes`, `datetimeSixHours`) | verified by introspection |
 | CPU time unit | `cpuTimeP50` · `cpuTimeP99` are **microseconds** | verified by a read |
 | Cron runs | GraphQL `workersInvocationsScheduled`: `cron` · `status` · `cpuTimeUs` · `scheduledDatetime` | verified by introspection |
+| KV operations | GraphQL `kvOperationsAdaptiveGroups` · `sum.requests` by `actionType`, filtered by `date` | from Cloudflare's [KV metrics](https://developers.cloudflare.com/kv/observability/metrics-analytics/) (2026-10-11); `actionType: "read"` is documented, **`write` · `delete` · `list` are unverified** until a live read |
+| KV storage | GraphQL `kvStorageAdaptiveGroups` · `max.byteCount` (also `max.keyCount`), filtered by `date` | from the docs; whether `namespaceId` is a dimension (for `max` per namespace) is **unverified** |
+| KV limits | Free per day: 100k reads, 1k writes, 1k deletes, 1k lists, 1 GB. Paid per month: 10M reads, 1M each of writes, deletes and lists, 1 GB; overage $0.50/M reads, $5.00/M writes, deletes and lists, $0.50/GB-month. Free resets at 00:00 UTC and fails the operation past it | verified on [KV pricing](https://developers.cloudflare.com/kv/platform/pricing/), 2026-10-11 |
 | Rate Limiting bindings | none exists | out of scope ([journeys §5](USER_JOURNEYS.md#5--out-of-scope-for-now)) |
 | GraphQL budget | 300 queries / 5 min / user; 31 days retention on adaptive datasets | verified |
 | Plan | `GET /accounts/{id}/subscriptions`: one entry per rate plan (an account can have *R2 Paid* without *Workers Paid*) | verified |

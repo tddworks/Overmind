@@ -38,7 +38,7 @@ description: Where Overmind stands — what is built per module with test counts
 | 6 ✅ | Service tabs | `Analytics` breakdowns, `Billing` deployments | D1 and Worker tabs, with deployment pins and the focus picker |
 | 7 ✅ | The bill | `Billing` | estimate, forecast, quote, invoices |
 | 8 ✅ | Watching | `Services` (`watchedByDefault`), `Monitor` (`watching`, `watch`, `unwatch`, law 21), App (Settings → *Watching*, Bill caption) | an unwatched service has no tab, card, query, warning or bill line; the choice survives a relaunch; the last one can't be turned off |
-| 9 | KV | `Services` (`where` on `sum`, ENGINE §2), `kv.json`, both plan files | KV's reads, writes, deletes, lists and storage, off until watched; datasets and allowances verified in ENGINE §6 |
+| 9 | KV | `Services` (`where` on a read, ENGINE §2), `Analytics` (`ReadPlan` writes it), `kv.json` (`watchedByDefault: false`), both plan files | KV reads, writes, deletes, lists and storage on Today, a KV tab, warnings and Bill lines once watched; the unverified `actionType` values in ENGINE §6 checked by a live read |
 | 10 | R2 | `r2.json`, its own plan (R2 is a separate subscription) | Class A, Class B and storage, off until watched |
 
 ## Decisions
