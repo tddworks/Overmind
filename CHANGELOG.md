@@ -4,6 +4,10 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 
 ## [Unreleased]
 
+---
+
+## [0.2.2] - 2026-10-11
+
 ### Fixed
 
 - Before the first read the menu bar shows `☁` alone, never an empty number.
