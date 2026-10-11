@@ -4,6 +4,10 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 
 ## [Unreleased]
 
+### Added
+
+- AI Gateway: a tab with requests and tokens by model, requests by provider and errors, once watched. It is free, so it adds no limits.
+
 ---
 
 ## [0.2.2] - 2026-10-11
@@ -17,7 +21,6 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 - Install with Homebrew: `brew install --cask tddworks/tap/overmind`.
 - Choose what Overmind watches: *Settings → Watching* turns Worker or D1 off. A service you don't watch is never read: no tab, no card, no menu bar number, no warning, and the Bill says what its estimate covers (*est. · Worker only*). New Cloudflare products will arrive off.
 - *Settings → General → Menu bar shows: Icon only* keeps the menu bar to `☁`, with `◐` or `⚠︎` when a limit needs watching.
-- AI Gateway: a tab with requests and tokens by model, requests by provider and errors, once watched. It is free, so it adds no limits.
 - Workers AI, Vectorize and Durable Objects (requests, SQLite rows, storage), each off until watched. On Workers Paid, Workers AI is billed day by day past its 10k neurons.
 - R2, on an account with R2: Class A, Class B and storage against R2's own free tier, priced in the Bill beside your Workers plan.
 - Queues: operations against Free's 10k a day or Workers Paid's 1M a month, once watched.
