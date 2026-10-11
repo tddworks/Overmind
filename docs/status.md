@@ -42,9 +42,9 @@ description: Where Overmind stands — what is built per module with test counts
 | 10 ✅ | The quiet menu bar | `Monitor` (`MenuBarState` as cases, `menuBarShows`, law 22), App (Settings row, label) | *Icon only* shows `☁` and the worst mark; before the first read the bar is `☁`, never an empty number. The GitHub issue's ask |
 | 11 ✅ | Queues | `queues.json`, both plan files, the `operations` unit | Queues operations against Free's 10k a day and Paid's 1M a month, off until watched |
 | 12 ✅ | R2, an add-on plan | `Plans` (`addOn`, `Plan.addOns`, law 23), `r2-paid.json`, `r2.json` | Class A, Class B and storage against R2's own free tier, on either Workers plan, priced in the Bill; off until watched |
-| 13 | Workers AI | `ai.json`, both plan files | **blocked**: the dataset is not documented; `scripts/introspect-datasets.sh 'ai'` first |
-| 14 | Vectorize | `vectorize.json`, both plan files | **blocked**: as above, `'vectorize'` |
-| 15 | Durable Objects | `durable-objects.json`, both plan files | **blocked**: time filter, duration and SQLite rows to confirm, `'durableObjects'` |
+| 13 | Workers AI | `Plans` (law 24: a priced daily allowance billed day by day), `Billing`, `ai.json`, both plan files, the `neurons` unit | neurons against 10k a day; on Paid the Bill charges each day's overage |
+| 14 | Vectorize | `vectorize.json`, both plan files, the `dimensions` unit | queried and stored vector dimensions against each plan, off until watched |
+| 15 | Durable Objects | `durable-objects.json`, both plan files | requests, SQLite rows read and written, and storage; GB-s duration after a live read |
 
 ## Decisions
 
@@ -57,7 +57,7 @@ description: Where Overmind stands — what is built per module with test counts
 | 2026-10-09 | Design approved; slices 1–7 built the same day |
 | 2026-10-09 | A per-invocation limit acts only when Cloudflare stopped invocations, and is never the closest: a real account ran p99 17 ms past Free's 10 ms with none stopped |
 | 2026-10-11 | R2 is an add-on plan beside the Workers plan, not a third plan (law 23) |
-| 2026-10-11 | A dataset nobody verified never ships: Workers AI, Vectorize and Durable Objects wait for introspection |
+| 2026-10-11 | A dataset nobody verified never ships. Introspection (`scripts/introspect-datasets.sh`) confirmed Workers AI, Vectorize and Durable Objects, and found Queues' `queueId` and KV storage's `namespaceId` |
 | 2026-10-11 | New services ship one at a time, each off until the person watches it; an unwatched service is not read at all, and the Bill says what its estimate covers (law 21) |
 
 ## Open questions

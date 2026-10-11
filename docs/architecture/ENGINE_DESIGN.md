@@ -81,6 +81,11 @@ dashboard, with `{account}` for the account ID; Overmind only links to it) and `
 `rate_plan` ids from `/accounts/{id}/subscriptions` that mean this plan.
 No match means Free.
 
+**A daily allowance with a price** (Workers AI on Workers Paid: 10k neurons a day, then
+$0.011 per 1k) is billed **day by day**: each UTC day's use past the allowance, added up over the
+billing month (model law 24). `Bill` already reads every daily limit per day (law 19) and hands
+those days to `Plan`. On Free the same allowance has no price, so it stops instead.
+
 **A plan without an allowance for a limit doesn't show that limit.** Free caps
 CPU per invocation (`workers.cpu`); Workers Paid bills CPU time by the month
 (`workers.cpuTime`, `sum.cpuTimeUs`). Each plan file names only its own.
@@ -154,9 +159,12 @@ by `date`, in one query; `Bill` counts the days whose use reached the allowance 
 | R2 operations | GraphQL `r2OperationsAdaptiveGroups` · `sum.requests` by `actionType`, `datetime`, focus `bucketName`. Class A: `ListBuckets` `PutBucket` `ListObjects` `PutObject` `CopyObject` `CreateMultipartUpload` `UploadPart` `UploadPartCopy` `CompleteMultipartUpload` `ListMultipartUploads` `ListParts` `LifecycleStorageTierTransition` `PutBucketEncryption` `PutBucketCors` `PutBucketLifecycleConfiguration`. Class B: `HeadBucket` `HeadObject` `GetObject` `UsageSummary` `GetBucketEncryption` `GetBucketLocation` `GetBucketCors` `GetBucketLifecycleConfiguration`. Deletes and aborts are free | verified by introspection and a live read (`GetObject` · `HeadObject` · `ListBuckets` seen), 2026-10-11 |
 | R2 storage | GraphQL `r2StorageAdaptiveGroups` · `max.payloadSize` per `bucketName`, `datetime`; also a `storageClass` dimension (only Standard is free) | verified by introspection 2026-10-11 |
 | R2 limits (Standard) | per month: 10 GB-month, 1M Class A, 10M Class B; then $0.015/GB-month, $4.50/M Class A, $0.36/M Class B. A separate subscription (`r2_paid`, verified on a real account) | verified on R2 pricing, 2026-10-11 |
-| Workers AI | 10k neurons a day on both plans, reset 00:00 UTC; Paid $0.011 per 1k beyond. **Dataset unknown**: not in Cloudflare's docs | waits for `scripts/introspect-datasets.sh 'ai'` |
-| Vectorize | Free 30M queried, 5M stored dimensions; Paid 50M queried a month then $0.01/M, 10M stored then $0.05 per 100M. **Dataset unknown** | waits for introspection |
-| Durable Objects | Free per day: 100k requests, 13k GB-s, SQLite 5M rows read, 100k written, 5 GB; Paid per month: 1M requests ($0.15/M), 400k GB-s ($12.50/M), 25B rows read, 50M written, 5 GB-month ($0.20). Datasets `durableObjectsInvocationsAdaptiveGroups` (`sum.requests`), `durableObjectsStorageGroups` (`max.storedBytes`) are documented; their time filter, duration and SQLite rows are **not** | waits for introspection |
+| Workers AI | GraphQL `aiInferenceAdaptiveGroups` · `sum.totalNeurons`, `datetime`; dimensions `modelId`, `errorCode` | verified by introspection 2026-10-11 |
+| Workers AI limits | 10k neurons a day on both plans, reset 00:00 UTC; Paid $0.011 per 1k beyond, day by day (law 24); Free stops | verified on [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/), 2026-10-11 |
+| Vectorize | GraphQL `vectorizeV2QueriesAdaptiveGroups` · `sum.queriedVectorDimensions`; `vectorizeV2StorageAdaptiveGroups` · `max.storedVectorDimensions` per `indexName`; `datetime` (the v1 datasets `vectorizeQueries…` · `vectorizeStorage…` also exist, by `vectorizeIndexId`) | verified by introspection 2026-10-11 |
+| Vectorize limits | Free: 30M queried dimensions a month, 5M stored; Paid: 50M queried a month then $0.01/M, 10M stored then $0.05 per 100M a month | verified on [Vectorize pricing](https://developers.cloudflare.com/vectorize/platform/pricing/), 2026-10-11 |
+| Durable Objects | GraphQL `durableObjectsInvocationsAdaptiveGroups` · `sum.requests`; `durableObjectsPeriodicGroups` · `sum.rowsRead` · `sum.rowsWritten` (also `sum.duration`, `sum.activeTime`); `durableObjectsSqlStorageGroups` · `max.storedBytes` per `namespaceId`; all by `datetime` | verified by introspection 2026-10-11; **the unit of `sum.duration` is not**, so GB-s duration waits for a live read on an account using Durable Objects |
+| Durable Objects limits | Free per day: 100k requests, SQLite 5M rows read, 100k written, 5 GB stored; Paid per month: 1M requests then $0.15/M, 25B rows read then $0.001/M, 50M written then $1.00/M, 5 GB then $0.20/GB-month | verified on [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/), 2026-10-11 |
 | Rate Limiting bindings | none exists | out of scope ([journeys §5](USER_JOURNEYS.md#5--out-of-scope-for-now)) |
 | GraphQL budget | 300 queries / 5 min / user; 31 days retention on adaptive datasets | verified |
 | Plan | `GET /accounts/{id}/subscriptions`: one entry per rate plan (an account can have *R2 Paid* without *Workers Paid*) | verified |
