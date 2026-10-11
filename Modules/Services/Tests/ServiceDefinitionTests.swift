@@ -47,6 +47,15 @@ struct ServiceDefinitionTests {
         #expect(acme.breakdowns[0].kind == .series(limit: "acme.widgets", by: .day, last: 7))
     }
 
+    @Test func `should know a limit counts only the operations its file names`() throws {
+        let only = Self.acme.replacingOccurrences(of: #""focus": "factoryId" } }"#,
+                                                  with: #""focus": "factoryId", "where": { "dimension": "actionType", "in": ["write"] } } }"#)
+        let acme = try ServiceDefinition(json: Data(only.utf8))
+
+        #expect(acme.limits[0].read.source.where == Read.Where(dimension: "actionType", in: ["write"]))
+        #expect(try ServiceDefinition(json: Data(Self.acme.utf8)).limits[0].read.source.where == nil)
+    }
+
     @Test func `should leave a service unwatched until the person turns it on when its file doesn't say otherwise`() throws {
         let acme = try ServiceDefinition(json: Data(Self.acme.utf8))
         #expect(acme.watchedByDefault == false)

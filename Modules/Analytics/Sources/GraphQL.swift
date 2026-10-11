@@ -9,6 +9,11 @@ enum GraphQL {
         return "\"\(escaped)\""
     }
 
+    /// The groups a limit counts: `actionType_in: ["write"]` (ENGINE §2).
+    static func filter(_ only: Read.Where) -> String {
+        "\(only.dimension)_in: [\(only.in.map(string).joined(separator: ", "))]"
+    }
+
     /// `sum.rowsRead` → `sum { rowsRead }`; `count` → `count`.
     static func selection(_ path: String) -> String {
         let parts = path.split(separator: ".").map(String.init)

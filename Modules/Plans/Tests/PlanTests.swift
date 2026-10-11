@@ -101,6 +101,19 @@ struct BuiltInPlansTests {
         #expect(paid.cost(of: ["d1.rowsRead": Quantity(26_000_000_000, .rows)]) == Money(6, "USD"))
     }
 
+    @Test func `should know Free allows 100k KV reads and 1k KV writes a day, and 1 GB stored`() throws {
+        let free = try PlanCatalog.builtIn("free")
+        #expect(free.allowance(for: "kv.reads") == .perDay(Quantity(100_000, .requests)))
+        #expect(free.allowance(for: "kv.writes") == .perDay(Quantity(1_000, .requests)))
+        #expect(free.allowance(for: "kv.storage") == .total(Quantity(1_000_000_000, .bytes)))
+    }
+
+    @Test func `should price 2M KV writes on Workers Paid at the subscription plus five dollars`() throws {
+        let paid = Plan(try PlanCatalog.builtIn("workers-paid"), renewsOn: nil)
+        #expect(paid.allowance(for: "kv.writes") == .perMonth(Quantity(1_000_000, .requests)))
+        #expect(paid.cost(of: ["kv.writes": Quantity(2_000_000, .requests)]) == Money(10, "USD"))
+    }
+
     @Test func `should take an account with only R2 Paid to be on the Free Workers plan`() throws {
         #expect(try PlanCatalog.plan(forRatePlans: ["r2_paid"]).id == "free")
     }

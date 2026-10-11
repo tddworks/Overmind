@@ -318,25 +318,26 @@ struct UpgradeTests {
 @MainActor
 @Suite
 struct WatchingTests {
-    /// A service that ships off: what KV will be.
-    static let kv = try! ServiceDefinition(json: Data("""
-    { "id": "kv", "name": "KV", "order": 3, "look": { "glyph": "K", "color": "sky" },
-      "limits": [ { "id": "kv.reads", "name": "KV reads", "short": "KV", "unit": "count",
-                    "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date" } } } ],
+    /// A service that ships off, as each new one does.
+    static let later = try! ServiceDefinition(json: Data("""
+    { "id": "later", "name": "Later", "order": 9, "look": { "glyph": "K", "color": "sky" },
+      "limits": [ { "id": "later.calls", "name": "Later calls", "short": "Later", "unit": "count",
+                    "read": { "sum": { "dataset": "laterGroups", "field": "sum.calls", "time": "date" } } } ],
       "breakdowns": [] }
     """.utf8))
 
-    @Test func `should watch every built-in service for someone who never chose`() throws {
+    @Test func `should watch Workers and D1 for someone who never chose, and say the bill counts only them`() throws {
         let account = try World().account()
 
         #expect(account.watching.map(\.id) == ["workers", "d1"])
-        #expect(account.estimateCovers == .everything)
+        #expect(account.estimateCovers == .only(["Worker", "D1"]))
     }
 
     @Test func `should leave a new service off until the person turns it on`() throws {
-        let account = try World().account(adding: [Self.kv])
+        let account = try World().account(adding: [Self.later])
 
         #expect(account.watching.map(\.id) == ["workers", "d1"])
+        #expect(account.isWatching("later") == false)
         #expect(account.isWatching("kv") == false)
     }
 
@@ -378,7 +379,7 @@ struct WatchingTests {
         await account.watch("d1", at: .utc("2026-10-09T14:30:00"))
 
         #expect(account.limit("d1.rowsRead")?.percent(at: .utc("2026-10-09T14:31:00"))?.rounded == 18)
-        #expect(account.estimateCovers == .everything)
+        #expect(account.estimateCovers == .only(["Worker", "D1"]))
     }
 
     @Test func `should keep watching the last service when the person tries to turn it off`() throws {
@@ -393,8 +394,8 @@ struct WatchingTests {
 
     @Test func `should remember what the person watches after a relaunch`() throws {
         let world = World()
-        try world.account(adding: [Self.kv]).unwatch("d1")
-        let relaunched = try world.account(adding: [Self.kv])
+        try world.account(adding: [Self.later]).unwatch("d1")
+        let relaunched = try world.account(adding: [Self.later])
 
         #expect(relaunched.watching.map(\.id) == ["workers"])
     }

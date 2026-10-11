@@ -9,13 +9,23 @@
     "workers.cpuTime": { "perMonth": "30M ms" },
     "d1.rowsRead": { "perMonth": "25B rows" },
     "d1.rowsWritten": { "perMonth": "50M rows" },
-    "d1.storage": { "total": "5 GB" }
+    "d1.storage": { "total": "5 GB" },
+    "kv.reads": { "perMonth": "10M requests" },
+    "kv.writes": { "perMonth": "1M requests" },
+    "kv.deletes": { "perMonth": "1M requests" },
+    "kv.lists": { "perMonth": "1M requests" },
+    "kv.storage": { "total": "1 GB" }
   },
   "prices": {
     "workers.requests": { "beyond": { "price": "0.30 USD", "per": "1M requests" } },
     "workers.cpuTime": { "beyond": { "price": "0.02 USD", "per": "1M ms" } },
     "d1.rowsRead": { "beyond": { "price": "0.001 USD", "per": "1M rows" } },
     "d1.rowsWritten": { "beyond": { "price": "1.00 USD", "per": "1M rows" } },
-    "d1.storage": { "perMonthOver": { "price": "0.75 USD", "per": "1 GB" } }
+    "d1.storage": { "perMonthOver": { "price": "0.75 USD", "per": "1 GB" } },
+    "kv.reads": { "beyond": { "price": "0.50 USD", "per": "1M requests" } },
+    "kv.writes": { "beyond": { "price": "5.00 USD", "per": "1M requests" } },
+    "kv.deletes": { "beyond": { "price": "5.00 USD", "per": "1M requests" } },
+    "kv.lists": { "beyond": { "price": "5.00 USD", "per": "1M requests" } },
+    "kv.storage": { "perMonthOver": { "price": "0.50 USD", "per": "1 GB" } }
   }
 }

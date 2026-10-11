@@ -47,6 +47,7 @@ Try it without an account: `OVERMIND_DEMO=1 .build/dd/Build/Products/Debug/Overm
 |---|---|---|
 | Workers | requests, CPU per invocation (Free) or CPU time (Paid) | requests per hour, invocations by outcome, cron runs, deployments |
 | D1 | rows read, rows written, storage | rows read per day and hour, top queries |
+| KV (off until you turn it on in *Settings → Watching*) | reads, writes, deletes, lists, storage | reads per day, operations by type |
 
 Plans: Free and Workers Paid; the Bill tab prices this month on both. Other Cloudflare products
 are one JSON file each → [ENGINE_DESIGN](docs/architecture/ENGINE_DESIGN.md).

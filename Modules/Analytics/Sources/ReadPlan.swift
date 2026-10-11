@@ -30,7 +30,8 @@ public struct ReadPlan: Sendable {
         for (index, read) in reads.enumerated() {
             let source = read.definition.read.source
             let period = read.period ?? .day(containing: now)
-            let range = GraphQL.range(source.time, from: period.start, to: min(now, period.end.addingTimeInterval(-1)))
+            var range = GraphQL.range(source.time, from: period.start, to: min(now, period.end.addingTimeInterval(-1)))
+            if let only = source.where { range += ", " + GraphQL.filter(only) }
             // What is kept is kept per database (or Worker): the largest size of each, added up.
             var selection = GraphQL.selection(source.field)
             if case .max = read.definition.read, let focus = source.focus { selection = "dimensions { \(focus) } \(selection)" }
@@ -48,7 +49,8 @@ public struct ReadPlan: Sendable {
     public func daily(_ limits: [LimitDefinition], over period: Period, at now: Date) -> PlannedDaily {
         let fields = limits.enumerated().map { index, limit in
             let source = limit.read.source
-            let range = GraphQL.range(source.time, from: period.start, to: min(now, period.end.addingTimeInterval(-1)))
+            var range = GraphQL.range(source.time, from: period.start, to: min(now, period.end.addingTimeInterval(-1)))
+            if let only = source.where { range += ", " + GraphQL.filter(only) }
             return "d\(index): \(source.dataset)(limit: \(Self.groups), filter: { \(range) }) { dimensions { date } \(GraphQL.selection(source.field)) }"
         }
         return PlannedDaily(query: query(fields), limits: limits)
@@ -64,6 +66,7 @@ public struct ReadPlan: Sendable {
                 let source = limit.read.source
                 let (dimension, filter, from) = Self.window(step, last: last, at: now)
                 var filters = [GraphQL.range(filter, from: from, to: now)]
+                if let only = source.where { filters.append(GraphQL.filter(only)) }
                 if let narrowed = focus.filter(for: source.focus) { filters.append(narrowed) }
                 fields.append("\(alias): \(source.dataset)(limit: \(Self.groups), filter: { \(filters.joined(separator: ", ")) }, orderBy: [\(dimension)_ASC]) { dimensions { \(dimension) } \(GraphQL.selection(source.field)) }")
             case .top(let source, let dimension, let count):

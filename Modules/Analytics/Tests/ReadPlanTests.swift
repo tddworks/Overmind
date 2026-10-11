@@ -40,6 +40,28 @@ struct ReadPlanTests {
         #expect(!query.contains("databaseId:"))
     }
 
+    @Test func `should count only KV's write operations for KV writes`() throws {
+        let writes = LimitRead(try Fixture.limit("kv", "kv.writes"), period: Fixture.today)
+
+        let query = plan.limits([writes], at: Fixture.now).query.text
+
+        #expect(query.contains(#"l0: kvOperationsAdaptiveGroups(limit: 10000, filter: { date_geq: "2026-10-09", date_leq: "2026-10-09", actionType_in: ["write"] })"#))
+    }
+
+    @Test func `should count only KV's write operations on each day of the month too`() throws {
+        let writes = try Fixture.limit("kv", "kv.writes")
+
+        let query = plan.daily([writes], over: .month(containing: Fixture.now, renewsOn: nil), at: Fixture.now).query.text
+
+        #expect(query.contains(#"actionType_in: ["write"]"#))
+    }
+
+    @Test func `should chart only KV's reads on the reads chart`() throws {
+        let query = plan.breakdowns(try ServiceCatalog.builtIn("kv"), focus: .everything, at: Fixture.now).query.text
+
+        #expect(query.contains(#"actionType_in: ["read"]"#))
+    }
+
     @Test func `should read today's D1 rows read from Cloudflare's answer`() throws {
         let usages = try plan.limits(try reads(), at: Fixture.now).usages(from: AnalyticsAnswer(Fixture.limitsAnswer))
 

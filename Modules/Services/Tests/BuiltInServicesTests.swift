@@ -5,12 +5,22 @@ import Measures
 /// The built-in service files, read through the real JSON.
 @Suite
 struct BuiltInServicesTests {
-    @Test func `should show Workers before D1`() throws {
-        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1"])
+    @Test func `should show Workers, then D1, then KV`() throws {
+        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv"])
+    }
+
+    @Test func `should know KV writes are KV's write operations, and leave KV off until the person watches it`() throws {
+        let kv = try ServiceCatalog.builtIn("kv")
+
+        let writes = try #require(kv.limits.first { $0.id == "kv.writes" })
+        #expect(writes.read == .sum(Read.Source(dataset: "kvOperationsAdaptiveGroups", field: "sum.requests", time: .date,
+                                                where: Read.Where(dimension: "actionType", in: ["write"]))))
+        #expect(kv.limits.map(\.id) == ["kv.reads", "kv.writes", "kv.deletes", "kv.lists", "kv.storage"])
+        #expect(kv.watchedByDefault == false)
     }
 
     @Test func `should watch Workers and D1 for someone who never chose`() throws {
-        #expect(try ServiceCatalog.builtIns().allSatisfy(\.watchedByDefault))
+        #expect(try ServiceCatalog.builtIns().filter(\.watchedByDefault).map(\.id) == ["workers", "d1"])
     }
 
     @Test func `should know D1 counts rows read from D1's analytics, narrowed to a database only on its tab`() throws {

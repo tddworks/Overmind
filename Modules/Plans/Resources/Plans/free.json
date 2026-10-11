@@ -8,6 +8,11 @@
     "workers.cpu": { "perInvocation": "10 ms" },
     "d1.rowsRead": { "perDay": "5M rows" },
     "d1.rowsWritten": { "perDay": "100k rows" },
-    "d1.storage": { "total": "5 GB" }
+    "d1.storage": { "total": "5 GB" },
+    "kv.reads": { "perDay": "100k requests" },
+    "kv.writes": { "perDay": "1k requests" },
+    "kv.deletes": { "perDay": "1k requests" },
+    "kv.lists": { "perDay": "1k requests" },
+    "kv.storage": { "total": "1 GB" }
   }
 }
