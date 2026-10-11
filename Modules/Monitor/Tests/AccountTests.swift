@@ -500,6 +500,25 @@ struct AddOnTests {
         #expect(account.isCounted("ai-gateway"))
     }
 
+    @Test func `should count a refresh as a good read, without asking Cloudflare, when only AI Gateway is watched`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        await account.watch("ai-gateway", at: .utc("2026-10-09T14:20:00"))
+        account.unwatch("workers")
+        account.unwatch("d1")
+        let before = world.cloudflare.queries.count
+
+        await account.refresh(at: .utc("2026-10-09T14:40:00"))
+        await account.openBill(at: .utc("2026-10-09T14:40:00"))
+
+        #expect(account.watching.map(\.id) == ["ai-gateway"])
+        #expect(account.lastRead == .utc("2026-10-09T14:40:00"))
+        #expect(account.lastProblem == nil)
+        #expect(account.bill?.estimate == Money(0, "USD"))
+        #expect(world.cloudflare.queries.count == before)   // an empty query is a GraphQL error
+    }
+
     @Test func `should never offer R2 as a plan to switch to, and quote Workers Paid with R2 kept`() async throws {
         let world = World()
         world.cloudflare.ratePlans = ["r2_paid"]

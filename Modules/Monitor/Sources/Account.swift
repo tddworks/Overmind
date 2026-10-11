@@ -202,6 +202,12 @@ public final class Account {
         defer { isRefreshing = false }
         if let planReadAt, now.timeIntervalSince(planReadAt) >= Self.planEvery { await readPlan(summary, at: now) }
         let reads = limits.map { LimitRead($0.definition, period: plan.period(for: $0.id, at: now)) }
+        // Only charts are watched (AI Gateway): nothing to read, and an empty query is an error.
+        guard !reads.isEmpty else {
+            lastRead = now
+            lastProblem = nil
+            return
+        }
         let planned = ReadPlan(account: summary.id).limits(reads, at: now)
         let started = Date()
         do {
@@ -262,7 +268,13 @@ public final class Account {
         }
         let reads = definitions.map { LimitRead($0, period: Self.isKept($0) ? nil : month) }
         let planned = ReadPlan(account: summary.id).limits(reads, at: now)
-        guard let usages = try? planned.usages(from: try await analytics.read(planned.query)) else { return }
+        let usages: [LimitID: Usage]
+        if reads.isEmpty {
+            usages = [:]   // nothing priced is watched: the subscription alone
+        } else {
+            guard let read = try? planned.usages(from: try await analytics.read(planned.query)) else { return }
+            usages = read
+        }
         let monthToDate = usages.filter { !Self.isKept(usage: $0.value) }.mapValues(\.used)
         let kept = usages.filter { Self.isKept(usage: $0.value) }.mapValues(\.used)
         var invoices: [Invoice] = []

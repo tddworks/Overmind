@@ -4,7 +4,7 @@ description: Where Overmind stands — what is built per module with test counts
 
 # Status
 
-> As of **2026-10-11** · **185 tests** (and 4 live checks), all passing. Every slice is built; the app
+> As of **2026-10-11** · **186 tests** (and 4 live checks), all passing. Every slice is built; the app
 > runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
