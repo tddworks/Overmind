@@ -24,7 +24,7 @@ struct LiveAccountTests {
             print("LIVE", limit.id, limit.current(at: now)?.used.short ?? "—", limit.percent(at: now).map { "\($0.rounded)%" } ?? "—",
                   limit.level(at: now).map { "\($0)" } ?? "—")
         }
-        print("LIVE menu bar", account.menuBar(at: now).text, account.freshness(at: now))
+        print("LIVE menu bar", account.menuBar(at: now), account.freshness(at: now))
         if let worker = account.workers.first(where: { $0.contains("leaderboard") }) ?? account.workers.first {
             account.focus = Focus(dimension: "scriptName", value: worker)
         }

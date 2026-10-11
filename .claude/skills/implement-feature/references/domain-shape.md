@@ -57,7 +57,7 @@ public enum MenuBarState: Equatable {
 // the view draws each state; the person's choice of *icon only* becomes one more input, not a guess
 ```
 
-Since it changes what the menu bar says, it goes into USER_JOURNEYS and CANONICAL (`menuBar: MenuBarState`) first.
+Since it changes what the menu bar says, it went into USER_JOURNEYS and CANONICAL (law 22) first. Built 2026-10-11 as `notReadYet · iconOnly(Level) · closest(short:percent:level:)`: *nothing runs out* and *the person chose icon only* draw the same, so they are one case.
 
 ## Keep it in scope
 

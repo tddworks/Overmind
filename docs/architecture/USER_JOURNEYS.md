@@ -42,7 +42,7 @@ do, the command that lands on the domain, and the node that answers.
 | 3 | The token can't read billing | *Connected · Bill needs Billing Read* | carries on | — | `Connection.missing` — a reading the token can't do is a reason on that tab, never a failed connect |
 | 4 | Kai glances at the menu bar | *D1 18%* | nothing | `account.menuBar` | the closest `Limit` |
 | 4a | Kai wants a quiet menu bar | *Settings → General → Menu bar shows: Closest limit · Icon only*; on *Icon only* the bar shows `☁`, with `◐` or `⚠︎` beside it while a limit is at *WATCH* or *ACT NOW* | picks *Icon only* | `account.setMenuBar(.iconOnly)` | `MenuBarState` (law 22) |
-| 4b | Before the first read, or when nothing on the plan runs out | `☁` alone, never an empty or stale number | nothing | `account.menuBar` | `MenuBarState.notReadYet` · `.nothingRunsOut` |
+| 4b | Before the first read, or when nothing on the plan runs out | `☁` alone, never an empty or stale number | nothing | `account.menuBar` | `MenuBarState.notReadYet` · `.iconOnly` |
 | 5 | Kai opens the popover | *FREE · resets in 9h 40m* · *claudebar-leaderboard · LIVE · read 1 min ago* · *CLOSEST TO THE LIMIT · D1 rows read · 18% of 5M · on pace for 31% by midnight* | reads | `account.closest` · `limit.pace` | `Limit` · `Pace` · `Plan` |
 | 6 | Kai reads *Every limit today* | one card per limit: *D1 reads 912k 18% · OK*, *CPU 7.8 ms 78% · WATCH* … *resets 00:00 UTC* · *82% left* | taps a card | `account.limits` | `Limit` · `Level` |
 | 7 | It's 00:20 UTC | the headline reads *too early to tell* instead of a pace | nothing | `limit.pace` | `Pace` is nil in a period's first hour |

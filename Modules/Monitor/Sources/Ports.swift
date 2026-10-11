@@ -35,9 +35,13 @@ public struct Settings: Sendable, Equatable, Codable {
     public var sent: Set<Warning.Key>
     /// The services the person turned on or off, by id; one not here follows its file (law 21).
     public var watch: [String: Bool]
+    /// *Closest limit* or *Icon only* (law 22).
+    public var menuBar: MenuBarStyle
 
     public init(account: AccountSummary? = nil, focus: Focus = .everything, interval: Int = 5,
-                alerts: AlertSettings = .standard, sent: Set<Warning.Key> = [], watch: [String: Bool] = [:]) {
+                alerts: AlertSettings = .standard, sent: Set<Warning.Key> = [], watch: [String: Bool] = [:],
+                menuBar: MenuBarStyle = .closestLimit) {
+        self.menuBar = menuBar
         self.account = account
         self.focus = focus
         self.interval = interval
@@ -57,5 +61,6 @@ public struct Settings: Sendable, Equatable, Codable {
         alerts = (try? container.decodeIfPresent(AlertSettings.self, forKey: .alerts)) ?? defaults.alerts
         sent = (try? container.decodeIfPresent(Set<Warning.Key>.self, forKey: .sent)) ?? defaults.sent
         watch = (try? container.decodeIfPresent([String: Bool].self, forKey: .watch)) ?? defaults.watch
+        menuBar = (try? container.decodeIfPresent(MenuBarStyle.self, forKey: .menuBar)) ?? defaults.menuBar
     }
 }

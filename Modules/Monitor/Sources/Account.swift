@@ -98,6 +98,7 @@ public final class Account {
         interval = TimeInterval((Self.intervals.contains(saved.interval) ? saved.interval : 5) * 60)
         alerts = Alerts(settings: saved.alerts, sent: saved.sent)
         choices = saved.watch
+        menuBarShows = saved.menuBar
         plan = Plan(try PlanCatalog.plan(forRatePlans: [], among: plans), renewsOn: nil)
         limits = Self.limits(watching, on: plan, keeping: [])
     }
@@ -391,11 +392,22 @@ public final class Account {
         }
     }
 
-    /// *D1 18%* and its level; the account's name before the first read.
+    /// *Menu bar shows: Closest limit · Icon only* (law 22).
+    public private(set) var menuBarShows: MenuBarStyle
+
+    public func setMenuBar(_ style: MenuBarStyle) {
+        menuBarShows = style
+        save()
+    }
+
+    /// `☁` before the first read; *D1 18%* coloured by the worst level; or, on *icon only* or
+    /// when nothing on the plan runs out, the cloud and the worst level's mark (law 22).
     public func menuBar(at now: Date) -> MenuBarState {
-        guard let closest = closest(at: now), let percent = closest.percent(at: now) else { return MenuBarState(text: "", level: .ok) }
-        let worst = limits.compactMap { $0.level(at: now) }.max() ?? .ok
-        return MenuBarState(text: "\(closest.definition.short) \(percent.rounded)%", level: max(worst, closest.level(at: now) ?? .ok))
+        guard let worst = limits.compactMap({ $0.level(at: now) }).max() else { return .notReadYet }
+        guard menuBarShows == .closestLimit, let closest = closest(at: now), let percent = closest.percent(at: now) else {
+            return .iconOnly(worst)
+        }
+        return .closest(short: closest.definition.short, percent: percent, level: worst)
     }
 
     /// *LIVE* · *STALE* (law 11).
@@ -429,7 +441,8 @@ public final class Account {
 
     private func save() {
         settings.save(Settings(account: summary ?? settings.load().account, focus: focus, interval: Int(interval / 60),
-                               alerts: alerts.settings, sent: alerts.sent, watch: choices))
+                               alerts: alerts.settings, sent: alerts.sent, watch: choices,
+                               menuBar: menuBarShows))
     }
 }
 
@@ -441,15 +454,19 @@ public enum Coverage: Sendable, Equatable {
     case only([String])
 }
 
-/// What the menu bar shows: the closest limit, coloured by the worst level.
-public struct MenuBarState: Sendable, Equatable {
-    public let text: String
-    public let level: Level
+/// What the menu bar shows, one state at a time (law 22).
+public enum MenuBarState: Sendable, Equatable {
+    /// `☁`: nothing read yet.
+    case notReadYet
+    /// `☁`, `☁ ◐`, `☁ ⚠︎`: no limit named, by choice or because nothing on the plan runs out.
+    case iconOnly(Level)
+    /// `☁ D1 18%`, coloured by the worst level of any limit.
+    case closest(short: String, percent: Percent, level: Level)
+}
 
-    public init(text: String, level: Level) {
-        self.text = text
-        self.level = level
-    }
+/// *Menu bar shows: Closest limit · Icon only* — the person's choice (law 22).
+public enum MenuBarStyle: String, Sendable, Equatable, Codable, CaseIterable {
+    case closestLimit, iconOnly
 }
 
 /// Another plan's price for this month's pace: *On Workers Paid $5.00*.

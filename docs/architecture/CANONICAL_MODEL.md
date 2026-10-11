@@ -91,8 +91,8 @@ Account  ◆                                  THE ROOT — one per app (v1)
 ├── limits                                  DERIVED — every watched service's limits, in catalog order
 ├── closest: Limit?                         DERIVED — the headline and the menu bar
 ├── menuBarShows: MenuBarStyle              closestLimit · iconOnly — a choice (law 22)
-├── menuBar: MenuBarState                   DERIVED — notReadYet · nothingRunsOut · closest(short, percent, level)
-│                                           · iconOnly(level): "☁ D1 18%", "☁ ◐"
+├── menuBar: MenuBarState                   DERIVED — notReadYet · iconOnly(level) · closest(short, percent, level):
+│                                           "☁", "☁ ◐", "☁ D1 18%". Nothing that runs out → iconOnly
 │
 ├── bill: Bill  ◇                           "This month · est." — estimate · forecast · invoices
 │   ├── stopped: [LimitID: [Date]]          "Free stopped you on 2 days" — days a daily allowance ran out

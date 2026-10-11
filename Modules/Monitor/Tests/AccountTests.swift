@@ -128,7 +128,12 @@ struct RefreshTests {
         let account = try await connected(world)
 
         #expect(account.closest(at: .utc("2026-10-09T14:21:00"))?.id == "d1.rowsRead")
-        #expect(account.menuBar(at: .utc("2026-10-09T14:21:00")) == MenuBarState(text: "D1 18%", level: .ok))
+        guard case .closest(let short, let percent, let level) = account.menuBar(at: .utc("2026-10-09T14:21:00")) else {
+            Issue.record("the menu bar names no limit"); return
+        }
+        #expect(short == "D1")
+        #expect(percent.rounded == 18)
+        #expect(level == .ok)
     }
 
     @Test func `should never call CPU the closest limit, however high its p99`() async throws {
@@ -406,5 +411,47 @@ struct WatchingTests {
         await account.watch("queues", at: .utc("2026-10-09T14:20:00"))
 
         #expect(account.watching.map(\.id) == ["workers", "d1"])
+    }
+}
+
+/// The menu bar's states and the *icon only* choice (law 22).
+@MainActor
+@Suite
+struct MenuBarTests {
+    @Test func `should show only the cloud before the first read`() throws {
+        let account = try World().account()
+        #expect(account.menuBar(at: .utc("2026-10-09T14:21:00")) == .notReadYet)
+    }
+
+    @Test func `should show only the cloud and the act-now mark when the person chooses icon only`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 4_600_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        account.setMenuBar(.iconOnly)
+
+        #expect(account.menuBar(at: .utc("2026-10-09T14:21:00")) == .iconOnly(.actNow))
+    }
+
+    @Test func `should name the closest limit again when the person goes back to it`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        account.setMenuBar(.iconOnly)
+
+        account.setMenuBar(.closestLimit)
+
+        guard case .closest(let short, _, _) = account.menuBar(at: .utc("2026-10-09T14:21:00")) else {
+            Issue.record("the menu bar names no limit"); return
+        }
+        #expect(short == "D1")
+    }
+
+    @Test func `should remember icon only after a relaunch`() throws {
+        let world = World()
+        try world.account().setMenuBar(.iconOnly)
+        #expect(try world.account().menuBarShows == .iconOnly)
     }
 }

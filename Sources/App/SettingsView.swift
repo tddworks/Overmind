@@ -77,23 +77,8 @@ struct SettingsView: View {
     private var readingSection: some View {
         SettingsSection(title: "Reading") {
             SettingsRow(title: "Read every", note: "STALE after two missed reads") {
-                HStack(spacing: 0) {
-                    ForEach(Array(Account.intervals.enumerated()), id: \.offset) { index, minutes in
-                        let on = Int(account.interval / 60) == minutes
-                        Button { account.setInterval(minutes: minutes) } label: {
-                            Text(index == 0 ? "\(minutes) min" : "\(minutes)").font(Pop.label(11))
-                                .foregroundStyle(on ? .white : Pop.ink)
-                                .padding(.horizontal, 10).padding(.vertical, 3)
-                                .background(on ? Pop.grape : Pop.paper)
-                                .overlay(alignment: .leading) {
-                                    if index > 0 { Rectangle().fill(Pop.ink).frame(width: 2) }
-                                }
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Pop.ink, lineWidth: 2))
+                Segments(options: Account.intervals.enumerated().map { index, minutes in (index == 0 ? "\(minutes) min" : "\(minutes)", minutes) },
+                         chosen: Int(account.interval / 60)) { account.setInterval(minutes: $0) }
             }
         }
     }
@@ -125,6 +110,11 @@ struct SettingsView: View {
 
     private var generalSection: some View {
         SettingsSection(title: "General") {
+            SettingsRow(title: "Menu bar shows",
+                        note: account.menuBarShows == .iconOnly ? "☁ alone; ☁ ◐ at WATCH, ☁ ⚠︎ at ACT NOW" : "☁ D1 18% — the limit closest to running out") {
+                Segments(options: [("Closest limit", MenuBarStyle.closestLimit), ("Icon only", .iconOnly)],
+                         chosen: account.menuBarShows) { account.setMenuBar($0) }
+            }
             SettingsRow(title: "Start at login", note: loginItem.problem) {
                 PopSwitch(isOn: loginItem.isOn) { loginItem.set(!loginItem.isOn) }
             }
@@ -175,6 +165,33 @@ struct SettingsRow<Trailing: View>: View {
         }
         .padding(.vertical, 7)
         .overlay(alignment: .top) { Rectangle().fill(Pop.dash).frame(height: 2) }
+    }
+}
+
+/// A row of choices, one on: *Closest limit · Icon only*.
+struct Segments<Value: Equatable>: View {
+    let options: [(String, Value)]
+    let chosen: Value
+    let tell: (Value) -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(options.enumerated()), id: \.offset) { index, option in
+                let on = option.1 == chosen
+                Button { tell(option.1) } label: {
+                    Text(option.0).font(Pop.label(11))
+                        .foregroundStyle(on ? .white : Pop.ink)
+                        .padding(.horizontal, 10).padding(.vertical, 3)
+                        .background(on ? Pop.grape : Pop.paper)
+                        .overlay(alignment: .leading) {
+                            if index > 0 { Rectangle().fill(Pop.ink).frame(width: 2) }
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Pop.ink, lineWidth: 2))
     }
 }
 

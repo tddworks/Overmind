@@ -4,7 +4,7 @@ description: Where Overmind stands — what is built per module with test counts
 
 # Status
 
-> As of **2026-10-11** · **154 tests** (and 4 live checks), all passing. Every slice is built; the app
+> As of **2026-10-11** · **158 tests** (and 4 live checks), all passing. Every slice is built; the app
 > runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
@@ -22,7 +22,7 @@ description: Where Overmind stands — what is built per module with test counts
 | `Analytics` | `ReadPlan` (one query; storage summed per database; per-day use; `where` filters), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 18 + 2 live |
 | `Billing` | `Bill` (estimate, forecast, quote, lines, days stopped, verdict), `BillingAPI`; `CloudflareREST` | 16 + 1 live |
 | `Alerts` | laws 9–10, CPU stopped invocations; `UserNotifier` | 11 |
-| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read, watching), `Refresher` | 35 + 1 live |
+| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read, watching, menu bar), `Refresher` | 39 + 1 live |
 | `Storage` | `KeychainTokenVault`, `JSONSettingsFile` (older files still read) | 4 |
 | `Diagnostics` | `AppLog` | — |
 
@@ -39,7 +39,7 @@ description: Where Overmind stands — what is built per module with test counts
 | 7 ✅ | The bill | `Billing` | estimate, forecast, quote, invoices |
 | 8 ✅ | Watching | `Services` (`watchedByDefault`), `Monitor` (`watching`, `watch`, `unwatch`, law 21), App (Settings → *Watching*, Bill caption) | an unwatched service has no tab, card, query, warning or bill line; the choice survives a relaunch; the last one can't be turned off |
 | 9 ✅ | KV | `Services` (`where` on a read, ENGINE §2), `Analytics` (`ReadPlan` writes it), `kv.json` (`watchedByDefault: false`), both plan files | KV reads, writes, deletes, lists and storage on Today, a KV tab, warnings and Bill lines once watched; the unverified `actionType` values in ENGINE §6 checked by a live read |
-| 10 | The quiet menu bar | `Monitor` (`MenuBarState` as cases, `menuBarShows`, law 22), App (Settings row, label) | *Icon only* shows `☁` and the worst mark; before the first read the bar is `☁`, never an empty number. The GitHub issue's ask |
+| 10 ✅ | The quiet menu bar | `Monitor` (`MenuBarState` as cases, `menuBarShows`, law 22), App (Settings row, label) | *Icon only* shows `☁` and the worst mark; before the first read the bar is `☁`, never an empty number. The GitHub issue's ask |
 | 11 | Queues | `queues.json`, both plan files, the `operations` unit | Queues operations against Free's 10k a day and Paid's 1M a month, off until watched |
 | 12 | R2, an add-on plan | `Plans` (`addOn`, `Plan.addOns`, law 23), `r2-paid.json`, `r2.json` | Class A, Class B and storage against R2's own free tier, on either Workers plan, priced in the Bill; off until watched |
 | 13 | Workers AI | `ai.json`, both plan files | **blocked**: the dataset is not documented; `scripts/introspect-datasets.sh 'ai'` first |
