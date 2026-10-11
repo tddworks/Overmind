@@ -5,8 +5,19 @@ import Measures
 /// The built-in service files, read through the real JSON.
 @Suite
 struct BuiltInServicesTests {
-    @Test func `should show Workers, then D1, then KV`() throws {
-        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv"])
+    @Test func `should show Workers, then D1, KV and Queues`() throws {
+        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv", "queues"])
+    }
+
+    @Test func `should know Queues counts billable operations across every queue, and leave Queues off until watched`() throws {
+        let queues = try ServiceCatalog.builtIn("queues")
+
+        let operations = try #require(queues.limits.first)
+        #expect(operations.id == "queues.operations")
+        #expect(operations.unit == .operations)
+        #expect(operations.read == .sum(Read.Source(dataset: "queueMessageOperationsAdaptiveGroups", field: "sum.billableOperations",
+                                                    time: .datetime, focus: "queueID")))
+        #expect(queues.watchedByDefault == false)
     }
 
     @Test func `should know KV writes are KV's write operations, and leave KV off until the person watches it`() throws {

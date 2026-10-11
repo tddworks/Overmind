@@ -114,6 +114,16 @@ struct BuiltInPlansTests {
         #expect(paid.cost(of: ["kv.writes": Quantity(2_000_000, .requests)]) == Money(10, "USD"))
     }
 
+    @Test func `should know Free allows 10k Queues operations a day, and Workers Paid 1M a month`() throws {
+        #expect(try PlanCatalog.builtIn("free").allowance(for: "queues.operations") == .perDay(Quantity(10_000, .operations)))
+        #expect(try PlanCatalog.builtIn("workers-paid").allowance(for: "queues.operations") == .perMonth(Quantity(1_000_000, .operations)))
+    }
+
+    @Test func `should price 3M Queues operations on Workers Paid at the subscription plus 80 cents`() throws {
+        let paid = Plan(try PlanCatalog.builtIn("workers-paid"), renewsOn: nil)
+        #expect(paid.cost(of: ["queues.operations": Quantity(3_000_000, .operations)]) == Money(Decimal(string: "5.80")!, "USD"))
+    }
+
     @Test func `should take an account with only R2 Paid to be on the Free Workers plan`() throws {
         #expect(try PlanCatalog.plan(forRatePlans: ["r2_paid"]).id == "free")
     }

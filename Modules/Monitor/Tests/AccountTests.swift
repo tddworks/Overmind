@@ -408,7 +408,7 @@ struct WatchingTests {
     @Test func `should ignore a service the catalog doesn't have`() async throws {
         let account = try World().account()
 
-        await account.watch("queues", at: .utc("2026-10-09T14:20:00"))
+        await account.watch("nonesuch", at: .utc("2026-10-09T14:20:00"))
 
         #expect(account.watching.map(\.id) == ["workers", "d1"])
     }

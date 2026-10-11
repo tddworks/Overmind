@@ -13,6 +13,7 @@
     "kv.writes": { "perDay": "1k requests" },
     "kv.deletes": { "perDay": "1k requests" },
     "kv.lists": { "perDay": "1k requests" },
-    "kv.storage": { "total": "1 GB" }
+    "kv.storage": { "total": "1 GB" },
+    "queues.operations": { "perDay": "10k operations" }
   }
 }

@@ -1,0 +1,18 @@
+{
+  "id": "queues",
+  "name": "Queues",
+  "order": 4,
+  "watchedByDefault": false,
+  "look": { "glyph": "⇶", "color": "sky" },
+  "limits": [
+    { "id": "queues.operations", "name": "Queues operations", "short": "Queues", "unit": "operations",
+      "read": { "sum": { "dataset": "queueMessageOperationsAdaptiveGroups", "field": "sum.billableOperations",
+                         "time": "datetime", "focus": "queueID" } } }
+  ],
+  "breakdowns": [
+    { "title": "Operations · per hour today", "series": { "limit": "queues.operations", "by": "hour", "last": 24 } },
+    { "title": "Operations by type",
+      "split": { "dataset": "queueMessageOperationsAdaptiveGroups", "dimension": "actionType",
+                 "measure": "sum.billableOperations", "time": "datetime", "focus": "queueID" } }
+  ]
+}

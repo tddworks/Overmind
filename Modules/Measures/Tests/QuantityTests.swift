@@ -12,6 +12,11 @@ struct QuantityTests {
         #expect(try Quantity(parsing: "100k requests") == Quantity(100_000, .requests))
     }
 
+    @Test func `should read 10k operations as ten thousand Queues operations`() throws {
+        #expect(try Quantity(parsing: "10k operations") == Quantity(10_000, .operations))
+        #expect(Quantity(1_250_000, .operations).short == "1.25M")
+    }
+
     @Test func `should read 25B rows as twenty-five billion rows`() throws {
         #expect(try Quantity(parsing: "25B rows") == Quantity(25_000_000_000, .rows))
     }
