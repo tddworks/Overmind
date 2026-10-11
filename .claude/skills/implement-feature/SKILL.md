@@ -34,6 +34,16 @@ Read in order ([ARCHITECTURE.md](../../../docs/architecture/ARCHITECTURE.md) map
 | Is it a choice or a reading? | choices go to `settings.json`, readings stay in memory (CANONICAL §2) |
 | Is a law missing, or owned twice? | add it to CANONICAL §5 with **one** owner |
 
+### Think the domain first
+
+Before components, ask how the domain should be: from the person's problem (the issue,
+the journey) to the facts it must respect, to the concepts those force, then compare with
+the code. Ask the five questions of every type the feature touches (would the person say
+it, does the thing decide about itself, can you see every state, is it as small as it can
+be, is what differs data) and draw now beside proposed →
+[references/domain-shape.md](references/domain-shape.md). A new node, a moved law or a
+changed owner goes into the docs change below.
+
 Write the change into the docs first, then present it: an ASCII diagram in the module
 words ([references/architecture-diagrams.md](references/architecture-diagrams.md)) and a
 table (component · purpose · inputs · outputs · dependencies). Ask with AskUserQuestion,
@@ -64,6 +74,10 @@ public struct Limit: Sendable, Equatable {
 ### Swift 6.2 — no ViewModel layer
 
 Views read `Account` directly ([references/swift-observable.md](references/swift-observable.md)).
+
+The patterns, on Overmind's own types (a type answers the person's questions, tell don't ask,
+a case per state, values over classes, what differs is data) →
+[references/domain-models.md](references/domain-models.md).
 
 ### Ports are `@Mockable`, at the module's root; implementations are `internal`
 
@@ -117,6 +131,7 @@ xcodebuild test -workspace Overmind.xcworkspace -scheme Overmind-Workspace \
 ## Checklist
 
 - [ ] Read the five design docs; placed it: owner, law, module
+- [ ] Thought the domain first: the five questions asked of touched types, now/proposed drawn ([domain-shape.md](references/domain-shape.md))
 - [ ] Design change written into the docs; **user approval** before code
 - [ ] Failing test first, asserting STATE; minimal code; refactor
 - [ ] No Swift names a Cloudflare product, dataset or price

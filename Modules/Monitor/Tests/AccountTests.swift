@@ -4,6 +4,7 @@ import Measures
 import Limits
 import Analytics
 import Billing
+import Services
 @testable import Monitor
 
 @MainActor
@@ -127,7 +128,12 @@ struct RefreshTests {
         let account = try await connected(world)
 
         #expect(account.closest(at: .utc("2026-10-09T14:21:00"))?.id == "d1.rowsRead")
-        #expect(account.menuBar(at: .utc("2026-10-09T14:21:00")) == MenuBarState(text: "D1 18%", level: .ok))
+        guard case .closest(let short, let percent, let level) = account.menuBar(at: .utc("2026-10-09T14:21:00")) else {
+            Issue.record("the menu bar names no limit"); return
+        }
+        #expect(short == "D1")
+        #expect(percent.rounded == 18)
+        #expect(level == .ok)
     }
 
     @Test func `should never call CPU the closest limit, however high its p99`() async throws {
@@ -310,5 +316,188 @@ struct UpgradeTests {
         let paid = try #require(account.quotes.first)
         #expect(paid.lines.contains { $0.limit == "d1.rowsRead" })
         #expect(paid.upgradeURL?.absoluteString == "https://dash.cloudflare.com/acc1/workers/plans")
+    }
+}
+
+/// Settings → Watching (law 21): only a watched service is read.
+@MainActor
+@Suite
+struct WatchingTests {
+    /// A service that ships off, as each new one does.
+    static let later = try! ServiceDefinition(json: Data("""
+    { "id": "later", "name": "Later", "order": 9, "look": { "glyph": "K", "color": "sky" },
+      "limits": [ { "id": "later.calls", "name": "Later calls", "short": "Later", "unit": "count",
+                    "read": { "sum": { "dataset": "laterGroups", "field": "sum.calls", "time": "date" } } } ],
+      "breakdowns": [] }
+    """.utf8))
+
+    @Test func `should watch Workers and D1 for someone who never chose, and say the bill counts only them`() throws {
+        let account = try World().account()
+
+        #expect(account.watching.map(\.id) == ["workers", "d1"])
+        #expect(account.estimateCovers == .only(["Worker", "D1"]))
+    }
+
+    @Test func `should leave a new service off until the person turns it on`() throws {
+        let account = try World().account(adding: [Self.later])
+
+        #expect(account.watching.map(\.id) == ["workers", "d1"])
+        #expect(account.isWatching("later") == false)
+        #expect(account.isWatching("kv") == false)
+    }
+
+    @Test func `should never read D1, warn about it or count it as closest once the person stops watching it`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 4_900_000, "requests": 9_814]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        account.unwatch("d1")
+        await account.refresh(at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.limit("d1.rowsRead") == nil)
+        #expect(world.cloudflare.queries.last?.contains("d1AnalyticsAdaptiveGroups") == false)
+        #expect(account.closest(at: .utc("2026-10-09T14:31:00"))?.id == "workers.requests")
+        #expect(account.estimateCovers == .only(["Worker"]))
+    }
+
+    @Test func `should leave D1 out of the bill when D1 isn't watched`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        account.unwatch("d1")
+        let before = world.cloudflare.queries.count
+
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(world.cloudflare.queries.dropFirst(before).contains { $0.contains("d1AnalyticsAdaptiveGroups") || $0.contains("d1StorageAdaptiveGroups") } == false)
+        #expect(account.quotes.first?.lines.map(\.limit).contains("d1.rowsRead") == false)
+    }
+
+    @Test func `should read a service at once when the person watches it again`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        account.unwatch("d1")
+
+        await account.watch("d1", at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.limit("d1.rowsRead")?.percent(at: .utc("2026-10-09T14:31:00"))?.rounded == 18)
+        #expect(account.estimateCovers == .only(["Worker", "D1"]))
+    }
+
+    @Test func `should keep watching the last service when the person tries to turn it off`() throws {
+        let account = try World().account()
+
+        account.unwatch("d1")
+        account.unwatch("workers")
+
+        #expect(account.watching.map(\.id) == ["workers"])
+        #expect(account.canUnwatch("workers") == false)
+    }
+
+    @Test func `should remember what the person watches after a relaunch`() throws {
+        let world = World()
+        try world.account(adding: [Self.later]).unwatch("d1")
+        let relaunched = try world.account(adding: [Self.later])
+
+        #expect(relaunched.watching.map(\.id) == ["workers"])
+    }
+
+    @Test func `should ignore a service the catalog doesn't have`() async throws {
+        let account = try World().account()
+
+        await account.watch("nonesuch", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.watching.map(\.id) == ["workers", "d1"])
+    }
+}
+
+/// The menu bar's states and the *icon only* choice (law 22).
+@MainActor
+@Suite
+struct MenuBarTests {
+    @Test func `should show only the cloud before the first read`() throws {
+        let account = try World().account()
+        #expect(account.menuBar(at: .utc("2026-10-09T14:21:00")) == .notReadYet)
+    }
+
+    @Test func `should show only the cloud and the act-now mark when the person chooses icon only`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 4_600_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        account.setMenuBar(.iconOnly)
+
+        #expect(account.menuBar(at: .utc("2026-10-09T14:21:00")) == .iconOnly(.actNow))
+    }
+
+    @Test func `should name the closest limit again when the person goes back to it`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        account.setMenuBar(.iconOnly)
+
+        account.setMenuBar(.closestLimit)
+
+        guard case .closest(let short, _, _) = account.menuBar(at: .utc("2026-10-09T14:21:00")) else {
+            Issue.record("the menu bar names no limit"); return
+        }
+        #expect(short == "D1")
+    }
+
+    @Test func `should remember icon only after a relaunch`() throws {
+        let world = World()
+        try world.account().setMenuBar(.iconOnly)
+        #expect(try world.account().menuBarShows == .iconOnly)
+    }
+}
+
+/// R2: an add-on plan beside the Workers plan (law 23).
+@MainActor
+@Suite
+struct AddOnTests {
+    @Test func `should count R2 against its own free tier once watched on an account with R2`() async throws {
+        let world = World()
+        world.cloudflare.ratePlans = ["r2_paid"]
+        world.cloudflare.numbers = ["requests": 250_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        await account.watch("r2", at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.plan.definition.id == "free")
+        #expect(account.limit("r2.classA")?.percent(at: .utc("2026-10-09T14:31:00"))?.rounded == 25)
+        #expect(account.isCounted("r2"))
+    }
+
+    @Test func `should say R2 isn't on the account's plans when it has no R2`() async throws {
+        let world = World()
+        world.cloudflare.ratePlans = []
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        await account.watch("r2", at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.limit("r2.classA") == nil)
+        #expect(account.isCounted("r2") == false)
+        #expect(account.isCounted("d1"))
+    }
+
+    @Test func `should never offer R2 as a plan to switch to, and quote Workers Paid with R2 kept`() async throws {
+        let world = World()
+        world.cloudflare.ratePlans = ["r2_paid"]
+        world.cloudflare.numbers = ["requests": 2_000_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        await account.watch("r2", at: .utc("2026-10-09T14:20:00"))
+
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.quotes.map(\.plan.name) == ["Workers Paid"])
+        #expect(account.quotes.first?.lines.map(\.limit).contains("r2.classA") == true)
     }
 }

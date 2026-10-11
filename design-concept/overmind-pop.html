@@ -252,6 +252,10 @@ button{font:inherit;color:inherit}
 .seg span{padding:3px 10px;font-size:11px;font-weight:800;border-left:2px solid var(--ink);cursor:pointer}
 .seg span:first-child{border-left:none}
 .seg span.on{background:var(--purple);color:#fff}
+.svc-i{width:24px;height:24px;border:2px solid var(--ink);border-radius:8px;display:grid;place-items:center;font-size:12px;flex:none}
+.set-row.unwatched > div:first-of-type{opacity:.5}
+.toggle.last{opacity:.45;cursor:not-allowed}
+.set-note{font-size:10.5px;color:var(--muted);font-weight:600;padding-top:6px}
 .btn-s{border:2px solid var(--ink);border-radius:10px;padding:4px 10px;font-weight:800;font-size:11px;background:var(--paper);box-shadow:2px 2px 0 var(--ink)}
 
 @media (max-width:760px){
@@ -521,7 +525,7 @@ button{font:inherit;color:inherit}
   </div>
 
   <h2 class="section-title">Settings</h2>
-  <p class="section-sub">Opened from <b>⚙ → Settings…</b> in the popover. Everything the popover offers, plus what only a window has room for: how often to read, starting at login, and updates. Changes save at once; there is no Save button.</p>
+  <p class="section-sub">Opened from <b>⚙ → Settings…</b> in the popover. Everything the popover offers, plus what only a window has room for: which services to watch, how often to read, starting at login, and updates. Changes save at once; there is no Save button.</p>
   <div class="stage">
     <div class="win">
       <div class="win-bar"><i style="background:var(--coral)"></i><i style="background:var(--butter)"></i><i style="background:var(--mint)"></i><b>Overmind Settings</b></div>
@@ -530,6 +534,18 @@ button{font:inherit;color:inherit}
           <h4>Account</h4>
           <div class="set-row"><div>acme<small>Cloudflare account · token ••••7f3a in your Keychain</small></div><div class="end"><span class="plan-chip" style="box-shadow:none">FREE</span><span class="btn-s">Disconnect</span></div></div>
           <div class="set-row"><div>Worker in focus<small>the D1 and Worker tabs; limits always count every Worker</small></div><div class="end"><span class="btn-s">leaderboard ▾</span></div></div>
+        </div>
+        <div class="card set" id="watching">
+          <h4>Watching</h4>
+          <div class="set-row"><span class="svc-i" style="background:var(--sky)">ƒ</span><div>Worker<small>Requests · CPU</small></div><div class="end"><span class="toggle" data-svc="Worker"><span class="sw-t"></span></span></div></div>
+          <div class="set-row"><span class="svc-i" style="background:var(--butter)">⛁</span><div>D1<small>rows read · rows written · storage</small></div><div class="end"><span class="toggle" data-svc="D1"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--cf-soft)">⚿</span><div>KV<small>new · reads · writes · deletes · lists · storage</small></div><div class="end"><span class="toggle off" data-svc="KV"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--sky)">⇶</span><div>Queues<small>new · operations</small></div><div class="end"><span class="toggle off" data-svc="Queues"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--butter)">◫</span><div>R2<small>new · Class A · Class B · storage · not on this account's plans</small></div><div class="end"><span class="toggle off" data-svc="R2"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--pink)">✦</span><div>Workers AI<small>new · neurons</small></div><div class="end"><span class="toggle off" data-svc="Workers AI"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--mint)">⋰</span><div>Vectorize<small>new · queried dimensions · stored dimensions</small></div><div class="end"><span class="toggle off" data-svc="Vectorize"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--sky)">◈</span><div>Durable Objects<small>new · requests · rows read · rows written · storage</small></div><div class="end"><span class="toggle off" data-svc="Durable Objects"><span class="sw-t"></span></span></div></div>
+          <div class="set-note" id="watch-note">A service you don't watch is never read: no tab, no card, no warning, no line in the Bill.</div>
         </div>
         <div class="card set">
           <h4>Reading</h4>
@@ -543,6 +559,7 @@ button{font:inherit;color:inherit}
         </div>
         <div class="card set">
           <h4>General</h4>
+          <div class="set-row"><div>Menu bar shows<small id="mb-note">☁ D1 18% — the limit closest to running out</small></div><div class="end"><div class="seg" id="mb-seg"><span class="on">Closest limit</span><span>Icon only</span></div></div></div>
           <div class="set-row"><div>Start at login</div><div class="end"><span class="toggle off"><span class="sw-t"></span></span></div></div>
           <div class="set-row"><div>Check for updates automatically<small>Overmind 0.1.0 · last checked today</small></div><div class="end"><span class="toggle"><span class="sw-t"></span></span><span class="btn-s">Check now</span></div></div>
         </div>
@@ -559,6 +576,34 @@ document.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{
 });
 
 
+
+// Settings → Watching: law 21, at least one service stays watched
+(function(){
+  const box=document.getElementById('watching');
+  const toggles=[...box.querySelectorAll('.toggle')];
+  function render(){
+    const on=toggles.filter(t=>!t.classList.contains('off'));
+    toggles.forEach(t=>{
+      t.closest('.set-row').classList.toggle('unwatched',t.classList.contains('off'));
+      t.classList.toggle('last',on.length===1&&on[0]===t);
+      t.title=(on.length===1&&on[0]===t)?'Overmind watches at least one service':'';
+    });
+    const names=on.map(t=>t.dataset.svc);
+    document.getElementById('watch-note').textContent=on.length===toggles.length
+      ? 'Every service is read; the Bill reads "This month · est."'
+      : 'A service you don\'t watch is never read: no tab, no card, no warning, no line in the Bill. Bill: "This month · est. · '+names.join(', ')+(names.length===1?' only':'')+'"';
+  }
+  toggles.forEach(t=>t.onclick=()=>{ if(t.classList.contains('last')) return; t.classList.toggle('off'); render(); });
+  render();
+})();
+
+// Settings → Menu bar shows (law 22)
+document.querySelectorAll('#mb-seg span').forEach(x=>x.onclick=()=>{
+  document.querySelectorAll('#mb-seg span').forEach(y=>y.classList.toggle('on',y===x));
+  document.getElementById('mb-note').textContent = x.textContent==='Icon only'
+    ? '☁ alone; ☁ ◐ at WATCH, ☁ ⚠︎ at ACT NOW'
+    : '☁ D1 18% — the limit closest to running out';
+});
 
 // Bill: the chosen plan card picks the detail list below it
 function pickPlan(which){

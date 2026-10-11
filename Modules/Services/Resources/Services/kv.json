@@ -1,0 +1,29 @@
+{
+  "id": "kv",
+  "name": "KV",
+  "order": 3,
+  "watchedByDefault": false,
+  "look": { "glyph": "⚿", "color": "pink" },
+  "limits": [
+    { "id": "kv.reads", "name": "KV reads", "short": "KV", "unit": "requests",
+      "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date",
+                         "where": { "dimension": "actionType", "in": ["read"] } } } },
+    { "id": "kv.writes", "name": "KV writes", "short": "KV writes", "unit": "requests",
+      "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date",
+                         "where": { "dimension": "actionType", "in": ["write"] } } } },
+    { "id": "kv.deletes", "name": "KV deletes", "short": "KV deletes", "unit": "requests",
+      "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date",
+                         "where": { "dimension": "actionType", "in": ["delete"] } } } },
+    { "id": "kv.lists", "name": "KV lists", "short": "KV lists", "unit": "requests",
+      "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date",
+                         "where": { "dimension": "actionType", "in": ["list"] } } } },
+    { "id": "kv.storage", "name": "KV storage", "short": "KV storage", "unit": "bytes",
+      "read": { "max": { "dataset": "kvStorageAdaptiveGroups", "field": "max.byteCount", "time": "date", "focus": "namespaceId" } } }
+  ],
+  "breakdowns": [
+    { "title": "Reads · last 7 days", "series": { "limit": "kv.reads", "by": "day", "last": 7 } },
+    { "title": "Operations by type",
+      "split": { "dataset": "kvOperationsAdaptiveGroups", "dimension": "actionType", "measure": "sum.requests",
+                 "time": "date" } }
+  ]
+}

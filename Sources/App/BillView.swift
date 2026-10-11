@@ -188,7 +188,7 @@ struct MonthCard: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(bill.issued == nil ? "THIS MONTH · EST." : "THIS MONTH · INVOICED").font(Pop.label(10)).tracking(0.6)
+                    Text(bill.issued == nil ? "THIS MONTH · EST.\(covers)" : "THIS MONTH · INVOICED").font(Pop.label(10)).tracking(0.6)
                     Text(Say.money(bill.issued?.amount ?? bill.estimate)).font(Pop.display(30))
                 }
                 Spacer()
@@ -207,6 +207,12 @@ struct MonthCard: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 11)
         .popCard(Pop.butter)
+    }
+
+    /// *· WORKER ONLY* when a service isn't watched (law 21).
+    private var covers: String {
+        guard case .only(let names) = account.estimateCovers else { return "" }
+        return " · " + names.joined(separator: ", ").uppercased() + (names.count == 1 ? " ONLY" : "")
     }
 
     private var note: String {

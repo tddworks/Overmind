@@ -4,7 +4,7 @@ description: Where Overmind stands — what is built per module with test counts
 
 # Status
 
-> As of **2026-10-09** · **137 tests** (and 4 live checks), all passing. Every slice is built; the app
+> As of **2026-10-11** · **182 tests** (and 4 live checks), all passing. Every slice is built; the app
 > runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
@@ -15,14 +15,14 @@ description: Where Overmind stands — what is built per module with test counts
 | Design: the five docs, the mockup | approved | — |
 | `Overmind` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect, the Settings window, `LoginItem`, `Updater` (Sparkle), the icon; demo mode and screenshots | — |
 | Release | `tests.yml`, `release.yml` (sign, notarize, DMG, appcast), ClaudeBar's scripts; a universal Release archive built and Developer-ID-signed locally | — |
-| `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 18 |
-| `Services` | `ServiceDefinition`, `LimitDefinition`, `Read`, `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json` | 10 |
-| `Plans` | `PlanDefinition` (upgrade link), `Plan`, `Allowance`, `Price`, `cost(of:)`, `lines(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` | 20 |
+| `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID`; units rows, requests, ms, bytes, count, operations, neurons, dimensions | 20 |
+| `Services` | `ServiceDefinition` (`watchedByDefault`), `LimitDefinition`, `Read` (`where`), `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json`, `kv.json`, `queues.json`, `r2.json`, `ai.json`, `vectorize.json`, `durable-objects.json` | 20 |
+| `Plans` | `PlanDefinition` (upgrade link, `addOn`), `Plan` (`addOns`), `Allowance`, `Price`, `cost(of:)`, `lines(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` (every service but R2), `r2-paid.json`; law 24 (a priced daily allowance billed by the day) | 32 |
 | `Limits` | `Limit` (laws 2–8), `Usage`, `Level`, `Pace` | 16 |
-| `Analytics` | `ReadPlan` (one query; storage summed per database; per-day use), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 15 + 2 live |
-| `Billing` | `Bill` (estimate, forecast, quote, lines, days stopped, verdict), `BillingAPI`; `CloudflareREST` | 16 + 1 live |
+| `Analytics` | `ReadPlan` (one query; storage summed per database; per-day use; `where` filters), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 18 + 2 live |
+| `Billing` | `Bill` (estimate, forecast, quote, lines, days stopped, verdict, day-by-day overage), `BillingAPI`; `CloudflareREST` | 18 + 1 live |
 | `Alerts` | laws 9–10, CPU stopped invocations; `UserNotifier` | 11 |
-| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read), `Refresher` | 27 + 1 live |
+| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read, watching, menu bar, add-ons), `Refresher` | 42 + 1 live |
 | `Storage` | `KeychainTokenVault`, `JSONSettingsFile` (older files still read) | 4 |
 | `Diagnostics` | `AppLog` | — |
 
@@ -37,6 +37,14 @@ description: Where Overmind stands — what is built per module with test counts
 | 5 ✅ | Warnings | `Alerts` | laws 9–10, with the sent log kept across relaunches |
 | 6 ✅ | Service tabs | `Analytics` breakdowns, `Billing` deployments | D1 and Worker tabs, with deployment pins and the focus picker |
 | 7 ✅ | The bill | `Billing` | estimate, forecast, quote, invoices |
+| 8 ✅ | Watching | `Services` (`watchedByDefault`), `Monitor` (`watching`, `watch`, `unwatch`, law 21), App (Settings → *Watching*, Bill caption) | an unwatched service has no tab, card, query, warning or bill line; the choice survives a relaunch; the last one can't be turned off |
+| 9 ✅ | KV | `Services` (`where` on a read, ENGINE §2), `Analytics` (`ReadPlan` writes it), `kv.json` (`watchedByDefault: false`), both plan files | KV reads, writes, deletes, lists and storage on Today, a KV tab, warnings and Bill lines once watched; the unverified `actionType` values in ENGINE §6 checked by a live read |
+| 10 ✅ | The quiet menu bar | `Monitor` (`MenuBarState` as cases, `menuBarShows`, law 22), App (Settings row, label) | *Icon only* shows `☁` and the worst mark; before the first read the bar is `☁`, never an empty number. The GitHub issue's ask |
+| 11 ✅ | Queues | `queues.json`, both plan files, the `operations` unit | Queues operations against Free's 10k a day and Paid's 1M a month, off until watched |
+| 12 ✅ | R2, an add-on plan | `Plans` (`addOn`, `Plan.addOns`, law 23), `r2-paid.json`, `r2.json` | Class A, Class B and storage against R2's own free tier, on either Workers plan, priced in the Bill; off until watched |
+| 13 ✅ | Workers AI | `Plans` (law 24: a priced daily allowance billed day by day), `Billing`, `ai.json`, both plan files, the `neurons` unit | neurons against 10k a day; on Paid the Bill charges each day's overage |
+| 14 ✅ | Vectorize | `vectorize.json`, both plan files, the `dimensions` unit | queried and stored vector dimensions against each plan, off until watched |
+| 15 ✅ | Durable Objects | `durable-objects.json`, both plan files | requests, SQLite rows read and written, and storage; GB-s duration after a live read |
 
 ## Decisions
 
@@ -48,12 +56,16 @@ description: Where Overmind stands — what is built per module with test counts
 | 2026-10-09 | The API implementation only: an API token, HTTP behind the `Analytics` and `BillingAPI` ports. The `cf` CLI can't serve every read (ENGINE §6) |
 | 2026-10-09 | Design approved; slices 1–7 built the same day |
 | 2026-10-09 | A per-invocation limit acts only when Cloudflare stopped invocations, and is never the closest: a real account ran p99 17 ms past Free's 10 ms with none stopped |
+| 2026-10-11 | R2 is an add-on plan beside the Workers plan, not a third plan (law 23) |
+| 2026-10-11 | A dataset nobody verified never ships. Introspection (`scripts/introspect-datasets.sh`) confirmed Workers AI, Vectorize and Durable Objects, and found Queues' `queueId` and KV storage's `namespaceId` |
+| 2026-10-11 | New services ship one at a time, each off until the person watches it; an unwatched service is not read at all, and the Bill says what its estimate covers (law 21) |
 
 ## Open questions
 
 - The first release needs the GitHub repo, its secrets and Pages turned on ([release setup](release/RELEASE_SETUP.md)); notarization has not run yet.
 
 - The name *Overmind* is a working name.
+- KV's `actionType` values `write`, `delete`, `list` and a per-namespace storage dimension are unverified until a live read (ENGINE §6); `read` is documented.
 - Workers Paid's `rate_plan` id (`workers_paid`) is unverified: no Paid account has been read.
 - Invoices have only been read as *forbidden* (the `cf` login has no billing scope); a token with Billing Read will show them.
 - Checked end to end on a real Free account on 2026-10-09: plan, 5 limits, both tabs with 10 deployment pins, and the Workers Paid quote ($5).

@@ -25,9 +25,13 @@ public enum Read: Sendable, Equatable {
         public let scale: Double?
         /// For a percentile: the invocations that went past the allowance.
         public let failures: Failures?
+        /// Only these groups count: KV writes are `actionType` `write`. Part of what the limit
+        /// is, so it always applies, unlike `focus` (ENGINE §2).
+        public let `where`: Where?
 
         public init(dataset: String, field: String, time: TimeFilter, focus: String? = nil,
-                    scale: Double? = nil, failures: Failures? = nil) {
+                    scale: Double? = nil, failures: Failures? = nil, where: Where? = nil) {
+            self.where = `where`
             self.dataset = dataset
             self.field = field
             self.time = time
@@ -48,6 +52,19 @@ public enum Read: Sendable, Equatable {
             self.dimension = dimension
             self.equals = equals
             self.measure = measure
+        }
+    }
+}
+
+extension Read {
+    /// The groups a limit counts: those whose `dimension` is one of `in`.
+    public struct Where: Sendable, Equatable, Codable {
+        public let dimension: String
+        public let `in`: [String]
+
+        public init(dimension: String, in values: [String]) {
+            self.dimension = dimension
+            self.in = values
         }
     }
 }

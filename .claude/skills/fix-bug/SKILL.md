@@ -35,6 +35,16 @@ that the code breaks. Find the law and its **one owner**, and fix it there, not 
 site. If the right fix changes a law or moves it, that is a design change: update the doc and
 ask the user to confirm first. If no law covers it, propose the law first.
 
+### Think the domain first
+
+A bug is often a shape that let it happen: a rule a view could work out for itself, one
+value meaning two states (`nil` or `""` for both *not read yet* and *none*), a `String`
+where a type would have refused the bad value, a Swift branch where a definition field
+belonged. Ask the five questions of the types the bug touches →
+[domain-shape.md](../implement-feature/references/domain-shape.md). Fix the shape when it
+is the cause, in the same change, test first; a new node or a moved owner is a design
+change, confirmed first.
+
 ### Locate in the modules
 
 The map is [implement-feature → Architecture](../implement-feature/SKILL.md#architecture).
@@ -76,6 +86,7 @@ Then run the full suite:
 ## Checklist
 
 - [ ] Bug reproduced; the law it breaks and its owner found
+- [ ] Domain thought through: is the bug a shape the [five questions](../implement-feature/references/domain-shape.md) would have refused? Fixed there if so
 - [ ] Failing test written, FAILS before the fix
 - [ ] Minimal fix at the owner; test PASSES
 - [ ] All tests pass

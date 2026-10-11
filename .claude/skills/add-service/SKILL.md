@@ -15,10 +15,14 @@ A service is data. **No Swift changes** unless it needs a case ENGINE_DESIGN doe
 
 1. Cloudflare's pricing and limits pages for the product: each counted thing, its Free and
    Paid allowance, its overage price, when it resets.
-2. The GraphQL dataset and fields: introspect the schema with a read-only token
-   (`__type(name: "AccountTypes")`), then run one query over a day and compare with the
-   dashboard. Note the time filter (`date` or `datetime`) and the focus dimension.
-3. Record what you found, with the date, in ENGINE §6 and `docs/services/<id>/design.md`.
+2. The GraphQL dataset and fields: `scripts/introspect-datasets.sh '<pattern>'` lists the
+   matching datasets with their `sum` / `max` / `dimensions` fields, using the token in the
+   Keychain and printing names only. Then run one query over a day and compare with the
+   dashboard. Note the time filter (`date` or `datetime`), the focus dimension, and any
+   `where` the limit needs (ENGINE §2). **A dataset name nobody verified never ships**: one
+   wrong name fails the whole refresh query for everyone watching that service.
+3. Record what you found, with the date and how (docs, introspection, a live read), in
+   ENGINE §6.
 
 ## 2. Check the cases
 
@@ -33,10 +37,12 @@ propose the new case in ENGINE_DESIGN and ask the user to confirm before code.
 2. `Modules/Services/Resources/Services/<id>.json`.
 3. Its allowances (and prices) in **every** plan file under `Modules/Plans/Resources/Plans/`.
    A plan without an allowance for a limit doesn't show that limit.
-4. A recorded GraphQL answer (account ID replaced) and an `AnswerReader` test that reads it.
+4. A `ReadPlanTests` test on the query it writes, and on a recorded answer (account ID replaced).
 
 ## 4. Ship
 
-- `docs/services/<id>/README.md`: what it watches, which token permission it needs.
-- One README table row, one CHANGELOG line under `Added`.
+- `watchedByDefault: false` in its file: a new service arrives off (model law 21).
+- A row in `docs/features/service-tabs/README.md` for its tab, and its switch in
+  `docs/features/settings/README.md`.
+- One README table row, one CHANGELOG line under `Added`, the slice in `docs/status.md`.
 - A mockup in `design-concept/` if the service gets a tab with a new kind of breakdown.

@@ -1,0 +1,17 @@
+{
+  "id": "ai",
+  "name": "Workers AI",
+  "order": 6,
+  "watchedByDefault": false,
+  "look": { "glyph": "✦", "color": "pink" },
+  "limits": [
+    { "id": "ai.neurons", "name": "Workers AI neurons", "short": "AI", "unit": "neurons",
+      "read": { "sum": { "dataset": "aiInferenceAdaptiveGroups", "field": "sum.totalNeurons", "time": "datetime" } } }
+  ],
+  "breakdowns": [
+    { "title": "Neurons · per hour today", "series": { "limit": "ai.neurons", "by": "hour", "last": 24 } },
+    { "title": "Top models by neurons",
+      "top": { "dataset": "aiInferenceAdaptiveGroups", "dimension": "modelId", "measure": "sum.totalNeurons",
+               "count": 5, "time": "datetime" } }
+  ]
+}

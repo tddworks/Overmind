@@ -38,7 +38,19 @@ Every `Read` names:
 - `scale`, when the answer's unit isn't the limit's: CPU comes in microseconds,
   so `0.001` turns it into milliseconds;
 - `failures`, for a `quantile`: the dimension value that marks an invocation
-  that went past the allowance (`status = exceededResources`).
+  that went past the allowance (`status = exceededResources`);
+- `where`, for any case: only the groups whose `dimension` is one of `in`. One
+  dataset can then hold several limits: KV's reads and writes are both
+  `kvOperationsAdaptiveGroups`, told apart by `actionType`; R2's Class A is a
+  set of action types. `ReadPlan` adds it as `<dimension>_in: [...]` to the
+  limit's read, its daily read (law 19) and its `series` charts. It is part of
+  what the limit **is**, so unlike `focus` it always applies (law 1 holds).
+
+```jsonc
+{ "id": "kv.writes", "name": "KV writes", "short": "KV writes", "unit": "requests",
+  "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date",
+                     "where": { "dimension": "actionType", "in": ["write"] } } } }
+```
 
 `ReadPlan` writes each limit as an aliased field of one `viewer.accounts`
 query filtered by `accountTag`, so a refresh is one request whatever the
@@ -59,10 +71,20 @@ number of limits.
 | `beyond(Money, per: Quantity)` | each unit past the allowance costs this (*$0.001 per 1M rows*) |
 | `perMonthOver(Money, per: Quantity)` | storage: billed on the month's average past the allowance (*$0.75 per GB-month*) |
 
+**Add-on plans** (`"addOn": true`, model law 23): *R2* is billed apart from Workers, so its
+allowances and prices live in `r2-paid.json`, matched by `r2_paid`. `PlanCatalog` picks the
+Workers plan among the files without `addOn`, then every add-on whose `matches` the account has.
+An add-on is never a plan card and never quoted alone.
+
 A plan also carries `subscription` (`$5` a month), `upgradeURL` (its page on Cloudflare's
 dashboard, with `{account}` for the account ID; Overmind only links to it) and `matches`: the
 `rate_plan` ids from `/accounts/{id}/subscriptions` that mean this plan.
 No match means Free.
+
+**A daily allowance with a price** (Workers AI on Workers Paid: 10k neurons a day, then
+$0.011 per 1k) is billed **day by day**: each UTC day's use past the allowance, added up over the
+billing month (model law 24). `Bill` already reads every daily limit per day (law 19) and hands
+those days to `Plan`. On Free the same allowance has no price, so it stops instead.
 
 **A plan without an allowance for a limit doesn't show that limit.** Free caps
 CPU per invocation (`workers.cpu`); Workers Paid bills CPU time by the month
@@ -88,6 +110,7 @@ by `date`, in one query; `Bill` counts the days whose use reached the allowance 
 // Services/Resources/Services/d1.json
 {
   "id": "d1", "name": "D1", "look": { "glyph": "⛁", "color": "butter" },
+  "watchedByDefault": true,          // Worker and D1: true; each later service: false (model law 21)
   "limits": [
     { "id": "d1.rowsRead", "name": "D1 rows read", "short": "D1", "unit": "rows",
       "read": { "sum": { "dataset": "d1AnalyticsAdaptiveGroups", "field": "sum.rowsRead",
@@ -128,6 +151,20 @@ by `date`, in one query; `Bill` counts the days whose use reached the allowance 
 | Workers by hour | `datetimeHour` (also `datetimeFifteenMinutes`, `datetimeSixHours`) | verified by introspection |
 | CPU time unit | `cpuTimeP50` · `cpuTimeP99` are **microseconds** | verified by a read |
 | Cron runs | GraphQL `workersInvocationsScheduled`: `cron` · `status` · `cpuTimeUs` · `scheduledDatetime` | verified by introspection |
+| KV operations | GraphQL `kvOperationsAdaptiveGroups` · `sum.requests` by `actionType`, filtered by `date` | dataset, `actionType`, `namespaceId` and `date`/`datetime` verified by introspection 2026-10-11; `actionType: "read"` is documented, **`write` · `delete` · `list` are unverified**: the account read had no KV traffic |
+| KV storage | GraphQL `kvStorageAdaptiveGroups` · `max.byteCount` per `namespaceId` (also `max.keyCount`), filtered by `date` | verified by introspection 2026-10-11 |
+| KV limits | Free per day: 100k reads, 1k writes, 1k deletes, 1k lists, 1 GB. Paid per month: 10M reads, 1M each of writes, deletes and lists, 1 GB; overage $0.50/M reads, $5.00/M writes, deletes and lists, $0.50/GB-month. Free resets at 00:00 UTC and fails the operation past it | verified on [KV pricing](https://developers.cloudflare.com/kv/platform/pricing/), 2026-10-11 |
+| Queues operations | GraphQL `queueMessageOperationsAdaptiveGroups` · `sum.billableOperations`, `datetime`, focus `queueId` (the docs' `queueID` is wrong), by `actionType` (`WriteMessage` · `ReadMessage` · `DeleteMessage`) | verified by introspection 2026-10-11 |
+| Queues limits | Free 10k operations a day; Paid 1M a month, then $0.40/M; an operation is 64 KB written, read or deleted | verified on [Queues pricing](https://developers.cloudflare.com/queues/platform/pricing/), 2026-10-11 |
+| R2 operations | GraphQL `r2OperationsAdaptiveGroups` · `sum.requests` by `actionType`, `datetime`, focus `bucketName`. Class A: `ListBuckets` `PutBucket` `ListObjects` `PutObject` `CopyObject` `CreateMultipartUpload` `UploadPart` `UploadPartCopy` `CompleteMultipartUpload` `ListMultipartUploads` `ListParts` `LifecycleStorageTierTransition` `PutBucketEncryption` `PutBucketCors` `PutBucketLifecycleConfiguration`. Class B: `HeadBucket` `HeadObject` `GetObject` `UsageSummary` `GetBucketEncryption` `GetBucketLocation` `GetBucketCors` `GetBucketLifecycleConfiguration`. Deletes and aborts are free | verified by introspection and a live read (`GetObject` · `HeadObject` · `ListBuckets` seen), 2026-10-11 |
+| R2 storage | GraphQL `r2StorageAdaptiveGroups` · `max.payloadSize` per `bucketName`, `datetime`; also a `storageClass` dimension (only Standard is free) | verified by introspection 2026-10-11 |
+| R2 limits (Standard) | per month: 10 GB-month, 1M Class A, 10M Class B; then $0.015/GB-month, $4.50/M Class A, $0.36/M Class B. A separate subscription (`r2_paid`, verified on a real account) | verified on R2 pricing, 2026-10-11 |
+| Workers AI | GraphQL `aiInferenceAdaptiveGroups` · `sum.totalNeurons`, `datetime`; dimensions `modelId`, `errorCode` | verified by introspection 2026-10-11 |
+| Workers AI limits | 10k neurons a day on both plans, reset 00:00 UTC; Paid $0.011 per 1k beyond, day by day (law 24); Free stops | verified on [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/), 2026-10-11 |
+| Vectorize | GraphQL `vectorizeV2QueriesAdaptiveGroups` · `sum.queriedVectorDimensions`; `vectorizeV2StorageAdaptiveGroups` · `max.storedVectorDimensions` per `indexName`; `datetime` (the v1 datasets `vectorizeQueries…` · `vectorizeStorage…` also exist, by `vectorizeIndexId`) | verified by introspection 2026-10-11 |
+| Vectorize limits | Free: 30M queried dimensions a month, 5M stored; Paid: 50M queried a month then $0.01/M, 10M stored then $0.05 per 100M a month | verified on [Vectorize pricing](https://developers.cloudflare.com/vectorize/platform/pricing/), 2026-10-11 |
+| Durable Objects | GraphQL `durableObjectsInvocationsAdaptiveGroups` · `sum.requests`; `durableObjectsPeriodicGroups` · `sum.rowsRead` · `sum.rowsWritten` (also `sum.duration`, `sum.activeTime`); `durableObjectsSqlStorageGroups` · `max.storedBytes` per `namespaceId`; all by `datetime` | verified by introspection 2026-10-11; **the unit of `sum.duration` is not**, so GB-s duration waits for a live read on an account using Durable Objects |
+| Durable Objects limits | Free per day: 100k requests, SQLite 5M rows read, 100k written, 5 GB stored; Paid per month: 1M requests then $0.15/M, 25B rows read then $0.001/M, 50M written then $1.00/M, 5 GB then $0.20/GB-month | verified on [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/), 2026-10-11 |
 | Rate Limiting bindings | none exists | out of scope ([journeys §5](USER_JOURNEYS.md#5--out-of-scope-for-now)) |
 | GraphQL budget | 300 queries / 5 min / user; 31 days retention on adaptive datasets | verified |
 | Plan | `GET /accounts/{id}/subscriptions`: one entry per rate plan (an account can have *R2 Paid* without *Workers Paid*) | verified |

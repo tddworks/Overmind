@@ -1,0 +1,18 @@
+{
+  "id": "r2-paid",
+  "name": "R2",
+  "subscription": "0 USD",
+  "matches": ["r2_paid"],
+  "addOn": true,
+  "upgradeURL": "https://dash.cloudflare.com/{account}/r2/plans",
+  "allowances": {
+    "r2.classA": { "perMonth": "1M requests" },
+    "r2.classB": { "perMonth": "10M requests" },
+    "r2.storage": { "total": "10 GB" }
+  },
+  "prices": {
+    "r2.classA": { "beyond": { "price": "4.50 USD", "per": "1M requests" } },
+    "r2.classB": { "beyond": { "price": "0.36 USD", "per": "1M requests" } },
+    "r2.storage": { "perMonthOver": { "price": "0.015 USD", "per": "1 GB" } }
+  }
+}

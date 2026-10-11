@@ -2,6 +2,7 @@
   "id": "workers",
   "name": "Worker",
   "order": 1,
+  "watchedByDefault": true,
   "look": { "glyph": "ƒ", "color": "sky" },
   "limits": [
     { "id": "workers.requests", "name": "Requests", "short": "Requests", "unit": "requests",

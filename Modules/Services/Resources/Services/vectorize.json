@@ -1,0 +1,21 @@
+{
+  "id": "vectorize",
+  "name": "Vectorize",
+  "order": 7,
+  "watchedByDefault": false,
+  "look": { "glyph": "⋰", "color": "mint" },
+  "limits": [
+    { "id": "vectorize.queried", "name": "Vectorize queried dimensions", "short": "Vectorize", "unit": "dimensions",
+      "read": { "sum": { "dataset": "vectorizeV2QueriesAdaptiveGroups", "field": "sum.queriedVectorDimensions",
+                         "time": "datetime", "focus": "indexName" } } },
+    { "id": "vectorize.stored", "name": "Vectorize stored dimensions", "short": "Vectorize stored", "unit": "dimensions",
+      "read": { "max": { "dataset": "vectorizeV2StorageAdaptiveGroups", "field": "max.storedVectorDimensions",
+                         "time": "datetime", "focus": "indexName" } } }
+  ],
+  "breakdowns": [
+    { "title": "Queried dimensions · last 7 days", "series": { "limit": "vectorize.queried", "by": "day", "last": 7 } },
+    { "title": "Top indexes by queried dimensions",
+      "top": { "dataset": "vectorizeV2QueriesAdaptiveGroups", "dimension": "indexName", "measure": "sum.queriedVectorDimensions",
+               "count": 5, "time": "datetime" } }
+  ]
+}

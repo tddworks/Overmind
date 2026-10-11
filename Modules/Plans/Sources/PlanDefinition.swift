@@ -8,6 +8,8 @@ public struct PlanDefinition: Sendable, Equatable, Identifiable {
     public let subscription: Money
     /// The `rate_plan` ids in the account's subscriptions that mean this plan.
     public let matches: [String]
+    /// *R2*: a subscription beside the Workers plan, never instead of it (CANONICAL law 23).
+    public let addOn: Bool
     let allowances: [LimitID: Allowance]
     let prices: [LimitID: Price]
     /// Its page on Cloudflare's dashboard, `{account}` for the account ID. Overmind only
@@ -21,6 +23,7 @@ public struct PlanDefinition: Sendable, Equatable, Identifiable {
             name = file.name
             subscription = try Money(parsing: file.subscription)
             matches = file.matches
+            addOn = file.addOn ?? false
             allowances = Dictionary(uniqueKeysWithValues: file.allowances.map { (LimitID($0.key), $0.value) })
             prices = Dictionary(uniqueKeysWithValues: (file.prices ?? [:]).map { (LimitID($0.key), $0.value) })
             upgradeTemplate = file.upgradeURL
@@ -50,6 +53,7 @@ public struct PlanDefinition: Sendable, Equatable, Identifiable {
     private struct File: Decodable {
         let id, name, subscription: String
         let matches: [String]
+        let addOn: Bool?
         let allowances: [String: Allowance]
         let prices: [String: Price]?
         let upgradeURL: String?

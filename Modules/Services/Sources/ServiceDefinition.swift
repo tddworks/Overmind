@@ -10,6 +10,22 @@ public struct ServiceDefinition: Sendable, Equatable, Decodable, Identifiable {
     public let look: Look
     public let limits: [LimitDefinition]
     public let breakdowns: [BreakdownDefinition]
+    /// Whether someone who never chose for it watches it: Workers and D1 yes, each later
+    /// service no, so it arrives off (CANONICAL law 21).
+    public let watchedByDefault: Bool
+
+    enum CodingKeys: String, CodingKey { case id, name, order, look, limits, breakdowns, watchedByDefault }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        order = try container.decode(Int.self, forKey: .order)
+        look = try container.decode(Look.self, forKey: .look)
+        limits = try container.decode([LimitDefinition].self, forKey: .limits)
+        breakdowns = try container.decode([BreakdownDefinition].self, forKey: .breakdowns)
+        watchedByDefault = try container.decodeIfPresent(Bool.self, forKey: .watchedByDefault) ?? false
+    }
 
     public struct Look: Sendable, Equatable, Codable {
         public let glyph: String

@@ -70,6 +70,9 @@ public final class Account {
         }
     }
 
+    /// What the person chose in *Watching*, by service id; a service not here follows its file.
+    private var choices: [String: Bool]
+
     let plans: [PlanDefinition]
     let analytics: any AnalyticsAPI
     let billing: any BillingAPI
@@ -94,8 +97,10 @@ public final class Account {
         focus = saved.focus
         interval = TimeInterval((Self.intervals.contains(saved.interval) ? saved.interval : 5) * 60)
         alerts = Alerts(settings: saved.alerts, sent: saved.sent)
+        choices = saved.watch
+        menuBarShows = saved.menuBar
         plan = Plan(try PlanCatalog.plan(forRatePlans: [], among: plans), renewsOn: nil)
-        limits = Self.limits(services, on: plan, keeping: [])
+        limits = Self.limits(watching, on: plan, keeping: [])
     }
 
     // MARK: Connecting
@@ -156,7 +161,7 @@ public final class Account {
         vault.delete()
         phase = .notConnected
         lastRead = nil
-        limits = Self.limits(services, on: plan, keeping: [])
+        limits = Self.limits(watching, on: plan, keeping: [])
         breakdowns = [:]
         bill = nil
         var saved = settings.load()
@@ -177,13 +182,15 @@ public final class Account {
         planReadAt = now
         do {
             let subscriptions = try await billing.subscriptions(account: summary.id)
-            let definition = try PlanCatalog.plan(forRatePlans: subscriptions.map(\.ratePlan), among: plans)
-            let renewal = subscriptions.first { definition.matches.contains($0.ratePlan) }?.renewsOn
-            plan = Plan(definition, renewsOn: renewal)
+            let ratePlans = subscriptions.map(\.ratePlan)
+            let renewal = { (definition: PlanDefinition) in subscriptions.first { definition.matches.contains($0.ratePlan) }?.renewsOn }
+            let definition = try PlanCatalog.plan(forRatePlans: ratePlans, among: plans)
+            let addOns = PlanCatalog.addOns(forRatePlans: ratePlans, among: plans).map { Plan($0, renewsOn: renewal($0)) }
+            plan = Plan(definition, renewsOn: renewal(definition), addOns: addOns)
         } catch {
             missing.insert(.billing)
         }
-        limits = Self.limits(services, on: plan, keeping: limits)
+        limits = Self.limits(watching, on: plan, keeping: limits)
     }
 
     // MARK: Reading
@@ -231,7 +238,7 @@ public final class Account {
     /// A service's tab (TARGET §3.3): its charts for the focus, and the focused Worker's
     /// deployments. Read again only when older than one refresh.
     public func open(_ serviceID: String, at now: Date) async {
-        guard case .connected(let summary) = phase, let service = services.first(where: { $0.id == serviceID }) else { return }
+        guard case .connected(let summary) = phase, let service = watching.first(where: { $0.id == serviceID }) else { return }
         if let readAt = breakdownsReadAt[serviceID], now.timeIntervalSince(readAt) < interval, breakdowns[serviceID] != nil { return }
         let planned = ReadPlan(account: summary.id).breakdowns(service, focus: focus, at: now)
         if let answer = try? await analytics.read(planned.query), let read = try? planned.breakdowns(from: answer) {
@@ -250,7 +257,7 @@ public final class Account {
         // An upgrade made on Cloudflare shows here without a restart (law 18).
         await readPlan(summary, at: now)
         let month = Period.month(containing: now, renewsOn: plan.renewsOn)
-        let definitions = services.flatMap(\.limits).filter { definition in
+        let definitions = watching.flatMap(\.limits).filter { definition in
             plans.contains { $0.price(for: definition.id) != nil }
         }
         let reads = definitions.map { LimitRead($0, period: Self.isKept($0) ? nil : month) }
@@ -265,7 +272,7 @@ public final class Account {
             missing.insert(.billing)
         }
         // Each day's use of every limit some plan allows per day: the days Free stops you (law 19).
-        let dailyLimits = services.flatMap(\.limits).filter { definition in
+        let dailyLimits = watching.flatMap(\.limits).filter { definition in
             plans.contains { if case .perDay = $0.allowance(for: definition.id) { true } else { false } }
         }
         var daily: [LimitID: [Date: Quantity]] = [:]
@@ -275,8 +282,9 @@ public final class Account {
         }
         let bill = Bill(plan: plan, monthToDate: monthToDate, kept: kept, invoices: invoices, daily: daily, at: now)
         self.bill = bill
-        quotes = plans.filter { $0.id != plan.definition.id }.map { definition in
-            let other = Plan(definition, renewsOn: nil)
+        // Another Workers plan, with the same add-ons: R2 stays whatever Workers plan you pick (law 23).
+        quotes = plans.filter { !$0.addOn && $0.id != plan.definition.id }.map { definition in
+            let other = Plan(definition, renewsOn: nil, addOns: plan.addOns)
             return Quote(plan: definition, cost: bill.quote(on: other), lines: bill.lines(on: other),
                          days: bill.days(on: other), upgradeURL: definition.upgradeURL(account: summary.id))
         }
@@ -301,6 +309,51 @@ public final class Account {
         guard Self.intervals.contains(minutes) else { return }
         interval = TimeInterval(minutes * 60)
         save()
+    }
+
+    // MARK: Watching
+
+    /// *Worker ☑ · D1 ☑ · KV ☐*: the services Overmind reads, in catalog order. One the person
+    /// never chose for follows its file; never empty (law 21).
+    public var watching: [ServiceDefinition] {
+        let watched = services.filter { choices[$0.id] ?? $0.watchedByDefault }
+        return watched.isEmpty ? Array(services.prefix(1)) : watched
+    }
+
+    public func isWatching(_ serviceID: String) -> Bool { watching.contains { $0.id == serviceID } }
+
+    /// Whether the account's plans count any of this service: R2 needs R2 on the account
+    /// (*not on this account's plans*).
+    public func isCounted(_ serviceID: String) -> Bool {
+        services.first { $0.id == serviceID }?.limits.contains { plan.allowance(for: $0.id) != nil } ?? false
+    }
+
+    /// Whether *Watching* lets this switch go off: never the last one (law 21).
+    public func canUnwatch(_ serviceID: String) -> Bool { isWatching(serviceID) && watching.count > 1 }
+
+    /// Turns a service on, and reads it at once (law 21).
+    public func watch(_ serviceID: String, at now: Date) async {
+        guard services.contains(where: { $0.id == serviceID }), !isWatching(serviceID) else { return }
+        choices[serviceID] = true
+        limits = Self.limits(watching, on: plan, keeping: limits)
+        save()
+        await refresh(at: now)
+    }
+
+    /// Turns a service off: its limits, tab and charts go; the sent-warnings log stays. The last
+    /// watched service stays on (law 21).
+    public func unwatch(_ serviceID: String) {
+        guard canUnwatch(serviceID) else { return }
+        choices[serviceID] = false
+        limits = Self.limits(watching, on: plan, keeping: limits)
+        breakdowns[serviceID] = nil
+        breakdownsReadAt[serviceID] = nil
+        save()
+    }
+
+    /// What the Bill's estimate counts: *est.* or *est. · Worker only* (law 21).
+    public var estimateCovers: Coverage {
+        watching.count == services.count ? .everything : .only(watching.map(\.name))
     }
 
     // MARK: Alerts
@@ -348,11 +401,22 @@ public final class Account {
         }
     }
 
-    /// *D1 18%* and its level; the account's name before the first read.
+    /// *Menu bar shows: Closest limit · Icon only* (law 22).
+    public private(set) var menuBarShows: MenuBarStyle
+
+    public func setMenuBar(_ style: MenuBarStyle) {
+        menuBarShows = style
+        save()
+    }
+
+    /// `☁` before the first read; *D1 18%* coloured by the worst level; or, on *icon only* or
+    /// when nothing on the plan runs out, the cloud and the worst level's mark (law 22).
     public func menuBar(at now: Date) -> MenuBarState {
-        guard let closest = closest(at: now), let percent = closest.percent(at: now) else { return MenuBarState(text: "", level: .ok) }
-        let worst = limits.compactMap { $0.level(at: now) }.max() ?? .ok
-        return MenuBarState(text: "\(closest.definition.short) \(percent.rounded)%", level: max(worst, closest.level(at: now) ?? .ok))
+        guard let worst = limits.compactMap({ $0.level(at: now) }).max() else { return .notReadYet }
+        guard menuBarShows == .closestLimit, let closest = closest(at: now), let percent = closest.percent(at: now) else {
+            return .iconOnly(worst)
+        }
+        return .closest(short: closest.definition.short, percent: percent, level: worst)
     }
 
     /// *LIVE* · *STALE* (law 11).
@@ -374,7 +438,7 @@ public final class Account {
 
     // MARK: Helpers
 
-    /// One limit per service limit the plan has an allowance for, keeping readings.
+    /// One limit per watched service's limit the plan has an allowance for, keeping readings.
     static func limits(_ services: [ServiceDefinition], on plan: Plan, keeping old: [Limit]) -> [Limit] {
         services.flatMap(\.limits).compactMap { definition in
             guard let allowance = plan.allowance(for: definition.id) else { return nil }
@@ -386,19 +450,32 @@ public final class Account {
 
     private func save() {
         settings.save(Settings(account: summary ?? settings.load().account, focus: focus, interval: Int(interval / 60),
-                               alerts: alerts.settings, sent: alerts.sent))
+                               alerts: alerts.settings, sent: alerts.sent, watch: choices,
+                               menuBar: menuBarShows))
     }
 }
 
-/// What the menu bar shows: the closest limit, coloured by the worst level.
-public struct MenuBarState: Sendable, Equatable {
-    public let text: String
-    public let level: Level
+/// Which services the Bill's estimate counts (law 21).
+public enum Coverage: Sendable, Equatable {
+    /// Every service: *est.*
+    case everything
+    /// Only these, by name: *est. · Worker only*.
+    case only([String])
+}
 
-    public init(text: String, level: Level) {
-        self.text = text
-        self.level = level
-    }
+/// What the menu bar shows, one state at a time (law 22).
+public enum MenuBarState: Sendable, Equatable {
+    /// `☁`: nothing read yet.
+    case notReadYet
+    /// `☁`, `☁ ◐`, `☁ ⚠︎`: no limit named, by choice or because nothing on the plan runs out.
+    case iconOnly(Level)
+    /// `☁ D1 18%`, coloured by the worst level of any limit.
+    case closest(short: String, percent: Percent, level: Level)
+}
+
+/// *Menu bar shows: Closest limit · Icon only* — the person's choice (law 22).
+public enum MenuBarStyle: String, Sendable, Equatable, Codable, CaseIterable {
+    case closestLimit, iconOnly
 }
 
 /// Another plan's price for this month's pace: *On Workers Paid $5.00*.

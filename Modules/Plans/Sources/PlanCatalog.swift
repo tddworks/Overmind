@@ -17,16 +17,23 @@ public enum PlanCatalog {
         return plans.sorted { $0.id < $1.id }
     }
 
-    /// The plan an account is on, from the `rate_plan` ids of its subscriptions: the first
-    /// definition that matches one, else the one that matches nothing (Free).
+    /// The Workers plan an account is on, from the `rate_plan` ids of its subscriptions: the
+    /// first definition that matches one, else the one that matches nothing (Free). Add-ons
+    /// are never it.
     public static func plan(forRatePlans ratePlans: [String]) throws(PlanError) -> PlanDefinition {
         try plan(forRatePlans: ratePlans, among: builtIns())
     }
 
     public static func plan(forRatePlans ratePlans: [String], among plans: [PlanDefinition]) throws(PlanError) -> PlanDefinition {
-        if let paid = plans.first(where: { !Set($0.matches).isDisjoint(with: ratePlans) }) { return paid }
-        guard let free = plans.first(where: \.matches.isEmpty) else { throw .notFound("a plan that matches nothing") }
+        let workers = plans.filter { !$0.addOn }
+        if let paid = workers.first(where: { !Set($0.matches).isDisjoint(with: ratePlans) }) { return paid }
+        guard let free = workers.first(where: \.matches.isEmpty) else { throw .notFound("a plan that matches nothing") }
         return free
+    }
+
+    /// The add-ons the account has beside its Workers plan: *R2* (law 23).
+    public static func addOns(forRatePlans ratePlans: [String], among plans: [PlanDefinition]) -> [PlanDefinition] {
+        plans.filter { $0.addOn && !Set($0.matches).isDisjoint(with: ratePlans) }
     }
 }
 
