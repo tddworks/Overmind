@@ -39,7 +39,7 @@ One module per bounded context ([MODULAR_DESIGN.md](docs/architecture/MODULAR_DE
 The design leads; code follows it. Before any change, in this order:
 
 1. **Read the design, in order** ([the map](docs/architecture/ARCHITECTURE.md)): [USER_JOURNEYS](docs/architecture/USER_JOURNEYS.md), [CANONICAL_MODEL](docs/architecture/CANONICAL_MODEL.md), [TARGET_ARCHITECTURE](docs/architecture/TARGET_ARCHITECTURE.md), [MODULAR_DESIGN](docs/architecture/MODULAR_DESIGN.md), [ENGINE_DESIGN](docs/architecture/ENGINE_DESIGN.md).
-2. **Place the change in it.** Which node owns it? Which law (CANONICAL §5) does it keep?
+2. **Place the change in it.** Which node owns it? Which law (CANONICAL §5) does it keep? Think how the domain should be, from the person's problem rather than the type you are editing, for every change, a fix too: names the person would say, each thing deciding about itself, every state visible, nothing bigger than it needs, what differs between services and plans as data → [domain-shape.md](.claude/skills/implement-feature/references/domain-shape.md).
 3. **Write the design change first** when the docs don't say it or say otherwise. Code that disagrees with the docs is behind.
 4. **Ask the person to confirm the design** before writing code.
 5. **Implement to the doc.** SRP: a type changes for one reason. OCP: a new product, plan or case is data or a new case, never an edit to a neighbour.

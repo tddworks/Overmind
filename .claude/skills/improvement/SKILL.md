@@ -31,6 +31,14 @@ that only makes the code match the docs needs no approval. One that changes a la
 a word the screen prints, or adds a piece is a design change: write it into the docs and ask
 the user to confirm before coding.
 
+**Think the domain first.** Ask how the domain should be, from the person's problem rather
+than the type at hand. Ask the five questions of the types the improvement touches (would
+the person say it, does the thing decide about itself, can you see every state, is it as
+small as it can be, is what differs data) and refine them in the same change →
+[domain-shape.md](../implement-feature/references/domain-shape.md). An improvement is the
+usual moment to fit a type to its shape; a new node or a moved owner is a design change,
+confirmed first.
+
 ## Kinds of improvement
 
 | Kind | Examples | Test approach |
@@ -51,6 +59,7 @@ tests green: `tuist test <Module>`, then the full `xcodebuild test`.
 ## Checklist
 
 - [ ] Design checked; doc changed and confirmed if a law/word/piece changed
+- [ ] Domain thought through: the touched types asked [the five questions](../implement-feature/references/domain-shape.md), refined in scope
 - [ ] Test for the improved behavior written and FAILS first
 - [ ] Improvement implemented; all tests pass
 - [ ] Docs and a CHANGELOG line for a change the person notices
