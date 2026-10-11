@@ -39,8 +39,12 @@ description: Where Overmind stands — what is built per module with test counts
 | 7 ✅ | The bill | `Billing` | estimate, forecast, quote, invoices |
 | 8 ✅ | Watching | `Services` (`watchedByDefault`), `Monitor` (`watching`, `watch`, `unwatch`, law 21), App (Settings → *Watching*, Bill caption) | an unwatched service has no tab, card, query, warning or bill line; the choice survives a relaunch; the last one can't be turned off |
 | 9 ✅ | KV | `Services` (`where` on a read, ENGINE §2), `Analytics` (`ReadPlan` writes it), `kv.json` (`watchedByDefault: false`), both plan files | KV reads, writes, deletes, lists and storage on Today, a KV tab, warnings and Bill lines once watched; the unverified `actionType` values in ENGINE §6 checked by a live read |
-| 10 | R2 | `r2.json`, its own plan (R2 is a separate subscription) | Class A, Class B and storage, off until watched. First a design question: an account has one `Plan` today, but R2 is billed apart from Workers |
-| 11 | Workers AI | `ai.json` (neurons), both plan files | neurons against Free's daily allowance and Paid's price, off until watched; dataset and allowance verified first |
+| 10 | The quiet menu bar | `Monitor` (`MenuBarState` as cases, `menuBarShows`, law 22), App (Settings row, label) | *Icon only* shows `☁` and the worst mark; before the first read the bar is `☁`, never an empty number. The GitHub issue's ask |
+| 11 | Queues | `queues.json`, both plan files, the `operations` unit | Queues operations against Free's 10k a day and Paid's 1M a month, off until watched |
+| 12 | R2, an add-on plan | `Plans` (`addOn`, `Plan.addOns`, law 23), `r2-paid.json`, `r2.json` | Class A, Class B and storage against R2's own free tier, on either Workers plan, priced in the Bill; off until watched |
+| 13 | Workers AI | `ai.json`, both plan files | **blocked**: the dataset is not documented; `scripts/introspect-datasets.sh 'ai'` first |
+| 14 | Vectorize | `vectorize.json`, both plan files | **blocked**: as above, `'vectorize'` |
+| 15 | Durable Objects | `durable-objects.json`, both plan files | **blocked**: time filter, duration and SQLite rows to confirm, `'durableObjects'` |
 
 ## Decisions
 
@@ -52,6 +56,8 @@ description: Where Overmind stands — what is built per module with test counts
 | 2026-10-09 | The API implementation only: an API token, HTTP behind the `Analytics` and `BillingAPI` ports. The `cf` CLI can't serve every read (ENGINE §6) |
 | 2026-10-09 | Design approved; slices 1–7 built the same day |
 | 2026-10-09 | A per-invocation limit acts only when Cloudflare stopped invocations, and is never the closest: a real account ran p99 17 ms past Free's 10 ms with none stopped |
+| 2026-10-11 | R2 is an add-on plan beside the Workers plan, not a third plan (law 23) |
+| 2026-10-11 | A dataset nobody verified never ships: Workers AI, Vectorize and Durable Objects wait for introspection |
 | 2026-10-11 | New services ship one at a time, each off until the person watches it; an unwatched service is not read at all, and the Bill says what its estimate covers (law 21) |
 
 ## Open questions

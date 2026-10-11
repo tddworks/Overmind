@@ -66,6 +66,7 @@ Account  ◆                                  THE ROOT — one per app (v1)
 ├── plan: Plan  ◇                           "FREE" — a PlanDefinition, picked by the account's subscriptions
 │   ├── allowance(for: Limit.ID)            5M per day · 10 ms per invocation · 5 GB total
 │   ├── price(for: Limit.ID)                beyond the allowance; nil on Free (it stops instead)
+│   ├── addOns: [Plan]                      "R2" — plans matched by their own subscription, beside this one (law 23)
 │   ├── subscription: Money                 $0 · $5 a month
 │   └── period(for:at:) → Period            Free: the UTC day · Paid: the billing month
 │
@@ -89,7 +90,9 @@ Account  ◆                                  THE ROOT — one per app (v1)
 ├── deployments: [Deployment]  ◇            id · when — pins on the charts
 ├── limits                                  DERIVED — every watched service's limits, in catalog order
 ├── closest: Limit?                         DERIVED — the headline and the menu bar
-├── menuBar: MenuBarState                   DERIVED — "D1 18%" and its level
+├── menuBarShows: MenuBarStyle              closestLimit · iconOnly — a choice (law 22)
+├── menuBar: MenuBarState                   DERIVED — notReadYet · nothingRunsOut · closest(short, percent, level)
+│                                           · iconOnly(level): "☁ D1 18%", "☁ ◐"
 │
 ├── bill: Bill  ◇                           "This month · est." — estimate · forecast · invoices
 │   ├── stopped: [LimitID: [Date]]          "Free stopped you on 2 days" — days a daily allowance ran out
@@ -108,7 +111,7 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | Kind | Examples | Home | Changes when |
 |---|---|---|---|
 | **Definitions** (data) | D1 counts *rows read* from `d1AnalyticsAdaptiveGroups`; Free allows 5M per day | `Resources/Services/*.json` · `Resources/Plans/*.json` | Cloudflare changes a product or a price |
-| **Choices** (settings) | the account, the focus, the services watched, the read interval, the alert levels | `~/.overmind/settings.json`; the token in the Keychain | the person changes them |
+| **Choices** (settings) | the account, the focus, the services watched, what the menu bar shows, the read interval, the alert levels | `~/.overmind/settings.json`; the token in the Keychain | the person changes them |
 | **Readings** (state) | 912k read at 14:20; the warnings already sent | memory; the sent-warnings log in settings | every refresh |
 
 **No Swift names a Cloudflare product or a number Cloudflare can change.**
@@ -138,6 +141,7 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | `open(service)` | `Account` | — (reads its breakdowns if older than one refresh) |
 | `toggle(level)` · `isOn` · `paceIsOn` | `Alerts` | — |
 | `setInterval(minutes:)` | `Account` | a choice other than 5, 10, 15 or 30 minutes |
+| `setMenuBar(_ style)` | `Account` | — |
 | `watch(serviceID)` · `unwatch(serviceID)` | `Account` | the service isn't in the catalog; `unwatch` of the last watched service |
 | `disconnect()` | `Account` | — (removes the token from the Keychain) |
 
@@ -165,6 +169,8 @@ Three kinds of fact, three homes. Mixing them is the usual bug.
 | 18 | **The plan is re-read** when the Bill tab opens and once a day, so an upgrade made on Cloudflare shows without a restart; the limits follow the new plan's allowances. | `Account` |
 | 19 | **A day Free stopped you** is a UTC day in the billing month when a *daily* allowance's use reached it. The verdict is *enough* when there is none, *stopped* otherwise. Each daily limit also answers its **busiest day** of the month. | `Bill` |
 | 20 | **A quote line** is one limit: its month's use, what the plan includes, and the price of the rest; the subscription is its own line and the lines add up to the quote. | `Plan` (`lines(of:)`) |
+| 22 | **The menu bar says one state at a time**: `☁` before the first read and when nothing on the plan runs out; the closest limit (*D1 18%*) otherwise. On *icon only* it never names a limit, but still shows the worst level's mark (`◐` *WATCH*, `⚠︎` *ACT NOW*). A refused token is `☁ ⚠︎` whatever the choice. | `Account` (`menuBar`) |
+| 23 | **An add-on plan** (*R2*) is a plan file matched by its own `rate_plan`; it adds its allowances and prices beside the Workers plan, never instead of it. A limit's allowance and price come from whichever of the two names it; its period uses that subscription's renewal. The estimate adds the add-on's subscription and lines; a quote prices another Workers plan **with the same add-ons**. The header and the plan cards name the Workers plan only. | `Plan` |
 | 21 | **Only a watched service is read.** One the person isn't watching has no limits, no tab, no query, no warning and no line in the Bill, which then names what its estimate covers (*est. · Worker only*). A service the person has never chosen for is watched if its file says `watchedByDefault`; at least one service is always watched. Watching again reads it at once; unwatching drops its readings but never clears the sent-warnings log (law 9). Law 1 holds within what is watched. | `Account` |
 
 *Start at login* and *updates* are the system's and Sparkle's, not the account's: the App holds them (`LoginItem`, `Updater`) and no law of the tree depends on them.

@@ -71,6 +71,11 @@ number of limits.
 | `beyond(Money, per: Quantity)` | each unit past the allowance costs this (*$0.001 per 1M rows*) |
 | `perMonthOver(Money, per: Quantity)` | storage: billed on the month's average past the allowance (*$0.75 per GB-month*) |
 
+**Add-on plans** (`"addOn": true`, model law 23): *R2* is billed apart from Workers, so its
+allowances and prices live in `r2-paid.json`, matched by `r2_paid`. `PlanCatalog` picks the
+Workers plan among the files without `addOn`, then every add-on whose `matches` the account has.
+An add-on is never a plan card and never quoted alone.
+
 A plan also carries `subscription` (`$5` a month), `upgradeURL` (its page on Cloudflare's
 dashboard, with `{account}` for the account ID; Overmind only links to it) and `matches`: the
 `rate_plan` ids from `/accounts/{id}/subscriptions` that mean this plan.
@@ -144,6 +149,14 @@ by `date`, in one query; `Bill` counts the days whose use reached the allowance 
 | KV operations | GraphQL `kvOperationsAdaptiveGroups` · `sum.requests` by `actionType`, filtered by `date` | from Cloudflare's [KV metrics](https://developers.cloudflare.com/kv/observability/metrics-analytics/) (2026-10-11); `actionType: "read"` is documented, **`write` · `delete` · `list` are unverified** until a live read |
 | KV storage | GraphQL `kvStorageAdaptiveGroups` · `max.byteCount` (also `max.keyCount`), filtered by `date` | from the docs; whether `namespaceId` is a dimension (for `max` per namespace) is **unverified** |
 | KV limits | Free per day: 100k reads, 1k writes, 1k deletes, 1k lists, 1 GB. Paid per month: 10M reads, 1M each of writes, deletes and lists, 1 GB; overage $0.50/M reads, $5.00/M writes, deletes and lists, $0.50/GB-month. Free resets at 00:00 UTC and fails the operation past it | verified on [KV pricing](https://developers.cloudflare.com/kv/platform/pricing/), 2026-10-11 |
+| Queues operations | GraphQL `queueMessageOperationsAdaptiveGroups` · `sum.billableOperations`, `datetime`, focus `queueID`, by `actionType` (`WriteMessage` · `ReadMessage` · `DeleteMessage`) | from Cloudflare's [Queues metrics](https://developers.cloudflare.com/queues/observability/metrics/), 2026-10-11 |
+| Queues limits | Free 10k operations a day; Paid 1M a month, then $0.40/M; an operation is 64 KB written, read or deleted | verified on [Queues pricing](https://developers.cloudflare.com/queues/platform/pricing/), 2026-10-11 |
+| R2 operations | GraphQL `r2OperationsAdaptiveGroups` · `sum.requests` by `actionType`, `datetime`, focus `bucketName`. Class A: `ListBuckets` `PutBucket` `ListObjects` `PutObject` `CopyObject` `CreateMultipartUpload` `UploadPart` `UploadPartCopy` `CompleteMultipartUpload` `ListMultipartUploads` `ListParts` `LifecycleStorageTierTransition` `PutBucketEncryption` `PutBucketCors` `PutBucketLifecycleConfiguration`. Class B: `HeadBucket` `HeadObject` `GetObject` `UsageSummary` `GetBucketEncryption` `GetBucketLocation` `GetBucketCors` `GetBucketLifecycleConfiguration`. Deletes and aborts are free | from Cloudflare's [R2 metrics](https://developers.cloudflare.com/r2/platform/metrics-analytics/) and [R2 pricing](https://developers.cloudflare.com/r2/pricing/), 2026-10-11 |
+| R2 storage | GraphQL `r2StorageAdaptiveGroups` · `max.payloadSize` per `bucketName`, `datetime` | from the docs |
+| R2 limits (Standard) | per month: 10 GB-month, 1M Class A, 10M Class B; then $0.015/GB-month, $4.50/M Class A, $0.36/M Class B. A separate subscription (`r2_paid`, verified on a real account) | verified on R2 pricing, 2026-10-11 |
+| Workers AI | 10k neurons a day on both plans, reset 00:00 UTC; Paid $0.011 per 1k beyond. **Dataset unknown**: not in Cloudflare's docs | waits for `scripts/introspect-datasets.sh 'ai'` |
+| Vectorize | Free 30M queried, 5M stored dimensions; Paid 50M queried a month then $0.01/M, 10M stored then $0.05 per 100M. **Dataset unknown** | waits for introspection |
+| Durable Objects | Free per day: 100k requests, 13k GB-s, SQLite 5M rows read, 100k written, 5 GB; Paid per month: 1M requests ($0.15/M), 400k GB-s ($12.50/M), 25B rows read, 50M written, 5 GB-month ($0.20). Datasets `durableObjectsInvocationsAdaptiveGroups` (`sum.requests`), `durableObjectsStorageGroups` (`max.storedBytes`) are documented; their time filter, duration and SQLite rows are **not** | waits for introspection |
 | Rate Limiting bindings | none exists | out of scope ([journeys §5](USER_JOURNEYS.md#5--out-of-scope-for-now)) |
 | GraphQL budget | 300 queries / 5 min / user; 31 days retention on adaptive datasets | verified |
 | Plan | `GET /accounts/{id}/subscriptions`: one entry per rate plan (an account can have *R2 Paid* without *Workers Paid*) | verified |

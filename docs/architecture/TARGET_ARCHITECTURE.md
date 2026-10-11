@@ -37,7 +37,7 @@ description: How Overmind runs. It covers the pieces, each with one job, and the
 | Piece | Job | Context | Inputs → outputs |
 |---|---|---|---|
 | `ServiceCatalog` | load the built-in service files | Services | bundle → `[ServiceDefinition]` |
-| `PlanCatalog` | load the plan files; pick the account's plan from its subscriptions | Plans | bundle, `[Subscription]` → `PlanDefinition` |
+| `PlanCatalog` | load the plan files; pick the account's Workers plan and its add-ons from its subscriptions | Plans | bundle, `[Subscription]` → `Plan` (with `addOns`) |
 | `Limit` | turn usage and an allowance into percent, level and pace | Limits | `Usage`, `Allowance`, now → derived values |
 | `ReadPlan` | every limit's read for one period, as **one** query | Analytics | `[LimitDefinition]`, `Period`s, accountID → `AnalyticsQuery` |
 | `AnalyticsAPI` (port) | send a query, return the rows | Analytics | `AnalyticsQuery` → `AnalyticsAnswer` |

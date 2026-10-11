@@ -540,6 +540,8 @@ button{font:inherit;color:inherit}
           <div class="set-row"><span class="svc-i" style="background:var(--sky)">ƒ</span><div>Worker<small>Requests · CPU</small></div><div class="end"><span class="toggle" data-svc="Worker"><span class="sw-t"></span></span></div></div>
           <div class="set-row"><span class="svc-i" style="background:var(--butter)">⛁</span><div>D1<small>rows read · rows written · storage</small></div><div class="end"><span class="toggle" data-svc="D1"><span class="sw-t"></span></span></div></div>
           <div class="set-row unwatched"><span class="svc-i" style="background:var(--cf-soft)">⚿</span><div>KV<small>new · reads · writes · deletes · lists · storage</small></div><div class="end"><span class="toggle off" data-svc="KV"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--sky)">⇶</span><div>Queues<small>new · operations</small></div><div class="end"><span class="toggle off" data-svc="Queues"><span class="sw-t"></span></span></div></div>
+          <div class="set-row unwatched"><span class="svc-i" style="background:var(--butter)">◫</span><div>R2<small>new · Class A · Class B · storage · needs R2 on this account</small></div><div class="end"><span class="toggle off" data-svc="R2"><span class="sw-t"></span></span></div></div>
           <div class="set-note" id="watch-note">A service you don't watch is never read: no tab, no card, no warning, no line in the Bill.</div>
         </div>
         <div class="card set">
@@ -554,6 +556,7 @@ button{font:inherit;color:inherit}
         </div>
         <div class="card set">
           <h4>General</h4>
+          <div class="set-row"><div>Menu bar shows<small id="mb-note">☁ D1 18% — the limit closest to running out</small></div><div class="end"><div class="seg" id="mb-seg"><span class="on">Closest limit</span><span>Icon only</span></div></div></div>
           <div class="set-row"><div>Start at login</div><div class="end"><span class="toggle off"><span class="sw-t"></span></span></div></div>
           <div class="set-row"><div>Check for updates automatically<small>Overmind 0.1.0 · last checked today</small></div><div class="end"><span class="toggle"><span class="sw-t"></span></span><span class="btn-s">Check now</span></div></div>
         </div>
@@ -590,6 +593,14 @@ document.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{
   toggles.forEach(t=>t.onclick=()=>{ if(t.classList.contains('last')) return; t.classList.toggle('off'); render(); });
   render();
 })();
+
+// Settings → Menu bar shows (law 22)
+document.querySelectorAll('#mb-seg span').forEach(x=>x.onclick=()=>{
+  document.querySelectorAll('#mb-seg span').forEach(y=>y.classList.toggle('on',y===x));
+  document.getElementById('mb-note').textContent = x.textContent==='Icon only'
+    ? '☁ alone; ☁ ◐ at WATCH, ☁ ⚠︎ at ACT NOW'
+    : '☁ D1 18% — the limit closest to running out';
+});
 
 // Bill: the chosen plan card picks the detail list below it
 function pickPlan(which){
