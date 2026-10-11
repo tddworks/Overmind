@@ -45,6 +45,7 @@ description: Where Overmind stands — what is built per module with test counts
 | 13 ✅ | Workers AI | `Plans` (law 24: a priced daily allowance billed day by day), `Billing`, `ai.json`, both plan files, the `neurons` unit | neurons against 10k a day; on Paid the Bill charges each day's overage |
 | 14 ✅ | Vectorize | `vectorize.json`, both plan files, the `dimensions` unit | queried and stored vector dimensions against each plan, off until watched |
 | 15 ✅ | Durable Objects | `durable-objects.json`, both plan files | requests, SQLite rows read and written, and storage; GB-s duration after a live read |
+| 16 | AI Gateway, a tab only | `ai-gateway.json` (no limits), App (Settings note) | requests, tokens, cache and errors by model and provider on its tab, off until watched; no card, warning or Bill line |
 
 ## Decisions
 
