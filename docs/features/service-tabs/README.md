@@ -1,5 +1,5 @@
 ---
-description: The Worker, D1, KV, Queues and R2 tabs — the charts and lists each shows, the Worker focus, and the deployment pins. Read when a chart looks empty or different from the dashboard.
+description: The Worker, D1, KV, Queues, R2, Workers AI, Vectorize and Durable Objects tabs — the charts and lists each shows, the Worker focus, and the deployment pins. Read when a chart looks empty or different from the dashboard.
 ---
 
 # Service tabs
@@ -11,6 +11,9 @@ description: The Worker, D1, KV, Queues and R2 tabs — the charts and lists eac
 | **KV** | reads per day (7 days) · operations by type · the KV limits. Only when KV is watched (*Settings → Watching*); Cloudflare keeps KV's analytics by day, so there is no per-hour chart |
 | **Queues** | operations per hour today · operations by type (write, read, delete) · the Queues limit. Only when watched; the focus doesn't narrow it |
 | **R2** | Class A and Class B per hour today · operations by type · the R2 limits, against R2's own free tier. Only when watched, and only on an account with an R2 subscription |
+| **Workers AI** | neurons per hour today · top models by neurons · the neurons limit (10k a day on both plans) |
+| **Vectorize** | queried dimensions per day (7 days) · top indexes · queried and stored dimensions |
+| **Durable Objects** | requests per hour today · requests by outcome · requests, SQLite rows read and written, storage. The Worker focus narrows the request charts. GB-s duration isn't counted yet |
 
 - **The focus** (*leaderboard ▾ · All Workers*) narrows the charts to one Worker. The limits never change: Cloudflare counts them across the account.
 - **Pins** (*d605dc93*) mark when a version of the focused Worker went live.

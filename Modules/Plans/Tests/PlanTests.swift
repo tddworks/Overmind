@@ -124,6 +124,36 @@ struct BuiltInPlansTests {
         #expect(paid.cost(of: ["queues.operations": Quantity(3_000_000, .operations)]) == Money(Decimal(string: "5.80")!, "USD"))
     }
 
+    @Test func `should allow 10k Workers AI neurons a day on both plans, and charge past it only on Workers Paid`() throws {
+        #expect(try PlanCatalog.builtIn("free").allowance(for: "ai.neurons") == .perDay(Quantity(10_000, .neurons)))
+        #expect(try PlanCatalog.builtIn("free").price(for: "ai.neurons") == nil)
+        #expect(try PlanCatalog.builtIn("workers-paid").allowance(for: "ai.neurons") == .perDay(Quantity(10_000, .neurons)))
+    }
+
+    @Test func `should charge Workers AI day by day: only each day's neurons past 10k`() throws {
+        let paid = Plan(try PlanCatalog.builtIn("workers-paid"), renewsOn: nil)
+        let days: [LimitID: [Date: Quantity]] = ["ai.neurons": [.utc("2026-10-01T00:00:00"): Quantity(25_000, .neurons),
+                                                               .utc("2026-10-02T00:00:00"): Quantity(5_000, .neurons)]]
+        let used: [LimitID: Quantity] = ["ai.neurons": Quantity(30_000, .neurons)]
+
+        // 15k past the allowance on the 1st, none on the 2nd: 15 × $0.011.
+        #expect(paid.cost(of: used, days: days) == Money(Decimal(string: "5.165")!, "USD"))
+        #expect(paid.lines(of: used, days: days).first?.cost == Money(Decimal(string: "0.165")!, "USD"))
+    }
+
+    @Test func `should know Vectorize's allowances on each plan`() throws {
+        #expect(try PlanCatalog.builtIn("free").allowance(for: "vectorize.queried") == .perMonth(Quantity(30_000_000, .dimensions)))
+        #expect(try PlanCatalog.builtIn("free").allowance(for: "vectorize.stored") == .total(Quantity(5_000_000, .dimensions)))
+        #expect(try PlanCatalog.builtIn("workers-paid").allowance(for: "vectorize.queried") == .perMonth(Quantity(50_000_000, .dimensions)))
+    }
+
+    @Test func `should know Durable Objects' allowances on each plan`() throws {
+        #expect(try PlanCatalog.builtIn("free").allowance(for: "durable-objects.requests") == .perDay(Quantity(100_000, .requests)))
+        #expect(try PlanCatalog.builtIn("workers-paid").allowance(for: "durable-objects.rowsRead") == .perMonth(Quantity(25_000_000_000, .rows)))
+        let paid = Plan(try PlanCatalog.builtIn("workers-paid"), renewsOn: nil)
+        #expect(paid.cost(of: ["durable-objects.requests": Quantity(3_000_000, .requests)]) == Money(Decimal(string: "5.30")!, "USD"))
+    }
+
     @Test func `should take R2 as an add-on beside the Workers plan when the account has R2`() throws {
         #expect(try PlanCatalog.addOns(forRatePlans: ["r2_paid"], among: .builtIns()).map(\.id) == ["r2-paid"])
         #expect(try PlanCatalog.addOns(forRatePlans: ["workers_paid"], among: .builtIns()).isEmpty)

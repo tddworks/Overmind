@@ -15,7 +15,14 @@
     "kv.deletes": { "perMonth": "1M requests" },
     "kv.lists": { "perMonth": "1M requests" },
     "kv.storage": { "total": "1 GB" },
-    "queues.operations": { "perMonth": "1M operations" }
+    "queues.operations": { "perMonth": "1M operations" },
+    "ai.neurons": { "perDay": "10k neurons" },
+    "vectorize.queried": { "perMonth": "50M dimensions" },
+    "vectorize.stored": { "total": "10M dimensions" },
+    "durable-objects.requests": { "perMonth": "1M requests" },
+    "durable-objects.rowsRead": { "perMonth": "25B rows" },
+    "durable-objects.rowsWritten": { "perMonth": "50M rows" },
+    "durable-objects.storage": { "total": "5 GB" }
   },
   "prices": {
     "workers.requests": { "beyond": { "price": "0.30 USD", "per": "1M requests" } },
@@ -28,6 +35,13 @@
     "kv.deletes": { "beyond": { "price": "5.00 USD", "per": "1M requests" } },
     "kv.lists": { "beyond": { "price": "5.00 USD", "per": "1M requests" } },
     "kv.storage": { "perMonthOver": { "price": "0.50 USD", "per": "1 GB" } },
-    "queues.operations": { "beyond": { "price": "0.40 USD", "per": "1M operations" } }
+    "queues.operations": { "beyond": { "price": "0.40 USD", "per": "1M operations" } },
+    "ai.neurons": { "beyond": { "price": "0.011 USD", "per": "1k neurons" } },
+    "vectorize.queried": { "beyond": { "price": "0.01 USD", "per": "1M dimensions" } },
+    "vectorize.stored": { "perMonthOver": { "price": "0.05 USD", "per": "100M dimensions" } },
+    "durable-objects.requests": { "beyond": { "price": "0.15 USD", "per": "1M requests" } },
+    "durable-objects.rowsRead": { "beyond": { "price": "0.001 USD", "per": "1M rows" } },
+    "durable-objects.rowsWritten": { "beyond": { "price": "1.00 USD", "per": "1M rows" } },
+    "durable-objects.storage": { "perMonthOver": { "price": "0.20 USD", "per": "1 GB" } }
   }
 }

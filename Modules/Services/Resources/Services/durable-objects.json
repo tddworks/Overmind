@@ -1,0 +1,27 @@
+{
+  "id": "durable-objects",
+  "name": "Durable Objects",
+  "order": 8,
+  "watchedByDefault": false,
+  "look": { "glyph": "◈", "color": "sky" },
+  "limits": [
+    { "id": "durable-objects.requests", "name": "Durable Objects requests", "short": "DO", "unit": "requests",
+      "read": { "sum": { "dataset": "durableObjectsInvocationsAdaptiveGroups", "field": "sum.requests",
+                         "time": "datetime", "focus": "scriptName" } } },
+    { "id": "durable-objects.rowsRead", "name": "Durable Objects rows read", "short": "DO reads", "unit": "rows",
+      "read": { "sum": { "dataset": "durableObjectsPeriodicGroups", "field": "sum.rowsRead",
+                         "time": "datetime", "focus": "namespaceId" } } },
+    { "id": "durable-objects.rowsWritten", "name": "Durable Objects rows written", "short": "DO writes", "unit": "rows",
+      "read": { "sum": { "dataset": "durableObjectsPeriodicGroups", "field": "sum.rowsWritten",
+                         "time": "datetime", "focus": "namespaceId" } } },
+    { "id": "durable-objects.storage", "name": "Durable Objects storage", "short": "DO storage", "unit": "bytes",
+      "read": { "max": { "dataset": "durableObjectsSqlStorageGroups", "field": "max.storedBytes",
+                         "time": "datetime", "focus": "namespaceId" } } }
+  ],
+  "breakdowns": [
+    { "title": "Requests · per hour today", "series": { "limit": "durable-objects.requests", "by": "hour", "last": 24 } },
+    { "title": "Requests by outcome",
+      "split": { "dataset": "durableObjectsInvocationsAdaptiveGroups", "dimension": "status", "measure": "sum.requests",
+                 "time": "datetime", "focus": "scriptName" } }
+  ]
+}

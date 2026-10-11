@@ -14,6 +14,13 @@
     "kv.deletes": { "perDay": "1k requests" },
     "kv.lists": { "perDay": "1k requests" },
     "kv.storage": { "total": "1 GB" },
-    "queues.operations": { "perDay": "10k operations" }
+    "queues.operations": { "perDay": "10k operations" },
+    "ai.neurons": { "perDay": "10k neurons" },
+    "vectorize.queried": { "perMonth": "30M dimensions" },
+    "vectorize.stored": { "total": "5M dimensions" },
+    "durable-objects.requests": { "perDay": "100k requests" },
+    "durable-objects.rowsRead": { "perDay": "5M rows" },
+    "durable-objects.rowsWritten": { "perDay": "100k rows" },
+    "durable-objects.storage": { "total": "5 GB" }
   }
 }

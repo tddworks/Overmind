@@ -50,6 +50,9 @@ Try it without an account: `OVERMIND_DEMO=1 .build/dd/Build/Products/Debug/Overm
 | KV (off until you turn it on in *Settings → Watching*) | reads, writes, deletes, lists, storage | reads per day, operations by type |
 | Queues (off until watched) | operations | operations per hour, operations by type |
 | R2 (off until watched; needs R2 on the account) | Class A, Class B, storage, against R2's own free tier | Class A and B per hour, operations by type |
+| Workers AI (off until watched) | neurons against 10k a day; on Workers Paid each day's overage is priced | neurons per hour, top models |
+| Vectorize (off until watched) | queried and stored vector dimensions | queried dimensions per day, top indexes |
+| Durable Objects (off until watched) | requests, SQLite rows read and written, storage | requests per hour, requests by outcome |
 
 Plans: Free and Workers Paid, with R2 as an add-on beside either; the Bill tab prices this month on both. Other Cloudflare products
 are one JSON file each → [ENGINE_DESIGN](docs/architecture/ENGINE_DESIGN.md).

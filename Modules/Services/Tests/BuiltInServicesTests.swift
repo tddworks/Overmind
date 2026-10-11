@@ -5,8 +5,35 @@ import Measures
 /// The built-in service files, read through the real JSON.
 @Suite
 struct BuiltInServicesTests {
-    @Test func `should show Workers, then D1, KV, Queues and R2`() throws {
-        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv", "queues", "r2"])
+    @Test func `should show Workers, then D1, KV, Queues, R2, Workers AI, Vectorize and Durable Objects`() throws {
+        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv", "queues", "r2", "ai", "vectorize", "durable-objects"])
+    }
+
+    @Test func `should leave every service but Workers and D1 off until the person watches it`() throws {
+        #expect(try ServiceCatalog.builtIns().filter { !$0.watchedByDefault }.map(\.id)
+                == ["kv", "queues", "r2", "ai", "vectorize", "durable-objects"])
+    }
+
+    @Test func `should know Workers AI counts neurons across every model`() throws {
+        let neurons = try #require(try ServiceCatalog.builtIn("ai").limits.first)
+        #expect(neurons.id == "ai.neurons")
+        #expect(neurons.unit == .neurons)
+        #expect(neurons.read == .sum(Read.Source(dataset: "aiInferenceAdaptiveGroups", field: "sum.totalNeurons", time: .datetime)))
+    }
+
+    @Test func `should know Vectorize counts queried dimensions, and stored dimensions across every index`() throws {
+        let vectorize = try ServiceCatalog.builtIn("vectorize")
+        #expect(vectorize.limits.map(\.id) == ["vectorize.queried", "vectorize.stored"])
+        #expect(vectorize.limits[1].read == .max(Read.Source(dataset: "vectorizeV2StorageAdaptiveGroups", field: "max.storedVectorDimensions",
+                                                             time: .datetime, focus: "indexName")))
+    }
+
+    @Test func `should know Durable Objects counts requests, SQLite rows and storage`() throws {
+        let objects = try ServiceCatalog.builtIn("durable-objects")
+        #expect(objects.limits.map(\.id) == ["durable-objects.requests", "durable-objects.rowsRead",
+                                             "durable-objects.rowsWritten", "durable-objects.storage"])
+        #expect(objects.limits[1].read == .sum(Read.Source(dataset: "durableObjectsPeriodicGroups", field: "sum.rowsRead",
+                                                           time: .datetime, focus: "namespaceId")))
     }
 
     @Test func `should know R2's Class B is reads like GetObject and HeadObject, and leave R2 off until watched`() throws {
@@ -31,7 +58,7 @@ struct BuiltInServicesTests {
         #expect(queues.watchedByDefault == false)
     }
 
-    @Test func `should know KV writes are KV's write operations, and leave KV off until the person watches it`() throws {
+    @Test func `should know KV writes are KV's write operations`() throws {
         let kv = try ServiceCatalog.builtIn("kv")
 
         let writes = try #require(kv.limits.first { $0.id == "kv.writes" })

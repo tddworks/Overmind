@@ -4,7 +4,7 @@ description: Where Overmind stands — what is built per module with test counts
 
 # Status
 
-> As of **2026-10-11** · **166 tests** (and 4 live checks), all passing. Every slice is built; the app
+> As of **2026-10-11** · **182 tests** (and 4 live checks), all passing. Every slice is built; the app
 > runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
@@ -15,12 +15,12 @@ description: Where Overmind stands — what is built per module with test counts
 | Design: the five docs, the mockup | approved | — |
 | `Overmind` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect, the Settings window, `LoginItem`, `Updater` (Sparkle), the icon; demo mode and screenshots | — |
 | Release | `tests.yml`, `release.yml` (sign, notarize, DMG, appcast), ClaudeBar's scripts; a universal Release archive built and Developer-ID-signed locally | — |
-| `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID`; units rows, requests, ms, bytes, count, operations | 19 |
-| `Services` | `ServiceDefinition` (`watchedByDefault`), `LimitDefinition`, `Read` (`where`), `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json`, `kv.json`, `queues.json`, `r2.json` | 16 |
-| `Plans` | `PlanDefinition` (upgrade link, `addOn`), `Plan` (`addOns`), `Allowance`, `Price`, `cost(of:)`, `lines(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` (Workers, D1, KV, Queues), `r2-paid.json` | 28 |
+| `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID`; units rows, requests, ms, bytes, count, operations, neurons, dimensions | 20 |
+| `Services` | `ServiceDefinition` (`watchedByDefault`), `LimitDefinition`, `Read` (`where`), `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json`, `kv.json`, `queues.json`, `r2.json`, `ai.json`, `vectorize.json`, `durable-objects.json` | 20 |
+| `Plans` | `PlanDefinition` (upgrade link, `addOn`), `Plan` (`addOns`), `Allowance`, `Price`, `cost(of:)`, `lines(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` (every service but R2), `r2-paid.json`; law 24 (a priced daily allowance billed by the day) | 32 |
 | `Limits` | `Limit` (laws 2–8), `Usage`, `Level`, `Pace` | 16 |
 | `Analytics` | `ReadPlan` (one query; storage summed per database; per-day use; `where` filters), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 18 + 2 live |
-| `Billing` | `Bill` (estimate, forecast, quote, lines, days stopped, verdict), `BillingAPI`; `CloudflareREST` | 16 + 1 live |
+| `Billing` | `Bill` (estimate, forecast, quote, lines, days stopped, verdict, day-by-day overage), `BillingAPI`; `CloudflareREST` | 18 + 1 live |
 | `Alerts` | laws 9–10, CPU stopped invocations; `UserNotifier` | 11 |
 | `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read, watching, menu bar, add-ons), `Refresher` | 42 + 1 live |
 | `Storage` | `KeychainTokenVault`, `JSONSettingsFile` (older files still read) | 4 |
@@ -42,9 +42,9 @@ description: Where Overmind stands — what is built per module with test counts
 | 10 ✅ | The quiet menu bar | `Monitor` (`MenuBarState` as cases, `menuBarShows`, law 22), App (Settings row, label) | *Icon only* shows `☁` and the worst mark; before the first read the bar is `☁`, never an empty number. The GitHub issue's ask |
 | 11 ✅ | Queues | `queues.json`, both plan files, the `operations` unit | Queues operations against Free's 10k a day and Paid's 1M a month, off until watched |
 | 12 ✅ | R2, an add-on plan | `Plans` (`addOn`, `Plan.addOns`, law 23), `r2-paid.json`, `r2.json` | Class A, Class B and storage against R2's own free tier, on either Workers plan, priced in the Bill; off until watched |
-| 13 | Workers AI | `Plans` (law 24: a priced daily allowance billed day by day), `Billing`, `ai.json`, both plan files, the `neurons` unit | neurons against 10k a day; on Paid the Bill charges each day's overage |
-| 14 | Vectorize | `vectorize.json`, both plan files, the `dimensions` unit | queried and stored vector dimensions against each plan, off until watched |
-| 15 | Durable Objects | `durable-objects.json`, both plan files | requests, SQLite rows read and written, and storage; GB-s duration after a live read |
+| 13 ✅ | Workers AI | `Plans` (law 24: a priced daily allowance billed day by day), `Billing`, `ai.json`, both plan files, the `neurons` unit | neurons against 10k a day; on Paid the Bill charges each day's overage |
+| 14 ✅ | Vectorize | `vectorize.json`, both plan files, the `dimensions` unit | queried and stored vector dimensions against each plan, off until watched |
+| 15 ✅ | Durable Objects | `durable-objects.json`, both plan files | requests, SQLite rows read and written, and storage; GB-s duration after a live read |
 
 ## Decisions
 

@@ -17,6 +17,8 @@ public struct Bill: Sendable, Equatable {
     let projected: [LimitID: Quantity]
     /// Each limit's use per UTC day of the month.
     let daily: [LimitID: [Date: Quantity]]
+    /// From the month so far to the whole month: a daily limit's overage is stretched by it (law 24).
+    let stretch: Double
 
     /// `monthToDate` is what was used up this billing month; `kept` is what is stored, which a
     /// pace doesn't stretch.
@@ -28,20 +30,21 @@ public struct Bill: Sendable, Equatable {
         self.period = period
         let elapsed = max(period.elapsedFraction(at: now), 1.0 / 31)
         projected = monthToDate.mapValues { Quantity($0.value / elapsed, $0.unit) }.merging(kept) { $1 }
-        estimate = plan.cost(of: monthToDate.merging(kept) { $1 })
-        forecast = plan.cost(of: projected)
+        stretch = 1 / elapsed
+        estimate = plan.cost(of: monthToDate.merging(kept) { $1 }, days: daily)
+        forecast = plan.cost(of: projected, days: daily, stretch: stretch)
         self.invoices = invoices.sorted { $0.at > $1.at }
         issued = invoices.first { period.contains($0.at) }
     }
 
     /// The same month's pace, priced by another plan: *On Workers Paid $5.00* (law 14).
     public func quote(on other: Plan) -> Money {
-        other.cost(of: projected)
+        other.cost(of: projected, days: daily, stretch: stretch)
     }
 
     /// Where a plan's price for this month's pace comes from, one line per limit (law 20).
     public func lines(on other: Plan) -> [CostLine] {
-        other.lines(of: projected)
+        other.lines(of: projected, days: daily, stretch: stretch)
     }
 
     /// For each limit `plan` allows per day: the allowance, the month's busiest day, and the days
@@ -51,7 +54,7 @@ public struct Bill: Sendable, Equatable {
         for (limit, days) in daily {
             guard case .perDay(let allowance)? = plan.allowance(for: limit) else { continue }
             let busiest = days.max { $0.value.value < $1.value.value }.map { DayUse(day: $0.key, used: $0.value) }
-            let stopped = days.filter { $0.value.value >= allowance.value }.keys.sorted()
+            let stopped = plan.stops(at: limit) ? days.filter { $0.value.value >= allowance.value }.keys.sorted() : []
             result[limit] = LimitDays(allowance: allowance, busiest: busiest, stopped: stopped)
         }
         return result

@@ -39,6 +39,26 @@ struct BillTests {
         #expect(abs(NSDecimalNumber(decimal: bill.forecast.amount).doubleValue - 10) < 0.001)
     }
 
+    @Test func `should bill Workers AI day by day, and forecast by stretching the overage, not the total`() {
+        let days: [LimitID: [Date: Quantity]] = ["ai.neurons": [.utc("2026-10-01T00:00:00"): Quantity(25_000, .neurons),
+                                                               .utc("2026-10-02T00:00:00"): Quantity(5_000, .neurons)]]
+        let bill = Bill(plan: paid, monthToDate: ["ai.neurons": Quantity(30_000, .neurons)], kept: [:], invoices: [], daily: days, at: now)
+
+        #expect(bill.estimate == Money(Decimal(string: "5.165")!, "USD"))
+        // $0.165 so far, a third of the month gone: on pace for $0.495.
+        #expect(abs(NSDecimalNumber(decimal: bill.forecast.amount).doubleValue - 5.495) < 0.001)
+    }
+
+    @Test func `should never say Workers Paid stopped Workers AI on a busy day, since it charges instead`() {
+        let days: [LimitID: [Date: Quantity]] = ["ai.neurons": [.utc("2026-10-01T00:00:00"): Quantity(25_000, .neurons)]]
+
+        let onPaid = Bill(plan: paid, monthToDate: ["ai.neurons": Quantity(25_000, .neurons)], kept: [:], invoices: [], daily: days, at: now)
+        let onFree = Bill(plan: free, monthToDate: ["ai.neurons": Quantity(25_000, .neurons)], kept: [:], invoices: [], daily: days, at: now)
+
+        #expect(onPaid.verdict == .enough)
+        #expect(onFree.verdict == .stopped(days: [.utc("2026-10-01T00:00:00")], limits: ["ai.neurons"]))
+    }
+
     @Test func `should not stretch storage by the month's pace, since it is kept, not used up`() {
         let bill = Bill(plan: paid, monthToDate: [:], kept: ["d1.storage": Quantity(6e9, .bytes)], invoices: [], at: now)
         #expect(bill.forecast == Money(Decimal(string: "5.75")!, "USD"))

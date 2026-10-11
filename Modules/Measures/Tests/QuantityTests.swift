@@ -17,6 +17,12 @@ struct QuantityTests {
         #expect(Quantity(1_250_000, .operations).short == "1.25M")
     }
 
+    @Test func `should read Workers AI's neurons and Vectorize's dimensions`() throws {
+        #expect(try Quantity(parsing: "10k neurons") == Quantity(10_000, .neurons))
+        #expect(try Quantity(parsing: "30M dimensions") == Quantity(30_000_000, .dimensions))
+        #expect(Quantity(12_500, .neurons).short == "12.5k")
+    }
+
     @Test func `should read 25B rows as twenty-five billion rows`() throws {
         #expect(try Quantity(parsing: "25B rows") == Quantity(25_000_000_000, .rows))
     }

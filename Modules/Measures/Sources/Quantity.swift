@@ -6,11 +6,16 @@ public enum QuantityUnit: String, Sendable, Codable, CaseIterable {
     case rows, requests, milliseconds, bytes, count
     /// Queues: 64 KB written, read or deleted.
     case operations
+    /// Workers AI's unit of compute.
+    case neurons
+    /// Vectorize: one number of one vector.
+    case dimensions
 
     /// The word a definition file writes after the number, and how many base units it means:
     /// `GB` is a billion bytes, as Cloudflare prices storage.
     static let words: [String: (QuantityUnit, Double)] = [
         "rows": (.rows, 1), "requests": (.requests, 1), "count": (.count, 1), "operations": (.operations, 1),
+        "neurons": (.neurons, 1), "dimensions": (.dimensions, 1),
         "ms": (.milliseconds, 1),
         "bytes": (.bytes, 1), "KB": (.bytes, 1e3), "MB": (.bytes, 1e6), "GB": (.bytes, 1e9),
     ]
@@ -62,7 +67,7 @@ extension Quantity {
                 return "\(Self.significant(value / size)) \(word)"
             }
             return "\(Int(value)) bytes"
-        case .rows, .requests, .count, .operations:
+        case .rows, .requests, .count, .operations, .neurons, .dimensions:
             for (size, word) in [(1e9, "B"), (1e6, "M"), (1e3, "k")] where value >= size {
                 return "\(Self.significant(value / size))\(word)"
             }
