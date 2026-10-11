@@ -124,6 +124,35 @@ struct BuiltInPlansTests {
         #expect(paid.cost(of: ["queues.operations": Quantity(3_000_000, .operations)]) == Money(Decimal(string: "5.80")!, "USD"))
     }
 
+    @Test func `should take R2 as an add-on beside the Workers plan when the account has R2`() throws {
+        #expect(try PlanCatalog.addOns(forRatePlans: ["r2_paid"], among: .builtIns()).map(\.id) == ["r2-paid"])
+        #expect(try PlanCatalog.addOns(forRatePlans: ["workers_paid"], among: .builtIns()).isEmpty)
+    }
+
+    @Test func `should count R2 Class A against R2's 1M a month beside the Free plan`() throws {
+        let free = Plan(try PlanCatalog.builtIn("free"), renewsOn: nil, addOns: [Plan(try PlanCatalog.builtIn("r2-paid"), renewsOn: nil)])
+
+        #expect(free.allowance(for: "r2.classA") == .perMonth(Quantity(1_000_000, .requests)))
+        #expect(free.allowance(for: "d1.rowsRead") == .perDay(Quantity(5_000_000, .rows)))
+        #expect(Plan(try PlanCatalog.builtIn("free"), renewsOn: nil).allowance(for: "r2.classA") == nil)
+    }
+
+    @Test func `should charge R2's Class A past its free million on Free, with its own line`() throws {
+        let free = Plan(try PlanCatalog.builtIn("free"), renewsOn: nil, addOns: [Plan(try PlanCatalog.builtIn("r2-paid"), renewsOn: nil)])
+        let used: [LimitID: Quantity] = ["r2.classA": Quantity(2_000_000, .requests), "d1.rowsRead": Quantity(1_000, .rows)]
+
+        #expect(free.cost(of: used) == Money(Decimal(string: "4.50")!, "USD"))
+        #expect(free.lines(of: used).map(\.limit) == ["r2.classA"])
+    }
+
+    @Test func `should reset R2's month on R2's own renewal day`() throws {
+        let renewal = Date(timeIntervalSince1970: 1_792_022_400)   // 2026-10-15 00:00 UTC
+        let paid = Plan(try PlanCatalog.builtIn("workers-paid"), renewsOn: nil,
+                        addOns: [Plan(try PlanCatalog.builtIn("r2-paid"), renewsOn: renewal)])
+
+        #expect(paid.period(for: "r2.classA", at: Date(timeIntervalSince1970: 1_791_763_200))?.end == renewal)   // 2026-10-12
+    }
+
     @Test func `should take an account with only R2 Paid to be on the Free Workers plan`() throws {
         #expect(try PlanCatalog.plan(forRatePlans: ["r2_paid"]).id == "free")
     }

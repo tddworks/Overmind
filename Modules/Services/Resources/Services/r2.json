@@ -1,0 +1,30 @@
+{
+  "id": "r2",
+  "name": "R2",
+  "order": 5,
+  "watchedByDefault": false,
+  "look": { "glyph": "◫", "color": "butter" },
+  "limits": [
+    { "id": "r2.classA", "name": "R2 Class A", "short": "R2 A", "unit": "requests",
+      "read": { "sum": { "dataset": "r2OperationsAdaptiveGroups", "field": "sum.requests", "time": "datetime", "focus": "bucketName",
+                         "where": { "dimension": "actionType",
+                                    "in": ["ListBuckets", "PutBucket", "ListObjects", "PutObject", "CopyObject",
+                                           "CreateMultipartUpload", "UploadPart", "UploadPartCopy", "CompleteMultipartUpload",
+                                           "ListMultipartUploads", "ListParts", "LifecycleStorageTierTransition",
+                                           "PutBucketEncryption", "PutBucketCors", "PutBucketLifecycleConfiguration"] } } } },
+    { "id": "r2.classB", "name": "R2 Class B", "short": "R2 B", "unit": "requests",
+      "read": { "sum": { "dataset": "r2OperationsAdaptiveGroups", "field": "sum.requests", "time": "datetime", "focus": "bucketName",
+                         "where": { "dimension": "actionType",
+                                    "in": ["HeadBucket", "HeadObject", "GetObject", "UsageSummary", "GetBucketEncryption",
+                                           "GetBucketLocation", "GetBucketCors", "GetBucketLifecycleConfiguration"] } } } },
+    { "id": "r2.storage", "name": "R2 storage", "short": "R2 storage", "unit": "bytes",
+      "read": { "max": { "dataset": "r2StorageAdaptiveGroups", "field": "max.payloadSize", "time": "datetime", "focus": "bucketName" } } }
+  ],
+  "breakdowns": [
+    { "title": "Class A · per hour today", "series": { "limit": "r2.classA", "by": "hour", "last": 24 } },
+    { "title": "Class B · per hour today", "series": { "limit": "r2.classB", "by": "hour", "last": 24 } },
+    { "title": "Operations by type",
+      "split": { "dataset": "r2OperationsAdaptiveGroups", "dimension": "actionType", "measure": "sum.requests",
+                 "time": "datetime", "focus": "bucketName" } }
+  ]
+}

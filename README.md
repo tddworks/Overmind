@@ -49,8 +49,9 @@ Try it without an account: `OVERMIND_DEMO=1 .build/dd/Build/Products/Debug/Overm
 | D1 | rows read, rows written, storage | rows read per day and hour, top queries |
 | KV (off until you turn it on in *Settings → Watching*) | reads, writes, deletes, lists, storage | reads per day, operations by type |
 | Queues (off until watched) | operations | operations per hour, operations by type |
+| R2 (off until watched; needs R2 on the account) | Class A, Class B, storage, against R2's own free tier | Class A and B per hour, operations by type |
 
-Plans: Free and Workers Paid; the Bill tab prices this month on both. Other Cloudflare products
+Plans: Free and Workers Paid, with R2 as an add-on beside either; the Bill tab prices this month on both. Other Cloudflare products
 are one JSON file each → [ENGINE_DESIGN](docs/architecture/ENGINE_DESIGN.md).
 
 Overmind only reads: no call it makes can change your account.

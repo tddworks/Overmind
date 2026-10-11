@@ -83,6 +83,7 @@ Account  ◆                                  THE ROOT — one per app (v1)
 │
 ├── watching: [ServiceDefinition]           "Worker ☑ · D1 ☑ · KV ☐" — DERIVED from the person's choices and
 │                                           each file's watchedByDefault; never empty (law 21)
+├── isCounted(service)                      DERIVED — false when no plan or add-on counts it: "not on this account's plans"
 ├── canUnwatch(service)                     DERIVED — false for the last one watched: its switch is dimmed
 ├── estimateCovers: Coverage                DERIVED — everything · only(["Worker"]): "est. · Worker only"
 ├── focus: Focus  ◇                         .worker(name) · .allWorkers — breakdowns only

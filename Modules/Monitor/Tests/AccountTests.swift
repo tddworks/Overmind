@@ -455,3 +455,49 @@ struct MenuBarTests {
         #expect(try world.account().menuBarShows == .iconOnly)
     }
 }
+
+/// R2: an add-on plan beside the Workers plan (law 23).
+@MainActor
+@Suite
+struct AddOnTests {
+    @Test func `should count R2 against its own free tier once watched on an account with R2`() async throws {
+        let world = World()
+        world.cloudflare.ratePlans = ["r2_paid"]
+        world.cloudflare.numbers = ["requests": 250_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        await account.watch("r2", at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.plan.definition.id == "free")
+        #expect(account.limit("r2.classA")?.percent(at: .utc("2026-10-09T14:31:00"))?.rounded == 25)
+        #expect(account.isCounted("r2"))
+    }
+
+    @Test func `should say R2 isn't on the account's plans when it has no R2`() async throws {
+        let world = World()
+        world.cloudflare.ratePlans = []
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        await account.watch("r2", at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.limit("r2.classA") == nil)
+        #expect(account.isCounted("r2") == false)
+        #expect(account.isCounted("d1"))
+    }
+
+    @Test func `should never offer R2 as a plan to switch to, and quote Workers Paid with R2 kept`() async throws {
+        let world = World()
+        world.cloudflare.ratePlans = ["r2_paid"]
+        world.cloudflare.numbers = ["requests": 2_000_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        await account.watch("r2", at: .utc("2026-10-09T14:20:00"))
+
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.quotes.map(\.plan.name) == ["Workers Paid"])
+        #expect(account.quotes.first?.lines.map(\.limit).contains("r2.classA") == true)
+    }
+}

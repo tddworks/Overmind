@@ -67,7 +67,7 @@ do, the command that lands on the domain, and the node that answers.
 | 21a | After turning *D1* off | no *D1* tab; no D1 card in *Every limit today*; the menu bar picks among the Worker's limits; no D1 warning; the Bill reads *This month · est. · Worker only* | nothing | — | `Account.limits` · `Bill` follow `watching` |
 | 21b | Kai tries to turn the last service off | the last switch is dimmed: *Overmind watches at least one service* | — | `account.unwatch(…)` says no | `Account` (law 21) |
 | 21d | Lee watches *R2* on an account with an R2 subscription | R2 cards (*Class A*, *Class B*, *R2 storage*) against R2's own free tier; the Bill adds R2's lines to the Workers plan's; the header still reads *FREE* or *WORKERS PAID* | — | `account.watch("r2")` | `Plan.addOns` (law 23) |
-| 21e | Lee watches *R2* without an R2 subscription | the *R2* row reads *needs R2 on this account*; no R2 cards | — | — | no allowance, so no limit (ENGINE §3) |
+| 21e | Lee watches *R2* without an R2 subscription | the *R2* row reads *not on this account's plans*; no R2 cards | — | — | `account.isCounted("r2")`: no allowance, so no limit (ENGINE §3) |
 | 21c | A new version ships KV | *KV* appears in *Watching*, off; Worker and D1 keep Kai's choices | turns it on if they use KV | `account.watch("kv")` | the service file's `watchedByDefault` |
 | 22 | A new version is out | Sparkle's *A new version of Overmind is available* · *Check now* in Settings | installs | — | `Updater` (App, Sparkle) |
 

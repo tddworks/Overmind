@@ -60,7 +60,9 @@ struct SettingsView: View {
                 let on = account.isWatching(service.id)
                 let locked = on && !account.canUnwatch(service.id)
                 SettingsRow(title: "\(service.look.glyph)  \(service.name)",
-                            note: locked ? "Overmind watches at least one service" : service.limits.map(\.name).joined(separator: " · ")) {
+                            note: locked ? "Overmind watches at least one service"
+                                : account.summary != nil && !account.isCounted(service.id) ? "not on this account's plans"
+                                : service.limits.map(\.name).joined(separator: " · ")) {
                     PopSwitch(isOn: on) {
                         if on { account.unwatch(service.id) } else { Task { await account.watch(service.id, at: Demo.now ?? .now) } }
                     }

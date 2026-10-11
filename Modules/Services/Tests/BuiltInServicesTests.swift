@@ -5,8 +5,19 @@ import Measures
 /// The built-in service files, read through the real JSON.
 @Suite
 struct BuiltInServicesTests {
-    @Test func `should show Workers, then D1, KV and Queues`() throws {
-        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv", "queues"])
+    @Test func `should show Workers, then D1, KV, Queues and R2`() throws {
+        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv", "queues", "r2"])
+    }
+
+    @Test func `should know R2's Class B is reads like GetObject and HeadObject, and leave R2 off until watched`() throws {
+        let r2 = try ServiceCatalog.builtIn("r2")
+
+        let classB = try #require(r2.limits.first { $0.id == "r2.classB" })
+        #expect(classB.read.source.dataset == "r2OperationsAdaptiveGroups")
+        #expect(classB.read.source.where?.dimension == "actionType")
+        #expect(classB.read.source.where?.in.contains("GetObject") == true)
+        #expect(classB.read.source.where?.in.contains("PutObject") == false)
+        #expect(r2.watchedByDefault == false)
     }
 
     @Test func `should know Queues counts billable operations across every queue, and leave Queues off until watched`() throws {

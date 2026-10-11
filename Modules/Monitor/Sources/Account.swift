@@ -182,9 +182,11 @@ public final class Account {
         planReadAt = now
         do {
             let subscriptions = try await billing.subscriptions(account: summary.id)
-            let definition = try PlanCatalog.plan(forRatePlans: subscriptions.map(\.ratePlan), among: plans)
-            let renewal = subscriptions.first { definition.matches.contains($0.ratePlan) }?.renewsOn
-            plan = Plan(definition, renewsOn: renewal)
+            let ratePlans = subscriptions.map(\.ratePlan)
+            let renewal = { (definition: PlanDefinition) in subscriptions.first { definition.matches.contains($0.ratePlan) }?.renewsOn }
+            let definition = try PlanCatalog.plan(forRatePlans: ratePlans, among: plans)
+            let addOns = PlanCatalog.addOns(forRatePlans: ratePlans, among: plans).map { Plan($0, renewsOn: renewal($0)) }
+            plan = Plan(definition, renewsOn: renewal(definition), addOns: addOns)
         } catch {
             missing.insert(.billing)
         }
@@ -280,8 +282,9 @@ public final class Account {
         }
         let bill = Bill(plan: plan, monthToDate: monthToDate, kept: kept, invoices: invoices, daily: daily, at: now)
         self.bill = bill
-        quotes = plans.filter { $0.id != plan.definition.id }.map { definition in
-            let other = Plan(definition, renewsOn: nil)
+        // Another Workers plan, with the same add-ons: R2 stays whatever Workers plan you pick (law 23).
+        quotes = plans.filter { !$0.addOn && $0.id != plan.definition.id }.map { definition in
+            let other = Plan(definition, renewsOn: nil, addOns: plan.addOns)
             return Quote(plan: definition, cost: bill.quote(on: other), lines: bill.lines(on: other),
                          days: bill.days(on: other), upgradeURL: definition.upgradeURL(account: summary.id))
         }
@@ -318,6 +321,12 @@ public final class Account {
     }
 
     public func isWatching(_ serviceID: String) -> Bool { watching.contains { $0.id == serviceID } }
+
+    /// Whether the account's plans count any of this service: R2 needs R2 on the account
+    /// (*not on this account's plans*).
+    public func isCounted(_ serviceID: String) -> Bool {
+        services.first { $0.id == serviceID }?.limits.contains { plan.allowance(for: $0.id) != nil } ?? false
+    }
 
     /// Whether *Watching* lets this switch go off: never the last one (law 21).
     public func canUnwatch(_ serviceID: String) -> Bool { isWatching(serviceID) && watching.count > 1 }
