@@ -4,6 +4,10 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 
 ## [Unreleased]
 
+---
+
+## [0.2.3] - 2026-10-11
+
 ### Added
 
 - AI Gateway: a tab with requests and tokens by model, requests by provider and errors, once watched. It is free, so it adds no limits.
