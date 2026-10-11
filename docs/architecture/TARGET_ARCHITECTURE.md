@@ -74,6 +74,7 @@ ConnectSheet ─ account.connect(token)
 ```text
 Refresher ─ account.refresh(at: now)
   limits of the watched services only            law 21
+  none (only AI Gateway watched) → a good read, no query: an empty query is a GraphQL error
   plan.period(for: each limit, at: now)          law 5
   ReadPlan(limits, periods) → one AnalyticsQuery  one POST per refresh: the GraphQL API allows 300 per 5 min
   AnalyticsAPI.read(query) → answer

@@ -4,7 +4,7 @@ description: Where Overmind stands — what is built per module with test counts
 
 # Status
 
-> As of **2026-10-11** · **182 tests** (and 4 live checks), all passing. Every slice is built; the app
+> As of **2026-10-11** · **186 tests** (and 4 live checks), all passing. Every slice is built; the app
 > runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
@@ -16,7 +16,7 @@ description: Where Overmind stands — what is built per module with test counts
 | `Overmind` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect, the Settings window, `LoginItem`, `Updater` (Sparkle), the icon; demo mode and screenshots | — |
 | Release | `tests.yml`, `release.yml` (sign, notarize, DMG, appcast), ClaudeBar's scripts; a universal Release archive built and Developer-ID-signed locally | — |
 | `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID`; units rows, requests, ms, bytes, count, operations, neurons, dimensions | 20 |
-| `Services` | `ServiceDefinition` (`watchedByDefault`), `LimitDefinition`, `Read` (`where`), `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json`, `kv.json`, `queues.json`, `r2.json`, `ai.json`, `vectorize.json`, `durable-objects.json` | 20 |
+| `Services` | `ServiceDefinition` (`watchedByDefault`), `LimitDefinition`, `Read` (`where`), `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json`, `kv.json`, `queues.json`, `r2.json`, `ai.json`, `vectorize.json`, `durable-objects.json`, `ai-gateway.json` | 21 |
 | `Plans` | `PlanDefinition` (upgrade link, `addOn`), `Plan` (`addOns`), `Allowance`, `Price`, `cost(of:)`, `lines(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` (every service but R2), `r2-paid.json`; law 24 (a priced daily allowance billed by the day) | 32 |
 | `Limits` | `Limit` (laws 2–8), `Usage`, `Level`, `Pace` | 16 |
 | `Analytics` | `ReadPlan` (one query; storage summed per database; per-day use; `where` filters), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 18 + 2 live |
@@ -45,6 +45,7 @@ description: Where Overmind stands — what is built per module with test counts
 | 13 ✅ | Workers AI | `Plans` (law 24: a priced daily allowance billed day by day), `Billing`, `ai.json`, both plan files, the `neurons` unit | neurons against 10k a day; on Paid the Bill charges each day's overage |
 | 14 ✅ | Vectorize | `vectorize.json`, both plan files, the `dimensions` unit | queried and stored vector dimensions against each plan, off until watched |
 | 15 ✅ | Durable Objects | `durable-objects.json`, both plan files | requests, SQLite rows read and written, and storage; GB-s duration after a live read |
+| 16 ✅ | AI Gateway, a tab only | `ai-gateway.json` (no limits), App (Settings note) | requests, tokens and errors by model, requests by provider, on its tab, off until watched; no card, warning or Bill line |
 
 ## Decisions
 

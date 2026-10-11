@@ -1,5 +1,5 @@
 ---
-description: The Worker, D1, KV, Queues, R2, Workers AI, Vectorize and Durable Objects tabs — the charts and lists each shows, the Worker focus, and the deployment pins. Read when a chart looks empty or different from the dashboard.
+description: The Worker, D1, KV, Queues, R2, Workers AI, Vectorize, Durable Objects and AI Gateway tabs — the charts and lists each shows, the Worker focus, and the deployment pins. Read when a chart looks empty or different from the dashboard.
 ---
 
 # Service tabs
@@ -14,6 +14,7 @@ description: The Worker, D1, KV, Queues, R2, Workers AI, Vectorize and Durable O
 | **Workers AI** | neurons per hour today · top models by neurons · the neurons limit (10k a day on both plans) |
 | **Vectorize** | queried dimensions per day (7 days) · top indexes · queried and stored dimensions |
 | **Durable Objects** | requests per hour today · requests by outcome · requests, SQLite rows read and written, storage. The Worker focus narrows the request charts. GB-s duration isn't counted yet |
+| **AI Gateway** | requests by model · tokens by model · requests by provider · errors by model, over the last 24 hours. Charts only: AI Gateway is free, so it has no limits, cards or warnings |
 
 - **The focus** (*leaderboard ▾ · All Workers*) narrows the charts to one Worker. The limits never change: Cloudflare counts them across the account.
 - **Pins** (*d605dc93*) mark when a version of the focused Worker went live.

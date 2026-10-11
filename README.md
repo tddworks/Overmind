@@ -53,6 +53,7 @@ Try it without an account: `OVERMIND_DEMO=1 .build/dd/Build/Products/Debug/Overm
 | Workers AI (off until watched) | neurons against 10k a day; on Workers Paid each day's overage is priced | neurons per hour, top models |
 | Vectorize (off until watched) | queried and stored vector dimensions | queried dimensions per day, top indexes |
 | Durable Objects (off until watched) | requests, SQLite rows read and written, storage | requests per hour, requests by outcome |
+| AI Gateway (off until watched) | none: it is free on every plan | requests and tokens by model, requests by provider, errors by model |
 
 Plans: Free and Workers Paid, with R2 as an add-on beside either; the Bill tab prices this month on both. Other Cloudflare products
 are one JSON file each → [ENGINE_DESIGN](docs/architecture/ENGINE_DESIGN.md).

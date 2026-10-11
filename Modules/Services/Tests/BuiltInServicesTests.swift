@@ -5,13 +5,22 @@ import Measures
 /// The built-in service files, read through the real JSON.
 @Suite
 struct BuiltInServicesTests {
-    @Test func `should show Workers, then D1, KV, Queues, R2, Workers AI, Vectorize and Durable Objects`() throws {
-        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv", "queues", "r2", "ai", "vectorize", "durable-objects"])
+    @Test func `should show Workers, then D1, KV, Queues, R2, Workers AI, Vectorize, Durable Objects and AI Gateway`() throws {
+        #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1", "kv", "queues", "r2", "ai", "vectorize", "durable-objects", "ai-gateway"])
+    }
+
+    @Test func `should know AI Gateway is charts only, free on every plan, ranking models by requests`() throws {
+        let gateway = try ServiceCatalog.builtIn("ai-gateway")
+
+        #expect(gateway.limits.isEmpty)
+        let source = BreakdownDefinition.Source(dataset: "aiGatewayRequestsAdaptiveGroups", measure: "count", time: .datetime, focus: "gateway")
+        #expect(gateway.breakdowns.first?.kind == .top(source, dimension: "model", count: 5))
+        #expect(gateway.watchedByDefault == false)
     }
 
     @Test func `should leave every service but Workers and D1 off until the person watches it`() throws {
         #expect(try ServiceCatalog.builtIns().filter { !$0.watchedByDefault }.map(\.id)
-                == ["kv", "queues", "r2", "ai", "vectorize", "durable-objects"])
+                == ["kv", "queues", "r2", "ai", "vectorize", "durable-objects", "ai-gateway"])
     }
 
     @Test func `should know Workers AI counts neurons across every model`() throws {
