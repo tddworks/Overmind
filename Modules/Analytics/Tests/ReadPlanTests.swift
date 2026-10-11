@@ -56,6 +56,13 @@ struct ReadPlanTests {
         #expect(query.contains(#"actionType_in: ["write"]"#))
     }
 
+    @Test func `should rank AI Gateway's models by how many requests each had`() throws {
+        let query = plan.breakdowns(try ServiceCatalog.builtIn("ai-gateway"), focus: .everything, at: Fixture.now).query.text
+
+        #expect(query.contains("b0: aiGatewayRequestsAdaptiveGroups(limit: 5"))
+        #expect(query.contains("orderBy: [count_DESC]) { dimensions { model } count }"))
+    }
+
     @Test func `should chart only KV's reads on the reads chart`() throws {
         let query = plan.breakdowns(try ServiceCatalog.builtIn("kv"), focus: .everything, at: Fixture.now).query.text
 

@@ -487,6 +487,19 @@ struct AddOnTests {
         #expect(account.isCounted("d1"))
     }
 
+    @Test func `should watch AI Gateway for its charts, without a card or a gap in the plans`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        let before = account.limits.count
+
+        await account.watch("ai-gateway", at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.isWatching("ai-gateway"))
+        #expect(account.limits.count == before)
+        #expect(account.isCounted("ai-gateway"))
+    }
+
     @Test func `should never offer R2 as a plan to switch to, and quote Workers Paid with R2 kept`() async throws {
         let world = World()
         world.cloudflare.ratePlans = ["r2_paid"]

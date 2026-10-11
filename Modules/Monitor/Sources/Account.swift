@@ -323,9 +323,11 @@ public final class Account {
     public func isWatching(_ serviceID: String) -> Bool { watching.contains { $0.id == serviceID } }
 
     /// Whether the account's plans count any of this service: R2 needs R2 on the account
-    /// (*not on this account's plans*).
+    /// (*not on this account's plans*). A service with no limits (AI Gateway) has nothing a plan
+    /// could miss.
     public func isCounted(_ serviceID: String) -> Bool {
-        services.first { $0.id == serviceID }?.limits.contains { plan.allowance(for: $0.id) != nil } ?? false
+        guard let service = services.first(where: { $0.id == serviceID }) else { return false }
+        return service.limits.isEmpty || service.limits.contains { plan.allowance(for: $0.id) != nil }
     }
 
     /// Whether *Watching* lets this switch go off: never the last one (law 21).

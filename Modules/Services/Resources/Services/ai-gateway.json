@@ -1,0 +1,22 @@
+{
+  "id": "ai-gateway",
+  "name": "AI Gateway",
+  "order": 9,
+  "watchedByDefault": false,
+  "look": { "glyph": "⇄", "color": "pink" },
+  "limits": [],
+  "breakdowns": [
+    { "title": "Requests by model · last 24 hours",
+      "top": { "dataset": "aiGatewayRequestsAdaptiveGroups", "dimension": "model", "measure": "count",
+               "count": 5, "time": "datetime", "focus": "gateway" } },
+    { "title": "Tokens by model · last 24 hours",
+      "top": { "dataset": "aiGatewayRequestsAdaptiveGroups", "dimension": "model", "measure": "sum.totalTokens",
+               "count": 5, "time": "datetime", "focus": "gateway" } },
+    { "title": "Requests by provider",
+      "split": { "dataset": "aiGatewayRequestsAdaptiveGroups", "dimension": "provider", "measure": "count",
+                 "time": "datetime", "focus": "gateway" } },
+    { "title": "Errors by model",
+      "top": { "dataset": "aiGatewayErrorsAdaptiveGroups", "dimension": "model", "measure": "count",
+               "count": 5, "time": "datetime", "focus": "gateway" } }
+  ]
+}
