@@ -59,7 +59,7 @@ enum Snapshots {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(4))
             await account.openBill(at: Demo.now ?? .now)
-            let tabs = ["today"] + account.services.map(\.id) + ["bill"]
+            let tabs = ["today"] + account.watching.map(\.id) + ["bill"]
             for tab in tabs {
                 if tab != "today" && tab != "bill" { await account.open(tab, at: Demo.now ?? .now) }
                 write(PopoverView(account: account, tab: tab, scrolls: false), to: folder, name: tab)

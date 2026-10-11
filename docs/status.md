@@ -4,7 +4,7 @@ description: Where Overmind stands — what is built per module with test counts
 
 # Status
 
-> As of **2026-10-09** · **137 tests** (and 4 live checks), all passing. Every slice is built; the app
+> As of **2026-10-11** · **147 tests** (and 4 live checks), all passing. Every slice is built; the app
 > runs on a real account and on demo data. This file is the one home for
 > "what's built and what's next". Update it when a slice lands.
 
@@ -16,13 +16,13 @@ description: Where Overmind stands — what is built per module with test counts
 | `Overmind` app | the menu bar, Today, the Workers and D1 tabs, Bill, Connect, the Settings window, `LoginItem`, `Updater` (Sparkle), the icon; demo mode and screenshots | — |
 | Release | `tests.yml`, `release.yml` (sign, notarize, DMG, appcast), ClaudeBar's scripts; a universal Release archive built and Developer-ID-signed locally | — |
 | `Measures` | `Quantity` (reads *5M rows*, prints *3.75M*, *75.7k ms*), `Money` (Decimal), `Period` (UTC day, billing month), `Percent`, `LimitID` | 18 |
-| `Services` | `ServiceDefinition`, `LimitDefinition`, `Read`, `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json` | 10 |
+| `Services` | `ServiceDefinition` (`watchedByDefault`), `LimitDefinition`, `Read`, `BreakdownDefinition`, `ServiceCatalog`; `workers.json`, `d1.json` | 12 |
 | `Plans` | `PlanDefinition` (upgrade link), `Plan`, `Allowance`, `Price`, `cost(of:)`, `lines(of:)`, `PlanCatalog`; `free.json`, `workers-paid.json` | 20 |
 | `Limits` | `Limit` (laws 2–8), `Usage`, `Level`, `Pace` | 16 |
 | `Analytics` | `ReadPlan` (one query; storage summed per database; per-day use), answers, breakdowns, `Focus`; `GraphQLAnalytics` | 15 + 2 live |
 | `Billing` | `Bill` (estimate, forecast, quote, lines, days stopped, verdict), `BillingAPI`; `CloudflareREST` | 16 + 1 live |
 | `Alerts` | laws 9–10, CPU stopped invocations; `UserNotifier` | 11 |
-| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read), `Refresher` | 27 + 1 live |
+| `Monitor` | `Account` (connect, choose, refresh, freshness, tabs, bill, alerts, read interval, plan re-read, watching), `Refresher` | 35 + 1 live |
 | `Storage` | `KeychainTokenVault`, `JSONSettingsFile` (older files still read) | 4 |
 | `Diagnostics` | `AppLog` | — |
 
@@ -37,6 +37,9 @@ description: Where Overmind stands — what is built per module with test counts
 | 5 ✅ | Warnings | `Alerts` | laws 9–10, with the sent log kept across relaunches |
 | 6 ✅ | Service tabs | `Analytics` breakdowns, `Billing` deployments | D1 and Worker tabs, with deployment pins and the focus picker |
 | 7 ✅ | The bill | `Billing` | estimate, forecast, quote, invoices |
+| 8 ✅ | Watching | `Services` (`watchedByDefault`), `Monitor` (`watching`, `watch`, `unwatch`, law 21), App (Settings → *Watching*, Bill caption) | an unwatched service has no tab, card, query, warning or bill line; the choice survives a relaunch; the last one can't be turned off |
+| 9 | KV | `Services` (`where` on `sum`, ENGINE §2), `kv.json`, both plan files | KV's reads, writes, deletes, lists and storage, off until watched; datasets and allowances verified in ENGINE §6 |
+| 10 | R2 | `r2.json`, its own plan (R2 is a separate subscription) | Class A, Class B and storage, off until watched |
 
 ## Decisions
 
@@ -48,6 +51,7 @@ description: Where Overmind stands — what is built per module with test counts
 | 2026-10-09 | The API implementation only: an API token, HTTP behind the `Analytics` and `BillingAPI` ports. The `cf` CLI can't serve every read (ENGINE §6) |
 | 2026-10-09 | Design approved; slices 1–7 built the same day |
 | 2026-10-09 | A per-invocation limit acts only when Cloudflare stopped invocations, and is never the closest: a real account ran p99 17 ms past Free's 10 ms with none stopped |
+| 2026-10-11 | New services ship one at a time, each off until the person watches it; an unwatched service is not read at all, and the Bill says what its estimate covers (law 21) |
 
 ## Open questions
 

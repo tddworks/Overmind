@@ -7,6 +7,7 @@ All notable changes to Overmind are recorded here, in the reader's order: Remove
 ### Added
 
 - Install with Homebrew: `brew install --cask tddworks/tap/overmind`.
+- Choose what Overmind watches: *Settings → Watching* turns Worker or D1 off. A service you don't watch is never read: no tab, no card, no menu bar number, no warning, and the Bill says what its estimate covers (*est. · Worker only*). New Cloudflare products will arrive off.
 
 ---
 

@@ -10,11 +10,12 @@ import Monitor
 struct SettingsFileTests {
     let folder = FileManager.default.temporaryDirectory.appendingPathComponent("overmind-\(UUID().uuidString)")
 
-    @Test func `should remember the account, the focus and the warnings already sent across a relaunch`() {
+    @Test func `should remember the account, the focus, the services watched and the warnings already sent across a relaunch`() {
         let saved = Settings(account: AccountSummary(id: "acc1", name: "Acme"),
                              focus: Focus(dimension: "scriptName", value: "leaderboard"),
                              alerts: AlertSettings(levels: [90], pace: false, isOn: true),
-                             sent: [Warning.Key(limit: "d1.rowsRead", mark: .level(75), period: Date(timeIntervalSince1970: 0))])
+                             sent: [Warning.Key(limit: "d1.rowsRead", mark: .level(75), period: Date(timeIntervalSince1970: 0))],
+                             watch: ["d1": false])
         Storage.makeSettings(folder: folder).save(saved)
 
         #expect(Storage.makeSettings(folder: folder).load() == saved)

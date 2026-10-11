@@ -49,7 +49,10 @@ struct PopoverView: View {
                         switch tab {
                         case "today": TodayView(account: account, now: now)
                         case "bill": BillView(account: account, now: now, chosen: billChoice)
-                        default: ServiceView(account: account, serviceID: tab, now: now)
+                        default:
+                            // A tab whose service was just turned off in Settings falls back to Today.
+                            if account.isWatching(tab) { ServiceView(account: account, serviceID: tab, now: now) }
+                            else { TodayView(account: account, now: now) }
                         }
                     }
                     .task(id: tab) { await open(tab, now: now) }
@@ -90,7 +93,7 @@ struct PopoverView: View {
     private var tabs: some View {
         HStack(spacing: 7) {
             TabPill(icon: "◔", title: "Today", tint: Pop.edgeSoft, isOn: tab == "today") { tab = "today" }
-            ForEach(account.services) { service in
+            ForEach(account.watching) { service in
                 TabPill(icon: service.look.glyph, title: service.name, tint: Pop.named(service.look.color), isOn: tab == service.id) {
                     tab = service.id
                 }

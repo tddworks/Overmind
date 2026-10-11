@@ -88,6 +88,7 @@ by `date`, in one query; `Bill` counts the days whose use reached the allowance 
 // Services/Resources/Services/d1.json
 {
   "id": "d1", "name": "D1", "look": { "glyph": "⛁", "color": "butter" },
+  "watchedByDefault": true,          // Worker and D1: true; each later service: false (model law 21)
   "limits": [
     { "id": "d1.rowsRead", "name": "D1 rows read", "short": "D1", "unit": "rows",
       "read": { "sum": { "dataset": "d1AnalyticsAdaptiveGroups", "field": "sum.rowsRead",

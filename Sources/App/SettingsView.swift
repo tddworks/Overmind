@@ -14,6 +14,7 @@ struct SettingsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 accountSection
+                watchingSection
                 readingSection
                 warningsSection
                 generalSection
@@ -49,6 +50,27 @@ struct SettingsView: View {
             } else {
                 SettingsRow(title: "Not connected", note: "connect from the ☁ menu bar item") { EmptyView() }
             }
+        }
+    }
+
+    /// *Worker ☑ · D1 ☑ · KV ☐* (law 21): the last switch on is dimmed and stays on.
+    private var watchingSection: some View {
+        SettingsSection(title: "Watching") {
+            ForEach(account.services) { service in
+                let on = account.isWatching(service.id)
+                let locked = on && !account.canUnwatch(service.id)
+                SettingsRow(title: "\(service.look.glyph)  \(service.name)",
+                            note: locked ? "Overmind watches at least one service" : service.limits.map(\.name).joined(separator: " · ")) {
+                    PopSwitch(isOn: on) {
+                        if on { account.unwatch(service.id) } else { Task { await account.watch(service.id, at: Demo.now ?? .now) } }
+                    }
+                    .opacity(locked ? 0.45 : 1)
+                    .disabled(locked)
+                }
+                .opacity(on ? 1 : 0.6)
+            }
+            Text("A service you don't watch is never read: no tab, no card, no warning, no line in the Bill.")
+                .font(Pop.body(10.5)).foregroundStyle(Pop.muted).padding(.top, 6)
         }
     }
 

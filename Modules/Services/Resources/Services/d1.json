@@ -2,6 +2,7 @@
   "id": "d1",
   "name": "D1",
   "order": 2,
+  "watchedByDefault": true,
   "look": { "glyph": "⛁", "color": "butter" },
   "limits": [
     { "id": "d1.rowsRead", "name": "D1 rows read", "short": "D1", "unit": "rows",

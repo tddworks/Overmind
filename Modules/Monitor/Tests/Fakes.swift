@@ -3,6 +3,7 @@ import Measures
 import Analytics
 import Billing
 import Alerts
+import Services
 @testable import Monitor
 
 extension Date {
@@ -116,8 +117,8 @@ struct World {
     let settings = FakeSettings()
     let notifier = FakeNotifier()
 
-    func account() throws -> Account {
-        try Account(services: .builtIns(), plans: .builtIns(), analytics: cloudflare, billing: cloudflare,
+    func account(adding extra: [ServiceDefinition] = []) throws -> Account {
+        try Account(services: .builtIns() + extra, plans: .builtIns(), analytics: cloudflare, billing: cloudflare,
                     vault: vault, settings: settings, notifier: notifier)
     }
 }

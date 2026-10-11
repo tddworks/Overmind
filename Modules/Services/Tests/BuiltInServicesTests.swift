@@ -9,6 +9,10 @@ struct BuiltInServicesTests {
         #expect(try ServiceCatalog.builtIns().map(\.id) == ["workers", "d1"])
     }
 
+    @Test func `should watch Workers and D1 for someone who never chose`() throws {
+        #expect(try ServiceCatalog.builtIns().allSatisfy(\.watchedByDefault))
+    }
+
     @Test func `should know D1 counts rows read from D1's analytics, narrowed to a database only on its tab`() throws {
         let d1 = try ServiceCatalog.builtIn("d1")
 

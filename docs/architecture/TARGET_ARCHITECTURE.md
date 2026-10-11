@@ -50,7 +50,7 @@ description: How Overmind runs. It covers the pieces, each with one job, and the
 | `Account` | the root; owns the refresh and every law that spans services | Monitor | all of the above |
 | `Refresher` | tell `Account.refresh` every 5 minutes, on wake and on *Refresh* | Monitor | a clock → commands |
 | `TokenVault` (port) | keep the token | Monitor | Keychain |
-| `SettingsStore` (port) | keep the choices and the sent-warnings log | Monitor | `~/.overmind/settings.json` |
+| `SettingsStore` (port) | keep the choices (with `watch: [ServiceID: Bool]`, only the services the person chose for) and the sent-warnings log | Monitor | `~/.overmind/settings.json` |
 | `SettingsView` | the Settings window: renders `Account` and tells it, like the popover | App | — |
 | `LoginItem` | *Start at login*, over `SMAppService.mainApp` | App | the system's login items |
 | `Updater` | Sparkle: checks the appcast, installs signed updates | App | `https://tddworks.github.io/Overmind/appcast.xml` |
@@ -73,6 +73,7 @@ ConnectSheet ─ account.connect(token)
 
 ```text
 Refresher ─ account.refresh(at: now)
+  limits of the watched services only            law 21
   plan.period(for: each limit, at: now)          law 5
   ReadPlan(limits, periods) → one AnalyticsQuery  one POST per refresh: the GraphQL API allows 300 per 5 min
   AnalyticsAPI.read(query) → answer
@@ -85,6 +86,19 @@ Refresher ─ account.refresh(at: now)
 
 A failed read changes `freshness` and nothing else: the last good usage stays
 on screen with *STALE*, never zeros.
+
+### 3.2a · Watching a service (journey 21)
+
+```text
+SettingsView ─ account.watch(id) / unwatch(id)
+  unknown id, or the last watched one → no (law 21)
+  settings.watch[id] = true / false · SettingsStore.save
+  limits = Account.limits(watched services, on: plan, keeping: limits)
+  watch → refresh(at: now)                        its numbers appear at once
+```
+
+A choice for a service the files no longer have is ignored; a service the
+choices don't name takes its file's `watchedByDefault`.
 
 ### 3.3 · Opening a service tab (journeys 12–14)
 
@@ -101,6 +115,7 @@ parameter, so law 1 can't be broken by a caller.
 
 ```text
 account.bill
+  only the watched services' limits; the estimate names them when one isn't watched (law 21)
   invoice for this period? → shown as is (law 13)
   else plan.cost(of: limits' month-to-date)  — Paid only; Free is $0 and can't overspend
   forecast = plan.cost(of: limits' month pace)

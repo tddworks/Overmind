@@ -4,6 +4,7 @@ import Measures
 import Limits
 import Analytics
 import Billing
+import Services
 @testable import Monitor
 
 @MainActor
@@ -310,5 +311,99 @@ struct UpgradeTests {
         let paid = try #require(account.quotes.first)
         #expect(paid.lines.contains { $0.limit == "d1.rowsRead" })
         #expect(paid.upgradeURL?.absoluteString == "https://dash.cloudflare.com/acc1/workers/plans")
+    }
+}
+
+/// Settings → Watching (law 21): only a watched service is read.
+@MainActor
+@Suite
+struct WatchingTests {
+    /// A service that ships off: what KV will be.
+    static let kv = try! ServiceDefinition(json: Data("""
+    { "id": "kv", "name": "KV", "order": 3, "look": { "glyph": "K", "color": "sky" },
+      "limits": [ { "id": "kv.reads", "name": "KV reads", "short": "KV", "unit": "count",
+                    "read": { "sum": { "dataset": "kvOperationsAdaptiveGroups", "field": "sum.requests", "time": "date" } } } ],
+      "breakdowns": [] }
+    """.utf8))
+
+    @Test func `should watch every built-in service for someone who never chose`() throws {
+        let account = try World().account()
+
+        #expect(account.watching.map(\.id) == ["workers", "d1"])
+        #expect(account.estimateCovers == .everything)
+    }
+
+    @Test func `should leave a new service off until the person turns it on`() throws {
+        let account = try World().account(adding: [Self.kv])
+
+        #expect(account.watching.map(\.id) == ["workers", "d1"])
+        #expect(account.isWatching("kv") == false)
+    }
+
+    @Test func `should never read D1, warn about it or count it as closest once the person stops watching it`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 4_900_000, "requests": 9_814]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+
+        account.unwatch("d1")
+        await account.refresh(at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.limit("d1.rowsRead") == nil)
+        #expect(world.cloudflare.queries.last?.contains("d1AnalyticsAdaptiveGroups") == false)
+        #expect(account.closest(at: .utc("2026-10-09T14:31:00"))?.id == "workers.requests")
+        #expect(account.estimateCovers == .only(["Worker"]))
+    }
+
+    @Test func `should leave D1 out of the bill when D1 isn't watched`() async throws {
+        let world = World()
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        account.unwatch("d1")
+        let before = world.cloudflare.queries.count
+
+        await account.openBill(at: .utc("2026-10-09T14:20:00"))
+
+        #expect(world.cloudflare.queries.dropFirst(before).contains { $0.contains("d1AnalyticsAdaptiveGroups") || $0.contains("d1StorageAdaptiveGroups") } == false)
+        #expect(account.quotes.first?.lines.map(\.limit).contains("d1.rowsRead") == false)
+    }
+
+    @Test func `should read a service at once when the person watches it again`() async throws {
+        let world = World()
+        world.cloudflare.numbers = ["rowsRead": 912_000]
+        let account = try world.account()
+        await account.connect(token: "tok", at: .utc("2026-10-09T14:20:00"))
+        account.unwatch("d1")
+
+        await account.watch("d1", at: .utc("2026-10-09T14:30:00"))
+
+        #expect(account.limit("d1.rowsRead")?.percent(at: .utc("2026-10-09T14:31:00"))?.rounded == 18)
+        #expect(account.estimateCovers == .everything)
+    }
+
+    @Test func `should keep watching the last service when the person tries to turn it off`() throws {
+        let account = try World().account()
+
+        account.unwatch("d1")
+        account.unwatch("workers")
+
+        #expect(account.watching.map(\.id) == ["workers"])
+        #expect(account.canUnwatch("workers") == false)
+    }
+
+    @Test func `should remember what the person watches after a relaunch`() throws {
+        let world = World()
+        try world.account(adding: [Self.kv]).unwatch("d1")
+        let relaunched = try world.account(adding: [Self.kv])
+
+        #expect(relaunched.watching.map(\.id) == ["workers"])
+    }
+
+    @Test func `should ignore a service the catalog doesn't have`() async throws {
+        let account = try World().account()
+
+        await account.watch("queues", at: .utc("2026-10-09T14:20:00"))
+
+        #expect(account.watching.map(\.id) == ["workers", "d1"])
     }
 }
